@@ -5,5 +5,4 @@ matrix:
         install:
            - pip install flask flask_restful flask_cors flask_jsonpify flask_script flask_migrate
         script:
-           - cd mycrt-backend/test
-           - python test.py
+           - python mycrt-backend/src/email/test_email_server.py
