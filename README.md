@@ -1,4 +1,4 @@
-# CatStone-MyCRT https://travis-ci.org/CPSECapstone/CatStone-MyCRT.svg?branch=master
+# CatStone-MyCRT ![alt text](https://travis-ci.org/CPSECapstone/CatStone-MyCRT.svg?branch=master)
 The MySQL Capture and Replay Tool(MyCRT) allows users to capture transactions on a database and replay them in a different environment to see the effect on their systems.
 
 #To run mycrt-backend
