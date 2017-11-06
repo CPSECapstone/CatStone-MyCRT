@@ -1,0 +1,6 @@
+matrix:
+   include:
+      - language: python
+        python: 3.2
+        install:
+           - pip install flask flask_restful flask_cors json flask_jsonpify flask_script flask_migrate
