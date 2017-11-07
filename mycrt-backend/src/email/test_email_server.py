@@ -1,5 +1,5 @@
 import unittest
-from email_server import email
+from .email_server import email
 class TestSample(unittest.TestCase):
    """
    Our basic test class

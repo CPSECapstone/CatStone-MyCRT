@@ -3,6 +3,6 @@ matrix:
       - language: python
         python: 3.2
         install:
-           - pip install flask flask_restful flask_cors flask_jsonpify flask_script flask_migrate
+           - pip install flask flask_restful flask_cors flask_jsonpify flask_script flask_migrate pytest
         script:
-           - python mycrt-backend/src/email/test_email_server.py
+           - pytest
