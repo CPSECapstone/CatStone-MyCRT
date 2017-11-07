@@ -3,6 +3,7 @@ matrix:
       - language: python
         python: 3.2
         install:
-           - pip install flask flask_restful flask_cors flask_jsonpify flask_script flask_migrate pytest
+           - pip install flask flask_restful flask_cors flask_jsonpify flask_script flask_migrate
+           - pip install -U pytest
         script:
            - pytest
