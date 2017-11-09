@@ -1,3 +1,8 @@
 .Home {
-  text-align: center;
+  text-align: left;
+  background: white;
+  padding-left: 150px;
+  padding-right: 15px;
+  box-sizing: border-box;
+  background-color: white;
 }
