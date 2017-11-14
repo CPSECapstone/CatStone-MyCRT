@@ -4,7 +4,7 @@ import './HomePage.css';
 import AddButton from './AddButton.js';
 import CaptureReplayContainer from './CaptureReplayContainer.js';
 
-class Home extends Component {
+class HomePage extends Component {
   render() {
     return (
       <div className="HomePage">
@@ -14,4 +14,4 @@ class Home extends Component {
   }
 }
 
-export default Home;
+export default HomePage;
