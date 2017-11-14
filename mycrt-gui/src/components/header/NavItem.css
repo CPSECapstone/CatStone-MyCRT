@@ -1,13 +1,13 @@
 .nav-item {
   text-align: left;
   padding: 5px 15px 5px 15px;
-
-  > a:focus, a:hover, a:active {
-  	text-decoration: none;
-  }
 }
 
 .nav-item:hover {
 	background: #dddddd;
 	cursor: pointer;
 }
+
+.nav-item a:hover {
+  	text-decoration: none !important;
+ }
