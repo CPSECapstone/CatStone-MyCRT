@@ -2,7 +2,7 @@
   text-align: left;
   padding: 5px 15px 5px 15px;
 
-  > a {
+  > a:focus, a:hover, a:active {
   	text-decoration: none;
   }
 }
