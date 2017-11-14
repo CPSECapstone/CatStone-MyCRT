@@ -26,11 +26,7 @@ class NavBar extends Component {
 
     return (
       <div class="Nav-Bar">
-        <nav class="col-sm-3 col-md-1 d-sm-block bg-light sidebar">
-          <ul class="nav nav-pills flex-column">
-          {navLinks.map(createLinkItem)}
-          </ul>
-        </nav>
+        {navLinks.map(createLinkItem)}
       </div>
     );
   }

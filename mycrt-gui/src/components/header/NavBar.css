@@ -1,20 +1,12 @@
 .Nav-Bar {
   text-align: left;
   box-sizing: border-box;
-}
-
-.sidebar {
-   position: fixed;
-   top: 51px;
-   bottom: 0;
-   left: 0;
-   z-index: 1000;
-   padding: 20px 0;
-   overflow-x: hidden;
-   overflow-y: auto;
-   border-right: 1px solid #eee;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
 }
 
 .bg-light {
-    background-color: #f8f9fa!important;
+    background-color: #f8f9fa;
 }

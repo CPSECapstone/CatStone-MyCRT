@@ -1,8 +1,6 @@
 .Home {
   text-align: left;
-  background: white;
-  padding-left: 150px;
-  padding-right: 15px;
+  background: #555555;
   box-sizing: border-box;
-  background-color: white;
+  flex-grow: 1;
 }
