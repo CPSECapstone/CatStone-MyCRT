@@ -7,7 +7,13 @@ class CaptureReplayContainer extends Component {
   render() {
     return (
       <div className="CaptureReplayContainer">
-        items here
+        <CaptureReplayItem/>
+        <CaptureReplayItem/>
+        <CaptureReplayItem/>
+        <CaptureReplayItem/>
+        <CaptureReplayItem/>
+        <CaptureReplayItem/>
+        <CaptureReplayItem/>
         <CaptureReplayItem/>
       </div>
     );

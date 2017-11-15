@@ -21,16 +21,16 @@ var navLinks = [
 class NavBar extends Component {
   render() {
     var createLinkItem = function(item, index) {
-      return <NavItem key={item.name + index} href={item.href} name={item.name} />;
+      return (<NavItem 
+        key={item.name + index} 
+        href={item.href} 
+        name={item.name} 
+      />);
     };
 
     return (
       <div class="Nav-Bar">
-        <nav class="col-sm-3 col-md-1 d-sm-block bg-light sidebar">
-          <ul class="nav nav-pills flex-column">
-          {navLinks.map(createLinkItem)}
-          </ul>
-        </nav>
+        {navLinks.map(createLinkItem)}
       </div>
     );
   }

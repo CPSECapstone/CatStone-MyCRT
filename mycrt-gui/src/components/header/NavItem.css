@@ -1,3 +1,17 @@
-.NavItem {
+.nav-item {
   text-align: left;
+  padding: 15px;
+}
+
+.nav-item:hover {
+	background: #666666;
+	cursor: pointer;
+}
+
+.nav-item a:hover {
+  	text-decoration: none !important;
+}
+
+.nav-item a {
+  	color: white;
 }

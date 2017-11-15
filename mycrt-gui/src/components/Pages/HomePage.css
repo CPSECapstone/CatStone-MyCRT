@@ -1,0 +1,6 @@
+.HomePage {
+  text-align: left;
+  background: white;
+  box-sizing: border-box;
+  flex-grow: 1;
+}

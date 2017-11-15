@@ -1,0 +1,8 @@
+.CaptureReplayItem {
+  text-align: center;
+  height: 200px;
+  flex: 0 0 180px;
+  background: white;
+  margin-right: 15px;
+  box-shadow: 0 0 3px 2px #cccccc;
+}
