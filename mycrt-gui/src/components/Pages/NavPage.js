@@ -6,11 +6,11 @@ import HomePage from './HomePage.js';
 class NavPage extends Component {
   render() {
     return (
-      <div className="NavPage">
+      <div class="NavPage">
       	<HomePage/>
       </div>
     );
   }
 }
 
-export default HomePage;
+export default NavPage;

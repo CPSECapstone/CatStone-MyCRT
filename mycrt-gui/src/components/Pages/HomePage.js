@@ -10,8 +10,10 @@ class HomePage extends Component {
       <div className="HomePage">
       	<h1>Dashboard</h1>
       	<h2>Captures</h2>
+      	<AddButton />
       	<CaptureReplayContainer />
       	<h2>Replays</h2>
+      	<AddButton />
       	<CaptureReplayContainer />
       </div>
     );
