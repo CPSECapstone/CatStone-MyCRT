@@ -19,6 +19,7 @@ class Callout extends Component {
     }));
   }
 
+  //TODO: move form to another component
   render() {
     return ( 
     <div>
@@ -41,11 +42,19 @@ class Callout extends Component {
             <input class="form-input" type="text" name="endpoint" value="default value here" />
             </div>
           </form> 
-          <div class="submit-button">
+          <div class="buttons">
+            <div class="cancel-button">
+            <Button 
+              onClick={this.props.onDismiss}
+              content="Cancel"
+            />
+            </div>
+            <div class="submit-button">
         		<Button 
               onClick={this.props.onDismiss}
               content="Submit"
             />
+            </div>
           </div>
       	</div>
       }
