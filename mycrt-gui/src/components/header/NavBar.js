@@ -21,7 +21,11 @@ var navLinks = [
 class NavBar extends Component {
   render() {
     var createLinkItem = function(item, index) {
-      return <NavItem key={item.name + index} href={item.href} name={item.name} />;
+      return (<NavItem 
+        key={item.name + index} 
+        href={item.href} 
+        name={item.name} 
+      />);
     };
 
     return (

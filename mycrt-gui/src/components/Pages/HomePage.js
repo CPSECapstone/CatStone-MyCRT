@@ -9,6 +9,10 @@ class HomePage extends Component {
     return (
       <div className="HomePage">
       	<h1>Dashboard</h1>
+      	<h2>Captures</h2>
+      	<CaptureReplayContainer />
+      	<h2>Replays</h2>
+      	<CaptureReplayContainer />
       </div>
     );
   }
