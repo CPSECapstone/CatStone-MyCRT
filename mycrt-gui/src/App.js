@@ -8,18 +8,18 @@ import NavBar from './components/header/NavBar.js';
 
 var navLinks = [
   {
-    name: "Home",
-    href: "#",
+    name: "Dashboard",
+    href: "",
     idx: 0
   },
   {
     name: "View Results",
-    href: "#",
+    href: "results",
     idx: 1
   },
   {
     name: "Compare",
-    href: "#",
+    href: "compare",
     idx: 2
   }]
 

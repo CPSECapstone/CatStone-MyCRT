@@ -6,14 +6,6 @@ import '../../bootstrap-3.3.7-dist/css/bootstrap.min.css';
 
 class NavBar extends Component {
   render() {
-    // var createLinkItem = function(item, index) {
-    //   return (<NavItem 
-    //     key={index} 
-    //     href={item.href} 
-    //     name={item.name}
-    //   />);
-    // };
-    console.log("NavBar " + this.props.navLinks[1].idx);
     return (
       <div class="Nav-Bar">
         {this.props.navLinks.map((item) => 

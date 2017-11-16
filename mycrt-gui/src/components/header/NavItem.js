@@ -15,8 +15,8 @@ class NavItem extends Component {
   render() {
     console.log("NavItem " + this.props.itemIdx);
     return (
-      <div class="nav-item" onClick={this.onNavItemClick}>
-      	<a href={this.props.href}>
+      <div class="nav-item" onClick={this.onNavItemClick} href={this.props.href}>
+      	<a>
       		{this.props.name}
       	</a>
       </div>
