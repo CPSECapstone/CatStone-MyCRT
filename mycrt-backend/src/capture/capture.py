@@ -4,6 +4,11 @@ import sys
 import boto3
 from botocore.exceptions import NoRegionError, ClientError
 
+#s3 setup
+s3 = boto3.client('s3')
+bucket_name = 'crt-bucket'
+
+
 region = 'us-west-1'
 rds_instance = 'testdb'
 log_file = 'general/mysql-general.log'
@@ -33,3 +38,4 @@ with open(local_log_file, 'w') as f:
     except ClientError as e:
         print(e)
         sys.exit(2)
+s3.upload_file(local_log_file, bucket_name, local_log_file)
