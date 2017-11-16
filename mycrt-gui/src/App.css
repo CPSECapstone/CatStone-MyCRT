@@ -9,6 +9,7 @@
   flex-direction: row;
   flex: 0 1 auto;
   height: 1000px;
+  padding-top: 40px;
 }
 
 .App-logo {

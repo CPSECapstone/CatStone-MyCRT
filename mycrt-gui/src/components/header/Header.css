@@ -1,9 +1,21 @@
 .Header {
   background: #0f77ff;
   height: 40px;
-  box-shadow: 0 0 3px 2px #cccccc;
   color: white;
   display: flex;
+  flex-direction: row;
+  position: fixed;
+  width: 100%;
+}
+
+.header-title {
+	flex-grow: 1;
+	text-align: left;
+	padding-left: 10px;
+}
+
+.header-glyphicons {
+	display: flex;
   flex-direction: row-reverse;
 }
 

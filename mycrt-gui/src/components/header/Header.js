@@ -8,9 +8,14 @@ class Header extends Component {
   render() {
     return (
       <div className="Header">
-        <div class="glyphicon glyphicon-question-sign" />
-        <div class="glyphicon glyphicon-cog" />
-        <div class="glyphicon glyphicon-envelope" />
+      	<div class="header-title">
+      		<h4>My Capture Replay Tool</h4>
+      	</div>
+      	<div class="header-glyphicons">
+	        <div class="glyphicon glyphicon-question-sign" />
+	        <div class="glyphicon glyphicon-cog" />
+	        <div class="glyphicon glyphicon-envelope" />
+        </div>
       </div>
     );
   }
