@@ -4,33 +4,26 @@ import NavItem from './NavItem';
 import './NavBar.css';
 import '../../bootstrap-3.3.7-dist/css/bootstrap.min.css';
 
-var navLinks = [
-  {
-    name: "Home",
-    href: "#"
-  },
-  {
-    name: "View Results",
-    href: "#"
-  },
-  {
-    name: "Compare",
-    href: "#"
-  }]
-
 class NavBar extends Component {
   render() {
-    var createLinkItem = function(item, index) {
-      return (<NavItem 
-        key={item.name + index} 
-        href={item.href} 
-        name={item.name} 
-      />);
-    };
-
+    // var createLinkItem = function(item, index) {
+    //   return (<NavItem 
+    //     key={index} 
+    //     href={item.href} 
+    //     name={item.name}
+    //   />);
+    // };
+    console.log("NavBar " + this.props.navLinks[1].idx);
     return (
       <div class="Nav-Bar">
-        {navLinks.map(createLinkItem)}
+        {this.props.navLinks.map((item) => 
+            <NavItem 
+            href={item.href} 
+            name={item.name}
+            itemIdx={item.idx} 
+            onNavItemClick={this.props.switchTab}
+          />
+      )}
       </div>
     );
   }
