@@ -6,6 +6,10 @@ import ViewResults from './ViewResults.js';
 import ComparePage from './ComparePage.js';
 
 class NavPage extends Component {
+  componentDidUpdate () {
+    window.scrollTo(0, 0)
+  }
+
   render() {
     var getState = function(idx) {
       switch (idx) {
