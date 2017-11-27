@@ -56,6 +56,7 @@ class AddReplayForm extends Component {
         		<Button 
               onClick={this.onSubmit}
               content="Submit"
+              isSubmit={false}
             />
             </div>
           </div>

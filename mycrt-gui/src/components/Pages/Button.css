@@ -6,6 +6,7 @@
   width: 200px;
   border-radius: 10px;
   box-shadow: 0 0 3px 2px #eeeeee;
+  border: none;
 }
 
 .Button:hover {

@@ -31,3 +31,15 @@
 	color: rgba(255, 255, 255, 0.5);
 	cursor: pointer;
 }
+
+.notification-popover {
+	width: 200px;
+}
+
+.notification-popover .popover-title {
+	background-color: #0f77ff;
+	color: white;
+}
+.notification-popover .popover-content {
+	color: black;
+}
