@@ -25,13 +25,14 @@ class AddCaptureForm extends Component {
     this.sendData = this.sendData.bind(this);
   }
 
-  sendData() {
-    console.log(this.state.formData);
+  sendData(formDataValues) {
+    console.log(formDataValues);
     $.ajax({
       url: 'http://localhost:5000/capture',
       dataType: 'json',
+      headers: {'Content-Type': 'application/json'},
       type: 'POST',
-      data: this.state.formData,
+      data: JSON.stringify(formDataValues),
       success: function(data) {
         console.log("successful form");
         console.log(data);
@@ -43,18 +44,21 @@ class AddCaptureForm extends Component {
   }
 
   onSubmit(e) {
+    var formDataValues = {
+       region: 'CHANGE-THIS',
+       rdsInstance: 'CHANGE-THIS',
+       logFile: 'CHANGE-THIS',
+       localLogFile: 'CHANGE-THIS',
+       bucketName: 'CHANGE-THIS'
+    };
+
     e.preventDefault();
     this.setState({
       formData: 
-      {
-        region: 'CHANGE-THIS',
-        rdsInstance: 'CHANGE-THIS',
-        logFile: 'CHANGE-THIS',
-        localLogFile: 'CHANGE-THIS',
-        bucketName: 'CHANGE-THIS'
-      }
-    });
-    this.sendData();
+      formDataValues
+    }, 
+    this.sendData(formDataValues));
+    
     this.props.onDismiss();
     console.log("submitted form");
   }
