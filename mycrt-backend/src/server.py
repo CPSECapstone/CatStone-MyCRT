@@ -15,6 +15,12 @@ api = Api(app)
 def get_test():
 	return jsonify({'test': 'test'})
 
+@app.route('/capture', methods=['POST'])
+def post_capture():
+    if request.headers['Content-Type'] == 'application/json':
+        print("JSON Message: " + json.dumps(request.json))
+    return jsonify("{'capture_status': 'running'}")
+
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
 	return jsonify(get_metrics())
