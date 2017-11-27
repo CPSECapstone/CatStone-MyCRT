@@ -29,8 +29,8 @@ def capture(region, rds_instance, log_file, local_log_file, bucket_name):
                     LogFileName=log_file,
                     Marker=token)
             f.write(response['LogFileData'])
-            return 1
         except ClientError as e:
             print(e)
             return 0
     s3.upload_file(local_log_file, bucket_name, local_log_file)
+    return 1
