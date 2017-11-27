@@ -10,7 +10,6 @@ class AddCaptureForm extends Component {
 	constructor(props) {
     super(props);
     this.state = {
-      testy: "",
       formData: {
         region: "",
         rdsInstance: "",
@@ -35,6 +34,7 @@ class AddCaptureForm extends Component {
       data: this.state.formData,
       success: function(data) {
         console.log("successful form");
+        console.log(data);
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -47,14 +47,13 @@ class AddCaptureForm extends Component {
     this.setState({
       formData: 
       {
-        region: 'us-west-1',
-        rdsInstance: 'testdb',
-        logFile: 'general/mysql-general.log',
-        localLogFile: 'log',
-        bucketName: 'crt-bucket'
+        region: 'CHANGE-THIS',
+        rdsInstance: 'CHANGE-THIS',
+        logFile: 'CHANGE-THIS',
+        localLogFile: 'CHANGE-THIS',
+        bucketName: 'CHANGE-THIS'
       }
     });
-    this.setState({testy: "hahahahaha"});
     this.sendData();
     this.props.onDismiss();
     console.log("submitted form");
@@ -73,27 +72,27 @@ class AddCaptureForm extends Component {
             <h2>Add Capture</h2>
             <div class="form-element">
             <h4>Region:</h4>
-            <input class="form-input" type="text" name="region" defaultValue="us-west-1" required/>
+            <input class="form-input" type="text" name="region" defaultValue="CHANGE-THIS" required/>
             </div>
 
             <div class="form-element">
             <h4>RDS Instance:</h4>
-            <input class="form-input" type="text" name="rds_instance" defaultValue="testdb" required/>
+            <input class="form-input" type="text" name="rds_instance" defaultValue="CHANGE-THIS" required/>
             </div>
 
             <div class="form-element">
             <h4>Log File:</h4>
-            <input class="form-input" type="text" name="log_file" defaultValue="general/mysql-general.log" required/>
+            <input class="form-input" type="text" name="log_file" defaultValue="CHANGE-THIS" required/>
             </div>
 
             <div class="form-element">
             <h4>Local Log File:</h4>
-            <input class="form-input" type="text" name="local_log_file" defaultValue="log" required/>
+            <input class="form-input" type="text" name="local_log_file" defaultValue="CHANGE-THIS" required/>
             </div>
 
             <div class="form-element">
             <h4>S3 Bucket Name:</h4>
-            <input class="form-input" type="text" name="bucket_name" defaultValue="crt-bucket" required/>
+            <input class="form-input" type="text" name="bucket_name" defaultValue="CHANGE-THIS" required/>
             </div>
           </form> 
           <div class="buttons">
