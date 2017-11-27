@@ -33,11 +33,11 @@ def get_metrics():
         Unit='Percent'
         )
 
-    print(metrics)
+    return metrics
 
 
-def main():
-   get_metrics()
+#def main():
+#   get_metrics()
 
 if __name__ == '__main__':
    main()
