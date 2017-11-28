@@ -2,13 +2,48 @@ import React, { Component } from 'react';
 
 import './ViewResults.css';
 import '../../bootstrap-3.3.7-dist/css/bootstrap.min.css';
+import Button from './Button.js';
+import $ from 'jquery';
 
 class ViewResults extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      formData: {}
+    };
+
+    // This binding is necessary to make `this` work in the callback
+    this.sendData = this.sendData.bind(this);
+  }
+
+  sendData(formDataValues) {
+    console.log(formDataValues);
+    $.ajax({
+      url: 'http://localhost:5000/metrics',
+      dataType: 'json',
+      type: 'POST',
+      success: function(data) {
+        this.setState({formData: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  }
 
   render() {
     return (
       <div className="ViewResults">
          <h1>View Results</h1>
+         <div class="buttons">
+            <div class="submit-button">
+            <Button 
+              onClick={this.sendData}
+              content="Refresh"
+              isSubmit={true}
+            />
+            </div>
+          </div>
          <table class="table table-hover">
           <thead>
             <tr>
