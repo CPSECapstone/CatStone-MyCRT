@@ -21,7 +21,7 @@ class ViewResults extends Component {
     $.ajax({
       url: 'http://localhost:5000/metrics',
       dataType: 'json',
-      type: 'POST',
+      type: 'GET',
       success: function(data) {
         this.setState({formData: data});
       }.bind(this),
@@ -63,7 +63,7 @@ class ViewResults extends Component {
               </td>
             </tr>
             <tr>
-              <td> </td>
+              <td> {JSON.stringify(this.state.formData)} </td>
               <td> </td>
               <td> </td>
               <td> </td>
