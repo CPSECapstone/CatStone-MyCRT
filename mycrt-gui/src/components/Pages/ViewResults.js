@@ -36,13 +36,11 @@ class ViewResults extends Component {
       <div className="ViewResults">
          <h1>View Results</h1>
          <div class="buttons">
-            <div class="submit-button">
             <Button 
               onClick={this.sendData}
               content="Refresh"
-              isSubmit={true}
+              isSubmit={false}
             />
-            </div>
           </div>
          <table class="table table-hover">
           <thead>

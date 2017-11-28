@@ -7,7 +7,7 @@ class Button extends Component {
   render() {
   	if (this.props.isSubmit) {
   	   return (
-    	<input type="submit" class="Button" onClick={this.props.onClick} />
+    	<input type="submit" value={this.props.content} class="Button" onClick={this.props.onClick} />
         );	
   	}
     else {
