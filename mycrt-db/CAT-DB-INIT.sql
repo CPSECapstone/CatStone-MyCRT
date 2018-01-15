@@ -41,11 +41,11 @@ CREATE TABLE Replays(
 
 CREATE TABLE Metrics(
    metricId       INT AUTO_INCREMENT,
-   captureId      INT,
-   replayId       INT,
+   captureAlias   VARCHAR(64),
+   replayAlias    VARCHAR(64),
    s3Bucket       VARCHAR(64),
    metricFileName VARCHAR(64),
    PRIMARY KEY (metricId),
-   FOREIGN KEY (captureId) references Captures(captureId),
-   FOREIGN KEY (replayId) references Replays(replayId)
+   FOREIGN KEY (captureAlias) references Captures(captureAlias),
+   FOREIGN KEY (replayAlias) references Replays(replayAlias)
 );
