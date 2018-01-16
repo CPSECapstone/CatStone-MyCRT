@@ -1,17 +1,31 @@
 .nav-item {
   text-align: left;
   padding: 15px;
+  height: 60px;
 }
 
 .nav-item:hover {
-	background: #666666;
 	cursor: pointer;
 }
+
+.nav-item:hover > a{
+	color: white;
+}
+
+.nav-item:hover > .glyphicon {
+	color: white;
+}
+
+.nav-item > .glyphicon {
+	color: #aaa;
+    vertical-align: middle;
+    padding: 0 10px 5px 0px;
+   }
 
 .nav-item a:hover {
   	text-decoration: none !important;
 }
 
 .nav-item a {
-  	color: white;
+  	color: #aaa;
 }

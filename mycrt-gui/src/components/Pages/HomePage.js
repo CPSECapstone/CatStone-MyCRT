@@ -49,8 +49,8 @@ class HomePage extends Component {
   render() {
     return (
       <div className="HomePage">
-      	<h1>Dashboard</h1>
-      	<h2>Captures</h2>
+      	<h2>Dashboard</h2>
+      	<h3>Captures</h3>
       	<Button 
       		onClick={this.showCaptureCallout}
       		content="Add Capture"
@@ -64,7 +64,7 @@ class HomePage extends Component {
       		/>
       	}
       	<CaptureReplayContainer />
-      	<h2>Replays</h2>
+      	<h3>Replays</h3>
       	<Button 
       		onClick={this.showReplayCallout}
       		content="Add Replay"
