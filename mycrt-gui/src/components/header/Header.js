@@ -33,13 +33,17 @@ class Header extends Component {
     return (
       <div className="Header">
       	<div class="header-title">
-      		<h4>My Capture Replay Tool</h4>
+      		<h5>My Capture Replay Tool</h5>
       	</div>
       	<div class="header-glyphicons">
-	        <div class="glyphicon glyphicon-question-sign" />
-	        <div class="glyphicon glyphicon-cog" />
+          <div class="logout glyphiconstyle">
+            Logout
+            <div class="glyphicon glyphicon-log-out" />
+          </div>
+	        <div class="glyphiconstyle glyphicon glyphicon-question-sign" />
+	        <div class="glyphiconstyle glyphicon glyphicon-cog" />
 	        <OverlayTrigger container={this} trigger="click" placement="bottom" overlay={notificationPopover}>
-	        	<div class="glyphicon glyphicon-envelope" 
+	        	<div class="glyphiconstyle glyphicon glyphicon-envelope" 
 	        		onClick={this.showPopover} />
 	        </OverlayTrigger>
         </div>

@@ -1,6 +1,7 @@
 .NavPage {
 	padding: 10px;
+	background: #f7f7f7;
 	display: flex;
 	flex: 1 1 auto;
-	margin-left: 120px;
+	margin-left: 140px;
 }

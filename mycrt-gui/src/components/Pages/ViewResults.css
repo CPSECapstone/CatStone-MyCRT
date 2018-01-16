@@ -1,6 +1,6 @@
 .ViewResults {
   text-align: left;
-  background: white;
+  background: #f7f7f7;
   box-sizing: border-box;
   flex-grow: 1;
 }

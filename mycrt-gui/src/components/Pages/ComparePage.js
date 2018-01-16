@@ -7,7 +7,7 @@ class ComparePage extends Component {
   render() {
     return (
       <div className="ComparePage">
-         <h1>Compare</h1>
+         <h2>Compare</h2>
       </div>
     );
   }
