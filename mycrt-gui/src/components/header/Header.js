@@ -3,22 +3,11 @@ import $ from 'jquery';
 
 import './Header.css';
 import '../../bootstrap-3.3.7-dist/css/bootstrap.min.css';
-//import { Popover } from 'react-bootstrap';
-import { OverlayTrigger } from 'react-bootstrap';
 
 import Popover from 'material-ui/Popover/Popover';
 import MenuItem from 'material-ui/MenuItem';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
-
-/*const notificationPopover = (
-  <Popover
-  	className = "notification-popover"
-	placement = "bottom"
-	title = "Notifications (0)" >
-	no notifications.
-	</Popover>
-);*/
 
 class Header extends Component {
 	constructor(props) {
