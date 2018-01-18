@@ -6,6 +6,8 @@ import Header from './components/Header/Header.js';
 import NavPage from './components/Pages/NavPage.js';
 import NavBar from './components/Header/NavBar.js';
 
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
 var navLinks = [
   {
     name: "Dashboard",
@@ -41,6 +43,7 @@ class App extends Component {
   render() {
     console.log("Im in App " + this.state.selected);
     return (
+      <MuiThemeProvider>
       <div class="App">
         <Header/>
         <div class="app-content">
@@ -48,6 +51,7 @@ class App extends Component {
           <NavPage selected={this.state.selected}/>
         </div>
       </div>
+      </MuiThemeProvider>
     );
   }
 }

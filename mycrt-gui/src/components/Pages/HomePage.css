@@ -4,3 +4,20 @@
   box-sizing: border-box;
   flex-grow: 1;
 }
+
+.add-capture-content {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.8em;
+}
+
+.add-capture-item {
+	display: flex;
+	flex-direction: column;
+	padding-top: 30px;
+}
+
+.capture-row {
+	display: flex;
+	flex-direction: row;
+}
