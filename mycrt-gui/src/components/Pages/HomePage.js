@@ -24,7 +24,8 @@ class HomePage extends Component {
       rdsValue: undefined,
       s3Value: undefined,
       aliasValue: undefined,
-      captureStartTime: undefined,
+      captureStartDay: undefined,
+      captureEndDay: undefined,
       captureEndTime: undefined
     };
 
@@ -36,6 +37,8 @@ class HomePage extends Component {
     this.hideReplayCallout = this.hideReplayCallout.bind(this);
     this.handleRdsChange = this.handleRdsChange.bind(this);
     this.handleS3Change = this.handleS3Change.bind(this);
+    this.handleStartDayChange = this.handleStartDayChange.bind(this);
+    this.handleEndDayChange = this.handleEndDayChange.bind(this);
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
   }
@@ -78,15 +81,32 @@ class HomePage extends Component {
     }));
   }
 
+  handleStartDayChange(event, value) {
+    this.setState(prevState => ({
+      captureStartDay: value
+    }))
+    console.log(value);
+  }
+
+  handleEndDayChange(event, value) {
+    this.setState(prevState => ({
+      captureEndDay: value
+    }))
+    console.log(value);
+  }
+
   isCaptureFieldsFilled() {
     //TODO: check for filled start/end time and alias values
-    return this.state.rdsValue != undefined && this.state.s3Value != undefined;
+    return this.state.rdsValue != undefined && this.state.s3Value != undefined
+      && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined;
   }
 
   onCaptureButton() {
     this.setState(prevState => ({
       s3Value: undefined,
-      rdsValue: undefined
+      rdsValue: undefined,
+      captureStartDay: undefined,
+      captureEndDay: undefined
     }));
     this.hideCaptureCallout();
   }
@@ -161,7 +181,10 @@ class HomePage extends Component {
             <div class="add-capture-item">
               Start Time
               <div class="capture-row">
-                <DatePicker hintText="Day" />
+                <DatePicker 
+                  hintText="Day" 
+                  onChange={this.handleStartDayChange}
+                />
                 <TimePicker
                   hintText="Time"
                 />
@@ -170,7 +193,10 @@ class HomePage extends Component {
             <div class="add-capture-item">
               End Time
               <div class="capture-row">
-                <DatePicker hintText="Day" />
+                <DatePicker 
+                  hintText="Day" 
+                  onChange={this.handleEndDayChange}
+                />
                 <TimePicker
                   hintText="Time"
                 />
