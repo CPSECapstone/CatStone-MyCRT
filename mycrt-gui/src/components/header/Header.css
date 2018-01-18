@@ -1,5 +1,5 @@
 .Header {
-  background: #0f77ff;
+  background: #333b44;
   height: 40px;
   color: white;
   display: flex;
@@ -19,17 +19,21 @@
   flex-direction: row-reverse;
 }
 
-.glyphicon {
-	color: white;
-    font-size: 1.6em;
+.glyphiconstyle {
+	 color: #aaa;
+    font-size: 1.2em;
     vertical-align: middle;
     line-height: 40px !important;
-    padding: 0 10px 0 10px;
+    padding: 0 15px 0 15px;
 }
 
-.glyphicon:hover {
-	color: rgba(255, 255, 255, 0.5);
+.glyphiconstyle:hover {
+	color: white;
 	cursor: pointer;
+}
+
+.glyphicon-log-out {
+  padding-left: 5px;
 }
 
 .notification-popover {
@@ -42,4 +46,8 @@
 }
 .notification-popover .popover-content {
 	color: black;
+}
+
+.logout {
+  font-size: 1em;
 }

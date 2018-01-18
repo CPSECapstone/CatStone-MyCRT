@@ -16,6 +16,7 @@ class NavItem extends Component {
     console.log("NavItem " + this.props.itemIdx);
     return (
       <div class="nav-item" onClick={this.onNavItemClick} href={this.props.href}>
+        <div class={"glyphicon " + this.props.icon}/>
       	<a>
       		{this.props.name}
       	</a>

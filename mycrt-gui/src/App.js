@@ -2,25 +2,28 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import Header from './components/header/Header.js';
+import Header from './components/Header/Header.js';
 import NavPage from './components/Pages/NavPage.js';
-import NavBar from './components/header/NavBar.js';
+import NavBar from './components/Header/NavBar.js';
 
 var navLinks = [
   {
     name: "Dashboard",
     href: "",
-    idx: 0
+    idx: 0,
+    icon: "glyphicon-dashboard"
   },
   {
     name: "View Results",
     href: "results",
-    idx: 1
+    idx: 1,
+    icon: "glyphicon-th-list"
   },
   {
     name: "Compare",
     href: "compare",
-    idx: 2
+    idx: 2,
+    icon: "glyphicon-eye-open"
   }]
 
 class App extends Component {

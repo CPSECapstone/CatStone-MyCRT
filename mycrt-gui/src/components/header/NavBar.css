@@ -1,11 +1,11 @@
 .Nav-Bar {
   text-align: left;
   box-sizing: border-box;
-  width: 120px;
+  width: 140px;
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
-  background: #444444;
+  background: #333b44;
   position: fixed;
   height: 100%;
 }

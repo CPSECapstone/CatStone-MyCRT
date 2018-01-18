@@ -34,7 +34,7 @@ class ViewResults extends Component {
   render() {
     return (
       <div className="ViewResults">
-         <h1>View Results</h1>
+         <h2>View Results</h2>
          <div class="buttons">
             <Button 
               onClick={this.sendData}

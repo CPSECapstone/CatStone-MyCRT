@@ -1,16 +1,15 @@
 .Button {
   text-align: center;
-  background: #0f77ff;
+  background: #409ff7;
   color: white;
   padding: 10px;
   width: 200px;
   border-radius: 10px;
-  box-shadow: 0 0 3px 2px #eeeeee;
   border: none;
 }
 
 .Button:hover {
   text-align: center;
-  background: #5ea3ff;
+  background: #3c8ad2;
   cursor: pointer;
 }
