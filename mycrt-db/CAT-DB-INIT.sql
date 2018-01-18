@@ -1,6 +1,6 @@
 CREATE TABLE Users(
    userId           INT AUTO_INCREMENT,
-   userName         VARCHAR(64),
+   userName         VARCHAR(64) UNIQUE,
    email            VARCHAR(64),
    notificationLife INT,
    PRIMARY KEY (userId)
