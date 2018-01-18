@@ -19,6 +19,17 @@
   flex-direction: row-reverse;
 }
 
+.notif-menu {
+  padding-top: 10px;
+}
+
+.header-glyphicons > div > button {
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  font-size: 1.2em !important;
+}
+
 .glyphiconstyle {
 	 color: #aaa;
     font-size: 1.2em;
@@ -48,6 +59,36 @@
 	color: black;
 }
 
+.notif-menu-card {
+  border: 2px solid #d2d2d2;
+  margin: 5px;
+}
+
+.notif-menu-card-content {
+  font-size: 0.8em;
+}
+
 .logout {
   font-size: 1em;
+}
+
+.badge1 {
+   position:relative;
+}
+.badge1[data-badge]:after {
+    content: attr(data-badge);
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: .5em;
+    background: #ff2d2d;
+    color: white;
+    width: 12px;
+    height: 12px;
+    text-align: center;
+    line-height: 9px;
+    border-radius: 50%;
+    -webkit-box-shadow: 0 0 1px #333;
+    box-shadow: 0 0 1px #333;
+    font-weight: 900;
 }
