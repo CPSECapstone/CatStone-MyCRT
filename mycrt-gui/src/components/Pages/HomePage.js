@@ -26,7 +26,9 @@ class HomePage extends Component {
       aliasValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
-      captureEndTime: undefined
+      captureStartTime: undefined,
+      captureEndTime: undefined,
+      isErrorVisible: false
     };
 
 
@@ -35,10 +37,15 @@ class HomePage extends Component {
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
     this.showReplayCallout = this.showReplayCallout.bind(this);
     this.hideReplayCallout = this.hideReplayCallout.bind(this);
+
     this.handleRdsChange = this.handleRdsChange.bind(this);
     this.handleS3Change = this.handleS3Change.bind(this);
     this.handleStartDayChange = this.handleStartDayChange.bind(this);
     this.handleEndDayChange = this.handleEndDayChange.bind(this);
+    this.handleStartTimeChange = this.handleStartTimeChange.bind(this);
+    this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
+    this.handleAliasChange = this.handleAliasChange.bind(this);
+
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
   }
@@ -82,23 +89,90 @@ class HomePage extends Component {
   }
 
   handleStartDayChange(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
+    } else {
+      var newDate = value;
+    }
+
     this.setState(prevState => ({
-      captureStartDay: value
+      captureStartDay: newDate
     }))
-    console.log(value);
+    console.log(newDate);
   }
 
   handleEndDayChange(event, value) {
+    if (this.state.captureEndDay != undefined) {
+      var newDate = this.state.captureEndDay;
+      newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
+    } else {
+      var newDate = value;
+    }
+
+    // check if end date is after start date
+    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+      this.setState(prevState => ({
+        isErrorVisible: true
+      }))
+    } else {
+      this.setState(prevState => ({
+        captureEndDay: newDate,
+        isErrorVisible: false
+      }))
+    }
+    console.log(newDate);
+  }
+
+  handleStartTimeChange(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes()); 
+    } else {
+      var newDate = value;
+    }
+
     this.setState(prevState => ({
-      captureEndDay: value
+      captureStartDay: newDate
     }))
-    console.log(value);
+    console.log(newDate);
+  }
+
+  handleEndTimeChange(event, value) {
+    if (this.state.captureEndDay != undefined) {
+      var newDate = this.state.captureEndDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes()); 
+    } else {
+      var newDate = value;
+    }
+
+    // check if end date is after start date
+    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+      this.setState(prevState => ({
+        isErrorVisible: true
+      }))
+    } else {
+      this.setState(prevState => ({
+        captureEndDay: newDate,
+        isErrorVisible: false
+      }))
+    }
+    console.log(newDate);
+  }
+
+  handleAliasChange(event, value) {
+    this.setState(prevState => ({
+      aliasValue: value
+    }))
   }
 
   isCaptureFieldsFilled() {
     //TODO: check for filled start/end time and alias values
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
-      && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined;
+      && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
+      && this.state.aliasValue != undefined && !this.state.isErrorVisible;
   }
 
   onCaptureButton() {
@@ -106,7 +180,9 @@ class HomePage extends Component {
       s3Value: undefined,
       rdsValue: undefined,
       captureStartDay: undefined,
-      captureEndDay: undefined
+      captureEndDay: undefined,
+      captureStartTime: undefined,
+      captureEndTime: undefined
     }));
     this.hideCaptureCallout();
   }
@@ -157,6 +233,7 @@ class HomePage extends Component {
               Capture Alias
                <TextField
                   hintText="Type alias here"
+                  onChange={this.handleAliasChange}
                 />
             </div>
             <div class="add-capture-item">
@@ -183,22 +260,33 @@ class HomePage extends Component {
               <div class="capture-row">
                 <DatePicker 
                   hintText="Day" 
+                  value={this.state.captureStartDay}
                   onChange={this.handleStartDayChange}
                 />
                 <TimePicker
                   hintText="Time"
+                  value={this.state.captureStartDay}
+                  onChange={this.handleStartTimeChange}
                 />
               </div>
             </div>
+            {this.state.isErrorVisible && 
+              <div class="error-message">
+                End time must be after start time.
+              </div>
+            }
             <div class="add-capture-item">
               End Time
               <div class="capture-row">
                 <DatePicker 
                   hintText="Day" 
+                  value={this.state.captureEndDay}
                   onChange={this.handleEndDayChange}
                 />
                 <TimePicker
                   hintText="Time"
+                  value={this.state.captureEndDay}
+                  onChange={this.handleEndTimeChange}
                 />
               </div>
             </div>
