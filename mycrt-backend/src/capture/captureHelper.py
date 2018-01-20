@@ -11,10 +11,13 @@ rds = boto3.client('rds')
 
 def getRDSInstances():
     DBInstances = []
-
-    response = rds.describe_db_instances()
-    DBInstancesInfo = response['DBInstances']
-    for instance in DBInstancesInfo:
-        DBInstances.append(instance['DBInstanceIdentifier'])
+    try:
+        response = rds.describe_db_instances()
+        DBInstancesInfo = response['DBInstances']
+        for instance in DBInstancesInfo:
+            DBInstances.append(instance['DBInstanceIdentifier'])
+    except ClientError as e:
+        print(e)
+        return 0
 
     return DBInstances
