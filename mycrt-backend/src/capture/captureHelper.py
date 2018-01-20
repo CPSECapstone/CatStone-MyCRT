@@ -21,3 +21,17 @@ def getRDSInstances():
         return 0
 
     return DBInstances
+
+def getS3Instances():
+    S3Instances = []
+
+    try:
+        response = s3.list_buckets()
+        S3InstancesInfo = response['Buckets']
+        for instance in S3InstancesInfo:
+            S3Instances.append(instance['Name'])
+    except ClientError as e:
+        print(e)
+        return 0
+        
+    return S3Instances
