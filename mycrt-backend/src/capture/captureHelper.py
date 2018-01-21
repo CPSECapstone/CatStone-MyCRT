@@ -20,4 +20,4 @@ def getRDSInstances():
         print(e)
         return 0
 
-    return DBInstances
+    return {'rdsInstances': DBInstances}
