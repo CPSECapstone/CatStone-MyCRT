@@ -34,6 +34,18 @@ def post_capture():
 
     return jsonify("{'capture_status': 'running'}")
 
+@app.route('/login', methods=['PUT'])
+def login():
+    if request.headers['Content-Type'] == 'application/json':
+        print("JSON Message: " + json.dumps(request.json))
+        print("------ JSON OBJ -------")
+        jsonData = request.json
+
+        #Call login method here verifies/authenticates user
+
+    return jsonify("{'login_status': 'Success'}")
+
+
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
 	return jsonify(get_metrics())
