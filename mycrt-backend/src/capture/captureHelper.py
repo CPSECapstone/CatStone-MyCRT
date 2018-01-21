@@ -33,5 +33,5 @@ def getS3Instances():
     except ClientError as e:
         print(e)
         return 0
-        
-    return S3Instances
+
+    return {'s3Instances': S3Instances}
