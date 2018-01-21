@@ -9,4 +9,8 @@ def getAllCaptures(username):
 				    (username))
 		return cur.fetchall()
 
-
+def getUserEmail(username):
+	with getConn().cursor() as cur:
+		cur.execute("""Select email FROM Users WHERE username = %s""",
+			        (username))
+		return cur.fetchall()
