@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 
 import './HomePage.css';
 import Button from './Button.js';
-import CaptureReplayContainer from './CaptureReplayContainer.js';
+import CaptureContainer from './CaptureContainer.js';
+import ReplayContainer from './ReplayContainer.js';
 import AddCaptureForm from '../Forms/AddCaptureForm.js';
 import AddReplayForm from '../Forms/AddReplayForm.js';
 import Callout from './Callout.js';
@@ -15,6 +16,8 @@ import TextField from 'material-ui/TextField';
 import TimePicker from 'material-ui/TimePicker';
 import DatePicker from 'material-ui/DatePicker';
 
+import $ from 'jquery';
+
 class HomePage extends Component {
 	constructor(props) {
     super(props);
@@ -26,13 +29,14 @@ class HomePage extends Component {
       aliasValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
-      captureStartTime: undefined,
-      captureEndTime: undefined,
-      isErrorVisible: false
+      isErrorVisible: false,
+      captureCards: []
     };
 
 
     // This binding is necessary to make `this` work in the callback
+    //this.getRdsData = this.getRdsData.bind(this);
+
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
     this.showReplayCallout = this.showReplayCallout.bind(this);
@@ -48,8 +52,20 @@ class HomePage extends Component {
 
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
+    this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
   }
-
+/*
+  getRdsData() {
+    $.getJSON( "test.js" )
+      .done(function( json ) {
+        console.log( "JSON Data: " + json.users[ 3 ].name );
+      })
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
+    });
+  }
+*/
   showCaptureCallout() {
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
@@ -169,7 +185,6 @@ class HomePage extends Component {
   }
 
   isCaptureFieldsFilled() {
-    //TODO: check for filled start/end time and alias values
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
       && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
       && this.state.aliasValue != undefined && !this.state.isErrorVisible;
@@ -181,10 +196,27 @@ class HomePage extends Component {
       rdsValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
-      captureStartTime: undefined,
-      captureEndTime: undefined
+      isErrorVisible: false
     }));
     this.hideCaptureCallout();
+  }
+
+  onCaptureSubmit() {
+    //TODO: send information to capture card
+    var card = {
+      alias: this.state.aliasValue,
+      rds: this.state.rdsValue,
+      s3: this.state.s3Value,
+      start: this.state.captureStartDay,
+      end: this.state.captureEndDay
+    };
+    var newCards = this.state.captureCards;
+    newCards.push(card);
+    this.setState(prevState => ({
+      captureCards: newCards,
+      isErrorVisible: false
+    }))
+    this.onCaptureButton();
   }
 
   render() {
@@ -198,7 +230,7 @@ class HomePage extends Component {
         label="Submit"
         primary={true}
         disabled={!this.isCaptureFieldsFilled()}
-        onClick={this.onCaptureButton}
+        onClick={this.onCaptureSubmit}
       />
     ];
 
@@ -292,7 +324,10 @@ class HomePage extends Component {
             </div>
           </div>
         </Dialog>
-      	<CaptureReplayContainer />
+      	<CaptureContainer 
+          cards={this.state.captureCards}
+          sampleDate={this.state.captureEndDay}
+        />
       	<h3>Replays</h3>
       	<Button 
       		onClick={this.showReplayCallout}
@@ -306,7 +341,8 @@ class HomePage extends Component {
           			/>}
       		/>
       	}
-      	<CaptureReplayContainer />
+      	<ReplayContainer 
+        />
       </div>
     );
   }
