@@ -13,11 +13,12 @@ def getRDSInstances():
     DBInstances = []
     try:
         response = rds.describe_db_instances()
-        DBInstancesInfo = response['DBInstances']
-        for instance in DBInstancesInfo:
-            DBInstances.append(instance['DBInstanceIdentifier'])
     except ClientError as e:
         print(e)
-        return 0
+        return e.response
 
-    return {'count': len(DBInstances), 'rdsInstances': DBInstances}
+    DBInstancesInfo = response['DBInstances']
+    for instance in DBInstancesInfo:
+        DBInstances.append(instance['DBInstanceIdentifier'])
+
+    return DBInstances
