@@ -34,4 +34,4 @@ def getS3Instances():
         print(e)
         return 0
 
-    return {'s3Instances': S3Instances}
+    return {'count': len(S3Instances), 's3Instances': S3Instances}
