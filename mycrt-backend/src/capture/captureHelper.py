@@ -29,6 +29,7 @@ def getS3Instances():
         response = s3.list_buckets()
     except ClientError as e:
         print(e)
+        return e.response
 
     S3InstancesInfo = response['Buckets']
     for instance in S3InstancesInfo:
