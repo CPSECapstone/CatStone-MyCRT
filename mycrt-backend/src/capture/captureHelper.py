@@ -7,10 +7,12 @@ from botocore.exceptions import NoRegionError, ClientError
 
 #AWS setup
 s3 = boto3.client('s3')
-rds = boto3.client('rds')
 
-def getRDSInstances():
+
+def getRDSInstances(botoAPI = boto3):
     DBInstances = []
+    rds = boto3.client('rds')
+    
     try:
         response = rds.describe_db_instances()
     except ClientError as e:
