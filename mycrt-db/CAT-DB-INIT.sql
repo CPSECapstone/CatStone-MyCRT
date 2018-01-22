@@ -1,6 +1,7 @@
 CREATE TABLE Users(
    userId           INT AUTO_INCREMENT,
    userName         VARCHAR(64) UNIQUE,
+   userPassword     VARCHAR(128),
    email            VARCHAR(64),
    accessKey        VARCHAR(128),
    secretKey        VARCHAR(128),

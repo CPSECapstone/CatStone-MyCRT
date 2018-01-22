@@ -68,16 +68,17 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
 
 ''' Function to insert a user into the database
    Example: insertUser("AndrewTest", 
+                       "HashedPassword",
                        "test@gmail.com", 
                        "testAccess", 
                        "testSecret")
 '''
-def insertUser(userName, email, accessKey, secretKey):
+def insertUser(userName, userPassword, email, accessKey, secretKey):
 	with getConn().cursor() as cur:
 		try:
-			cur.execute("""INSERT INTO Users (userName, email, accessKey, secretKey)
-				                       values (%s, %s, %s, %s)""",
-				        (userName, email, accessKey, secretKey))
+			cur.execute("""INSERT INTO Users (userName, userPassword, email, accessKey, secretKey)
+				                       values (%s, %s, %s, %s, %s)""",
+				        (userName, userPassword, email, accessKey, secretKey))
 			getConn().commit()
 			print("[SUCCESS]: Inserted User '" + userName + "' into Users table")
 		except pymysql.Error as e:
