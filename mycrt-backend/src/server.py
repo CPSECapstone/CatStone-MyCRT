@@ -2,6 +2,8 @@ from flask import Flask, request, render_template, send_from_directory, session,
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
 from flask_jsonpify import jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 from flask_security import Security, login_required, SQLAlchemyUserDatastore
@@ -18,6 +20,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://mycrt:catstone@localhost/mycrt_
 
 CORS(app)
 api = Api(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 user_datastore = SQLAlchemyUserDatastore(db_session, User, Role)
 security = Security(app, user_datastore)
@@ -46,6 +50,18 @@ def post_capture():
 
 
     return jsonify("{'capture_status': 'running'}")
+
+@app.route('/login', methods=['PUT'])
+def login():
+    if request.headers['Content-Type'] == 'application/json':
+        print("JSON Message: " + json.dumps(request.json))
+        print("------ JSON OBJ -------")
+        jsonData = request.json
+
+        #Call login method here verifies/authenticates user
+
+    return jsonify("{'login_status': 'Success'}")
+
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
