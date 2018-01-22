@@ -5,18 +5,21 @@ from dbConnector import getConn
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1, 
                                 "test-capture-2", 
-                               "2018-01-01 00:00:01", 
-                               "2018-01-01 00:00:02", 
-                               "testBucket", 
-                               "test-capture-1.log", 
-                               "test-rds")
+                                "2018-01-01 00:00:01", 
+                                "2018-01-01 00:00:02", 
+                                "testBucket", 
+                                "test-capture-1.log", 
+                                "test-rds", 
+                                "test", 
+                                "testPW", 
+                                "testDB")
 '''
-def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance):
+def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
 	with getConn().cursor() as cur:
 		try:
-			cur.execute("""INSERT INTO Captures (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance)
-				                       values   (%s, %s, %s, %s, %s, %s, %s)""",
-				        (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance))
+			cur.execute("""INSERT INTO Captures (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
+				                       values   (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+				        (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase))
 			getConn().commit()
 			print("[SUCCESS]: Inserted Capture '" + captureAlias + "' into Captures table")
 		except pymysql.Error as e:
@@ -24,7 +27,12 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 			getConn().rollback()
 
 
-#Simple function to insert a capture metric
+'''Simple function to insert a capture metric
+   Example: insertCaptureMetric("test-capture-2", 
+                                "testBucket", 
+                                "test-capture-1.log")
+
+'''
 def insertCaptureMetric(capture, bucket, metricFile):
 	insertMetric(captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
 
@@ -58,5 +66,23 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
 				print("[ERROR]:", e.args[0], e.args[1])
 				getConn().rollback()
 
-insertCapture(1, "test-capture-2", "2018-01-01 00:00:01", "2018-01-01 00:00:02", "testBucket", "test-capture-1.log", "test-rds")
-insertCaptureMetric("test-capture-2", "testBucket", "test-capture-1.log")
+''' Function to insert a user into the database
+   Example: insertUser("AndrewTest", 
+                       "test@gmail.com", 
+                       "testAccess", 
+                       "testSecret")
+'''
+def insertUser(userName, email, accessKey, secretKey):
+	with getConn().cursor() as cur:
+		try:
+			cur.execute("""INSERT INTO Users (userName, email, accessKey, secretKey)
+				                       values (%s, %s, %s, %s)""",
+				        (userName, email, accessKey, secretKey))
+			getConn().commit()
+			print("[SUCCESS]: Inserted User '" + userName + "' into Users table")
+		except pymysql.Error as e:
+			print("[ERROR]:", e.args[0], e.args[1])
+			getConn().rollback()
+
+
+
