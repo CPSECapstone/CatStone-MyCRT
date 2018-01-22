@@ -4,11 +4,28 @@ from flask_cors import CORS, cross_origin
 from flask_jsonpify import jsonify
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
+from flask_security import Security, login_required, SQLAlchemyUserDatastore
+from src.database import db_session, init_db
+from src.user.user import User, Role
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
+
+# app configuration
 app = Flask(__name__, static_url_path='')
+app.config['DEBUG'] = True
+app.config['SECRET_KEY'] = 'catstone-secret-key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://mycrt:catstone@localhost/mycrt_development'
+
 CORS(app)
 api = Api(app)
+
+user_datastore = SQLAlchemyUserDatastore(db_session, User, Role)
+security = Security(app, user_datastore)
+
+@app.route('/')
+@login_required
+def home():
+    return 'Here you go!'
 
 @app.route('/test/api', methods=['GET'])
 def get_test():
@@ -20,11 +37,11 @@ def post_capture():
         print("JSON Message: " + json.dumps(request.json))
         print("-----JSON OBJ -------")
         jsonData = request.json
-        
-        capture(jsonData["region"], 
-        	    jsonData["rdsInstance"], 
-        	    jsonData["logFile"], 
-        	    jsonData["localLogFile"], 
+
+        capture(jsonData["region"],
+        	    jsonData["rdsInstance"],
+        	    jsonData["logFile"],
+        	    jsonData["localLogFile"],
         	    jsonData["bucketName"])
 
 
