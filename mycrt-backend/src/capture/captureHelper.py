@@ -20,4 +20,4 @@ def getRDSInstances():
         print(e)
         return 0
 
-    return {'rdsInstances': DBInstances}
+    return {'count': len(DBInstances), 'rdsInstances': DBInstances}
