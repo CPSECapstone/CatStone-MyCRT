@@ -14,10 +14,24 @@
 .add-capture-item {
 	display: flex;
 	flex-direction: column;
-	padding-top: 30px;
+	padding-top: 15px;
+}
+
+.add-capture-item > div {
+	font-size: 1em !important;
+	height: 40px !important;
 }
 
 .capture-row {
 	display: flex;
 	flex-direction: row;
+}
+
+.capture-row > div > div {
+	font-size: 1em !important;
+	height: 40px !important;
+}
+
+.error-message {
+	color: red;
 }
