@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 
 import './HomePage.css';
 import Button from './Button.js';
-import CaptureReplayContainer from './CaptureReplayContainer.js';
+import CaptureContainer from './CaptureContainer.js';
+import ReplayContainer from './ReplayContainer.js';
 import AddCaptureForm from '../Forms/AddCaptureForm.js';
 import AddReplayForm from '../Forms/AddReplayForm.js';
 import Callout from './Callout.js';
@@ -15,6 +16,8 @@ import TextField from 'material-ui/TextField';
 import TimePicker from 'material-ui/TimePicker';
 import DatePicker from 'material-ui/DatePicker';
 
+import $ from 'jquery';
+
 class HomePage extends Component {
 	constructor(props) {
     super(props);
@@ -24,22 +27,45 @@ class HomePage extends Component {
       rdsValue: undefined,
       s3Value: undefined,
       aliasValue: undefined,
-      captureStartTime: undefined,
-      captureEndTime: undefined
+      captureStartDay: undefined,
+      captureEndDay: undefined,
+      isErrorVisible: false,
+      captureCards: []
     };
 
 
     // This binding is necessary to make `this` work in the callback
+    //this.getRdsData = this.getRdsData.bind(this);
+
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
     this.showReplayCallout = this.showReplayCallout.bind(this);
     this.hideReplayCallout = this.hideReplayCallout.bind(this);
+
     this.handleRdsChange = this.handleRdsChange.bind(this);
     this.handleS3Change = this.handleS3Change.bind(this);
+    this.handleStartDayChange = this.handleStartDayChange.bind(this);
+    this.handleEndDayChange = this.handleEndDayChange.bind(this);
+    this.handleStartTimeChange = this.handleStartTimeChange.bind(this);
+    this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
+    this.handleAliasChange = this.handleAliasChange.bind(this);
+
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
+    this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
   }
-
+/*
+  getRdsData() {
+    $.getJSON( "test.js" )
+      .done(function( json ) {
+        console.log( "JSON Data: " + json.users[ 3 ].name );
+      })
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
+    });
+  }
+*/
   showCaptureCallout() {
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
@@ -78,17 +104,119 @@ class HomePage extends Component {
     }));
   }
 
+  handleStartDayChange(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
+    } else {
+      var newDate = value;
+    }
+
+    this.setState(prevState => ({
+      captureStartDay: newDate
+    }))
+    console.log(newDate);
+  }
+
+  handleEndDayChange(event, value) {
+    if (this.state.captureEndDay != undefined) {
+      var newDate = this.state.captureEndDay;
+      newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
+    } else {
+      var newDate = value;
+    }
+
+    // check if end date is after start date
+    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+      this.setState(prevState => ({
+        isErrorVisible: true
+      }))
+    } else {
+      this.setState(prevState => ({
+        captureEndDay: newDate,
+        isErrorVisible: false
+      }))
+    }
+    console.log(newDate);
+  }
+
+  handleStartTimeChange(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes()); 
+    } else {
+      var newDate = value;
+    }
+
+    this.setState(prevState => ({
+      captureStartDay: newDate
+    }))
+    console.log(newDate);
+  }
+
+  handleEndTimeChange(event, value) {
+    if (this.state.captureEndDay != undefined) {
+      var newDate = this.state.captureEndDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes()); 
+    } else {
+      var newDate = value;
+    }
+
+    // check if end date is after start date
+    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+      this.setState(prevState => ({
+        isErrorVisible: true
+      }))
+    } else {
+      this.setState(prevState => ({
+        captureEndDay: newDate,
+        isErrorVisible: false
+      }))
+    }
+    console.log(newDate);
+  }
+
+  handleAliasChange(event, value) {
+    this.setState(prevState => ({
+      aliasValue: value
+    }))
+  }
+
   isCaptureFieldsFilled() {
-    //TODO: check for filled start/end time and alias values
-    return this.state.rdsValue != undefined && this.state.s3Value != undefined;
+    return this.state.rdsValue != undefined && this.state.s3Value != undefined
+      && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
+      && this.state.aliasValue != undefined && !this.state.isErrorVisible;
   }
 
   onCaptureButton() {
     this.setState(prevState => ({
       s3Value: undefined,
-      rdsValue: undefined
+      rdsValue: undefined,
+      captureStartDay: undefined,
+      captureEndDay: undefined,
+      isErrorVisible: false
     }));
     this.hideCaptureCallout();
+  }
+
+  onCaptureSubmit() {
+    //TODO: send information to capture card
+    var card = {
+      alias: this.state.aliasValue,
+      rds: this.state.rdsValue,
+      s3: this.state.s3Value,
+      start: this.state.captureStartDay,
+      end: this.state.captureEndDay
+    };
+    var newCards = this.state.captureCards;
+    newCards.push(card);
+    this.setState(prevState => ({
+      captureCards: newCards,
+      isErrorVisible: false
+    }))
+    this.onCaptureButton();
   }
 
   render() {
@@ -102,7 +230,7 @@ class HomePage extends Component {
         label="Submit"
         primary={true}
         disabled={!this.isCaptureFieldsFilled()}
-        onClick={this.onCaptureButton}
+        onClick={this.onCaptureSubmit}
       />
     ];
 
@@ -137,6 +265,7 @@ class HomePage extends Component {
               Capture Alias
                <TextField
                   hintText="Type alias here"
+                  onChange={this.handleAliasChange}
                 />
             </div>
             <div class="add-capture-item">
@@ -161,24 +290,44 @@ class HomePage extends Component {
             <div class="add-capture-item">
               Start Time
               <div class="capture-row">
-                <DatePicker hintText="Day" />
+                <DatePicker 
+                  hintText="Day" 
+                  value={this.state.captureStartDay}
+                  onChange={this.handleStartDayChange}
+                />
                 <TimePicker
                   hintText="Time"
+                  value={this.state.captureStartDay}
+                  onChange={this.handleStartTimeChange}
                 />
               </div>
             </div>
+            {this.state.isErrorVisible && 
+              <div class="error-message">
+                End time must be after start time.
+              </div>
+            }
             <div class="add-capture-item">
               End Time
               <div class="capture-row">
-                <DatePicker hintText="Day" />
+                <DatePicker 
+                  hintText="Day" 
+                  value={this.state.captureEndDay}
+                  onChange={this.handleEndDayChange}
+                />
                 <TimePicker
                   hintText="Time"
+                  value={this.state.captureEndDay}
+                  onChange={this.handleEndTimeChange}
                 />
               </div>
             </div>
           </div>
         </Dialog>
-      	<CaptureReplayContainer />
+      	<CaptureContainer 
+          cards={this.state.captureCards}
+          sampleDate={this.state.captureEndDay}
+        />
       	<h3>Replays</h3>
       	<Button 
       		onClick={this.showReplayCallout}
@@ -192,7 +341,8 @@ class HomePage extends Component {
           			/>}
       		/>
       	}
-      	<CaptureReplayContainer />
+      	<ReplayContainer 
+        />
       </div>
     );
   }
