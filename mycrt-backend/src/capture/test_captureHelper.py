@@ -2,13 +2,12 @@ import unittest
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../..'))
-from tests.mocking.mockBoto import mockBoto
-from capture.captureHelper import getRDSInstances
+from .mocking.mockBoto import mockBoto
+from .captureHelper import getRDSInstances
 
 class TestCaptureHelper(unittest.TestCase):
    """
-   Our basic test class
+   Testing for the CaptureHelper
    """
 
    def test_get_rds_instances_many(self):
