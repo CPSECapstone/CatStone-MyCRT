@@ -1,30 +1,35 @@
 import pymysql
 
-from dbConnector import getConn
-
+from dbConnector import db
+from models import *
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1, 
                                 "test-capture-2", 
-                               "2018-01-01 00:00:01", 
-                               "2018-01-01 00:00:02", 
-                               "testBucket", 
-                               "test-capture-1.log", 
-                               "test-rds")
+                                "2018-01-01 00:00:01", 
+                                "2018-01-01 00:00:02", 
+                                "testBucket", 
+                                "test-capture-1.log", 
+                                "test-rds", 
+                                "test", 
+                                "testPW", 
+                                "testDB")
 '''
-def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance):
-	with getConn().cursor() as cur:
-		try:
-			cur.execute("""INSERT INTO Captures (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance)
-				                       values   (%s, %s, %s, %s, %s, %s, %s)""",
-				        (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance))
-			getConn().commit()
-			print("[SUCCESS]: Inserted Capture '" + captureAlias + "' into Captures table")
-		except pymysql.Error as e:
-			print("[ERROR]:", e.args[0], e.args[1])
-			getConn().rollback()
+def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
+	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
+	
+	try:
+		db.session.add(capture)
+		db.session.commit()
+	except:
+		db.session.rollback()
 
 
-#Simple function to insert a capture metric
+'''Simple function to insert a capture metric
+   Example: insertCaptureMetric("test-capture-2", 
+                                "testBucket", 
+                                "test-capture-1.log")
+
+'''
 def insertCaptureMetric(capture, bucket, metricFile):
 	insertMetric(captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
 
@@ -36,27 +41,30 @@ def insertReplayMetric(replay, bucket, metricFile):
 #Note: This should NOT be used anywhere else in the system.
 def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileName=None):
 	if captureAlias is not None:
-		with getConn().cursor() as cur:
-			try:
-				cur.execute("""INSERT INTO Metrics (captureAlias, s3Bucket, metricFileName)
-					                       values  (%s, %s, %s)""",
-					        (captureAlias, s3Bucket, metricFileName))
-				getConn().commit()
-				print("[SUCCESS]: Inserted Capture Metric '" + metricFileName + "' for Capture '" + captureAlias + "'")
-			except pymysql.Error as e:
-				print("[ERROR]:", e.args[0], e.args[1])
-				getConn().rollback()
+		metric = Metric(s3Bucket, metricFileName, captureAlias=captureAlias)
 	else:
-		with getConn().cursor() as cur:
-			try:
-				cur.execute("""INSERT INTO Metrics (replayAlias, s3Bucket, metricFileName)
-					                       values  (%s, %s, %s)""",
-					        (replayAlias, s3Bucket, metricFileName))
-				getConn().commit()
-				print("[SUCCESS]: Inserted Replay Metric '" + metricFileName + "' for Replay '" + replayAlias + "'")
-			except pymysql.Error as e:
-				print("[ERROR]:", e.args[0], e.args[1])
-				getConn().rollback()
+		metric = Metric(s3Bucket, metricFileName, replayAlias=replayAlias)
 
-insertCapture(1, "test-capture-2", "2018-01-01 00:00:01", "2018-01-01 00:00:02", "testBucket", "test-capture-1.log", "test-rds")
-insertCaptureMetric("test-capture-2", "testBucket", "test-capture-1.log")
+	try:
+		db.session.add(metric)
+		db.session.commit()
+	except:
+		db.session.rollback()
+
+''' Function to insert a user into the database
+   Example: insertUser("AndrewTest", 
+                       "HashedPassword",
+                       "test@gmail.com", 
+                       "testAccess", 
+                       "testSecret")
+'''
+def insertUser(userName, userPassword, email, accessKey, secretKey):
+		user = User(userName, userPassword, email, accessKey, secretKey)
+
+		try:
+			db.session.add(user)
+			db.session.commit()
+		except:
+			db.session.rollback()
+
+
