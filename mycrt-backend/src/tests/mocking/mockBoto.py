@@ -1,3 +1,6 @@
+import datetime
+from dateutil.tz import tzutc
+
 class mockBoto:
 
     class mockRDS:
