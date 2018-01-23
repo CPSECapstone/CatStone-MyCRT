@@ -15,10 +15,10 @@ class TestCaptureHelper(unittest.TestCase):
 
       self.assertEqual(response, expected)
 
-   def test_get_s3_instances_many(self):
+   def test_get_s3_instances_singular(self):
       testBoto = mockBoto()
       response = getS3Instances(testBoto)
-      expected = ['testBucket1', 'testBucket2']
+      expected = ['testBucket1']
 
       self.assertEqual(response, expected)
 
