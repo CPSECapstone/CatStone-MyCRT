@@ -1,0 +1,23 @@
+.CaptureContainer {
+	padding: 10px;
+}
+
+.CaptureContainer > .capture-subcontainer {
+	background: #ececec;
+	padding: 10px;
+	border-radius: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  flex: 0 0 100%;
+  overflow: auto;
+}
+
+.no-captures {
+	text-align: center;
+	background: #ececec;
+	color: #aaaaaa;
+	height: 100px;
+	padding: 30px;
+	border-radius: 5px;
+}

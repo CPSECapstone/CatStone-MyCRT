@@ -1,8 +1,0 @@
-.CaptureReplayContainer {
-  text-align: center;
-  padding: 10px;
-  display: flex;
-  flex-direction: row;
-  flex: 0 0 100%;
-  overflow: auto;
-}
