@@ -4,26 +4,9 @@
  This allows us to get the database connection
 
 '''
-import pymysql
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-__all__ = ['getConn']
-
-#Change the host, user, passwd, and db fields as necessary for your database
-def connect():
-	return pymysql.connect(host='CHANGE VALUES',
-		                   user='CHANGE VALUES',
-		                   passwd='CHANGE VALUES',
-		                   db='CHANGE VALUES',
-		                   cursorclass=pymysql.cursors.DictCursor)
-
-def getConn():
-    global conn
-
-    try:
-	    conn.ping(True)
-    except:
-	    conn = connect()
-
-    return conn
-
-conn = connect()
+application = Flask(__name__)
+application.config.from_object('config')
+db = SQLAlchemy(application)

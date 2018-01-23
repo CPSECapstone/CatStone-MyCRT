@@ -1,7 +1,10 @@
 CREATE TABLE Users(
    userId           INT AUTO_INCREMENT,
    userName         VARCHAR(64) UNIQUE,
+   userPassword     VARCHAR(128),
    email            VARCHAR(64),
+   accessKey        VARCHAR(128),
+   secretKey        VARCHAR(128),
    notificationLife INT,
    PRIMARY KEY (userId)
 );
@@ -24,6 +27,9 @@ CREATE TABLE Captures(
    s3Bucket     VARCHAR(64),
    logFileName  VARCHAR(64),
    rdsInstance  VARCHAR(64),
+   rdsUsername  VARCHAR(64),
+   rdsPassword  VARCHAR(64),
+   rdsDatabase  VARCHAR(64),
    PRIMARY KEY (captureId),
    FOREIGN KEY (userId) references Users(userId)
 );
