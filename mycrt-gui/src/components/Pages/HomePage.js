@@ -18,6 +18,8 @@ import DatePicker from 'material-ui/DatePicker';
 
 import $ from 'jquery';
 
+var SERVER_PATH = "http://localhost:5000";
+
 class HomePage extends Component {
 	constructor(props) {
     super(props);
@@ -35,7 +37,7 @@ class HomePage extends Component {
 
 
     // This binding is necessary to make `this` work in the callback
-    //this.getRdsData = this.getRdsData.bind(this);
+    this.getRdsData = this.getRdsData.bind(this);
 
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
@@ -54,18 +56,19 @@ class HomePage extends Component {
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
   }
-/*
+
   getRdsData() {
-    $.getJSON( "test.js" )
+    $.getJSON( SERVER_PATH + "/rds" )
       .done(function( json ) {
-        console.log( "JSON Data: " + json.users[ 3 ].name );
+        console.log( "JSON rds instances: " + json.rdsInstances );
+        console.log( "JSON count: " + json.count );
       })
       .fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ", " + error;
         console.log( "Request Failed: " + err );
     });
   }
-*/
+
   showCaptureCallout() {
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
@@ -127,7 +130,9 @@ class HomePage extends Component {
     }
 
     // check if end date is after start date
-    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+    var newDateWithBuffer = newDate;
+    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
+    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
       this.setState(prevState => ({
         isErrorVisible: true
       }))
@@ -165,7 +170,9 @@ class HomePage extends Component {
     }
 
     // check if end date is after start date
-    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+    var newDateWithBuffer = newDate;
+    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
+    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
       this.setState(prevState => ({
         isErrorVisible: true
       }))
@@ -220,6 +227,9 @@ class HomePage extends Component {
   }
 
   render() {
+    //TODO: refactor form to be a separate component
+    this.getRdsData();
+
     const actions = [
       <FlatButton
         label="Cancel"
@@ -261,6 +271,9 @@ class HomePage extends Component {
           autoScrollBodyContent={true}
         >
           <div class="add-capture-content">
+            <div class="notif-message">
+              Ensure that General Logging is enabled before starting a capture.
+            </div>
             <div class="add-capture-item">
               Capture Alias
                <TextField
@@ -304,7 +317,7 @@ class HomePage extends Component {
             </div>
             {this.state.isErrorVisible && 
               <div class="error-message">
-                End time must be after start time.
+                End time must be at least one minute after start time.
               </div>
             }
             <div class="add-capture-item">
