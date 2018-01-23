@@ -11,12 +11,11 @@ s3 = boto3.client('s3')
 
 def getRDSInstances(botoAPI = boto3):
     DBInstances = []
-    rds = boto3.client('rds')
-    
+    rds = botoAPI.client('rds')
+
     try:
         response = rds.describe_db_instances()
     except ClientError as e:
-        print(e)
         return e.response
 
     DBInstancesInfo = response['DBInstances']
