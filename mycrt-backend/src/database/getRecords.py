@@ -1,23 +1,27 @@
 import pymysql
 
-from dbConnector import getConn
+from dbConnector import db
+from models import *
 
+''' Function to get All Captures
+	getAllCaptures("testUserName")
+'''
 def getAllCaptures(username):
-	with getConn().cursor() as cur:
-		cur.execute("""Select Users.userId, captureAlias, startTime, endTime, rdsInstance 
-				       FROM Users JOIN Captures ON Users.userId = Captures.userId WHERE userName = %s""",
-				    (username))
-		return cur.fetchall()
+	user_captures = db.session.query(Capture).join(User).filter(User.username == username)
+	return db.session.execute(user_captures).fetchall()
 
+''' Function to get a user email
+    getUserEmail("testUserName")
+'''
 def getUserEmail(username):
-	with getConn().cursor() as cur:
-		cur.execute("""Select email FROM Users WHERE username = %s""",
-			        (username))
-		return cur.fetchall()
+	userEmail = db.session.query(User.email).filter(User.username == username)
+	return db.session.execute(userEmail).fetchall()
 
+''' Function to get RDS Information from Capture
+    getCaptureRDSInformation("test-capture-2")
+
+'''
 def getCaptureRDSInformation(captureAlias):
-	with getConn().cursor() as cur:
-		cur.execute("""Select rdsInstance, rdsUsername, rdsPassword, rdsDatabase
-			           FROM Captures WHERE captureAlias = %s""",
-			        (captureAlias))
-		return cur.fetchall()
+	rdsInformation = db.session.query(Capture.rdsInstance, Capture.rdsUsername, Capture.rdsPassword, Capture.rdsDatabase).filter(Capture.captureAlias == captureAlias)
+	return db.session.execute(rdsInformation).fetchall()
+

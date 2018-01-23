@@ -1,7 +1,7 @@
 import pymysql
 
-from dbConnector import getConn
-
+from dbConnector import db
+from models import *
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1, 
                                 "test-capture-2", 
@@ -15,16 +15,13 @@ from dbConnector import getConn
                                 "testDB")
 '''
 def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
-	with getConn().cursor() as cur:
-		try:
-			cur.execute("""INSERT INTO Captures (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
-				                       values   (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-				        (userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase))
-			getConn().commit()
-			print("[SUCCESS]: Inserted Capture '" + captureAlias + "' into Captures table")
-		except pymysql.Error as e:
-			print("[ERROR]:", e.args[0], e.args[1])
-			getConn().rollback()
+	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
+	
+	try:
+		db.session.add(capture)
+		db.session.commit()
+	except:
+		db.session.rollback()
 
 
 '''Simple function to insert a capture metric
@@ -44,27 +41,15 @@ def insertReplayMetric(replay, bucket, metricFile):
 #Note: This should NOT be used anywhere else in the system.
 def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileName=None):
 	if captureAlias is not None:
-		with getConn().cursor() as cur:
-			try:
-				cur.execute("""INSERT INTO Metrics (captureAlias, s3Bucket, metricFileName)
-					                       values  (%s, %s, %s)""",
-					        (captureAlias, s3Bucket, metricFileName))
-				getConn().commit()
-				print("[SUCCESS]: Inserted Capture Metric '" + metricFileName + "' for Capture '" + captureAlias + "'")
-			except pymysql.Error as e:
-				print("[ERROR]:", e.args[0], e.args[1])
-				getConn().rollback()
+		metric = Metric(s3Bucket, metricFileName, captureAlias=captureAlias)
 	else:
-		with getConn().cursor() as cur:
-			try:
-				cur.execute("""INSERT INTO Metrics (replayAlias, s3Bucket, metricFileName)
-					                       values  (%s, %s, %s)""",
-					        (replayAlias, s3Bucket, metricFileName))
-				getConn().commit()
-				print("[SUCCESS]: Inserted Replay Metric '" + metricFileName + "' for Replay '" + replayAlias + "'")
-			except pymysql.Error as e:
-				print("[ERROR]:", e.args[0], e.args[1])
-				getConn().rollback()
+		metric = Metric(s3Bucket, metricFileName, replayAlias=replayAlias)
+
+	try:
+		db.session.add(metric)
+		db.session.commit()
+	except:
+		db.session.rollback()
 
 ''' Function to insert a user into the database
    Example: insertUser("AndrewTest", 
@@ -74,16 +59,12 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testSecret")
 '''
 def insertUser(userName, userPassword, email, accessKey, secretKey):
-	with getConn().cursor() as cur:
-		try:
-			cur.execute("""INSERT INTO Users (userName, userPassword, email, accessKey, secretKey)
-				                       values (%s, %s, %s, %s, %s)""",
-				        (userName, userPassword, email, accessKey, secretKey))
-			getConn().commit()
-			print("[SUCCESS]: Inserted User '" + userName + "' into Users table")
-		except pymysql.Error as e:
-			print("[ERROR]:", e.args[0], e.args[1])
-			getConn().rollback()
+		user = User(userName, userPassword, email, accessKey, secretKey)
 
+		try:
+			db.session.add(user)
+			db.session.commit()
+		except:
+			db.session.rollback()
 
 
