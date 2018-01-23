@@ -5,31 +5,18 @@ import pymysql
 import boto3
 from botocore.exceptions import NoRegionError, ClientError
 from datetime import datetime
-from . import rds_config
+from rds_config import db_query
 
 #s3 setup
 s3 = boto3.client('s3')
 
-#will have: def capture(region, rds_endpoint, db_user, db_password, db_name, start_time, end_time, local_log_file, bucket_name):
-def capture(region, rds_instance, log_file, local_log_file, bucket_name):
-    try:
-        rds = boto3.client('rds', region)
-    except NoRegionError:
-        rds = boto3.client('rds','us-west-1')
-
+def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, local_log_file, bucket_name):
+    print('hello')
     with open(local_log_file, 'w') as f:
         try:
-            rds_host = rds_config.db_endpoint
-            name = rds_config.db_username
-            password = rds_config.db_password
-            db_name = rds_config.db_name
-            sql = rds_config.db_query
+            sql = db_query
 
-            port = 3306
-            start_time = datetime(2018, 1, 22, 19, 20, 5)
-            end_time = datetime(2018, 1, 22, 21, 20, 5)
-
-            connection = pymysql.connect(rds_host, user=name, passwd=password, db=db_name, connect_timeout=5)
+            connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
             queries = []
 
             try:
@@ -49,4 +36,6 @@ def capture(region, rds_instance, log_file, local_log_file, bucket_name):
             return 1
 
     s3.upload_file(local_log_file, bucket_name, local_log_file)
+    print()
     return 0
+
