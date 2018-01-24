@@ -18,6 +18,8 @@ import DatePicker from 'material-ui/DatePicker';
 
 import $ from 'jquery';
 
+var SERVER_PATH = "http://localhost:5000";
+
 class HomePage extends Component {
 	constructor(props) {
     super(props);
@@ -30,12 +32,15 @@ class HomePage extends Component {
       captureStartDay: undefined,
       captureEndDay: undefined,
       isErrorVisible: false,
-      captureCards: []
+      captureCards: [],
+      rdsItems: [],
+      s3Items: []
     };
 
 
     // This binding is necessary to make `this` work in the callback
-    //this.getRdsData = this.getRdsData.bind(this);
+    this.getRdsData = this.getRdsData.bind(this);
+    this.getS3Data = this.getS3Data.bind(this);
 
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
@@ -54,19 +59,59 @@ class HomePage extends Component {
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
   }
-/*
-  getRdsData() {
-    $.getJSON( "test.js" )
+
+  getS3Data() {
+    $.getJSON( SERVER_PATH + "/s3" )
       .done(function( json ) {
-        console.log( "JSON Data: " + json.users[ 3 ].name );
-      })
+        console.log( "JSON s3 instances: " + json.s3Instances );
+        console.log( "JSON count: " + json.count );
+        if (json.s3Instances != undefined) {
+          var s3Arr = json.s3Instances;
+          var newS3Items = [];
+          console.log("S3 ITEMS RECIEVED: " + this.state.s3Items);
+          for (let i = 0; i < s3Arr.length; i++ ) {
+            console.log(s3Arr[i]);
+            newS3Items.push(<MenuItem value={s3Arr[i]} key={i} primaryText={`${s3Arr[i]}`} />);
+          }
+          this.setState(prevState => ({
+            s3Items: newS3Items
+          }));
+        }
+      }.bind(this))
       .fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ", " + error;
         console.log( "Request Failed: " + err );
     });
   }
-*/
+
+  getRdsData() {
+    $.getJSON( SERVER_PATH + "/rds" )
+      .done(function( json ) {
+        console.log( "JSON rds instances: " + json.rdsInstances );
+        console.log( "JSON count: " + json.count );
+        if (json.rdsInstances != undefined) {
+          var rdsArr = json.rdsInstances;
+          var newRdsItems = [];
+          console.log("RDS ITEMS RECIEVED: " + this.state.rdsItems);
+          for (let i = 0; i < rdsArr.length; i++ ) {
+            console.log(rdsArr[i]);
+            newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
+          }
+          this.setState(prevState => ({
+            rdsItems: newRdsItems
+          }));
+        }
+      }.bind(this))
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
+    });
+  }
+
   showCaptureCallout() {
+    this.getRdsData();
+    this.getS3Data();
+    
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
       isReplayCalloutVisible: false
@@ -127,7 +172,9 @@ class HomePage extends Component {
     }
 
     // check if end date is after start date
-    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+    var newDateWithBuffer = newDate;
+    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
+    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
       this.setState(prevState => ({
         isErrorVisible: true
       }))
@@ -165,7 +212,9 @@ class HomePage extends Component {
     }
 
     // check if end date is after start date
-    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+    var newDateWithBuffer = newDate;
+    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
+    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
       this.setState(prevState => ({
         isErrorVisible: true
       }))
@@ -220,6 +269,8 @@ class HomePage extends Component {
   }
 
   render() {
+    //TODO: refactor form to be a separate component
+
     const actions = [
       <FlatButton
         label="Cancel"
@@ -233,11 +284,6 @@ class HomePage extends Component {
         onClick={this.onCaptureSubmit}
       />
     ];
-
-    const items = [];
-    for (let i = 0; i < 100; i++ ) {
-      items.push(<MenuItem value={i} key={i} primaryText={`Item ${i}`} />);
-    }
 
     const dropdownStyle = {
       customWidth: {
@@ -261,6 +307,9 @@ class HomePage extends Component {
           autoScrollBodyContent={true}
         >
           <div class="add-capture-content">
+            <div class="notif-message">
+              Ensure that General Logging is enabled before starting a capture.
+            </div>
             <div class="add-capture-item">
               Capture Alias
                <TextField
@@ -274,7 +323,7 @@ class HomePage extends Component {
                 style={dropdownStyle.customWidth}
                 value={this.state.rdsValue} 
                 onChange={this.handleRdsChange}>
-                {items}
+                {this.state.rdsItems != undefined ? this.state.rdsItems : []}
               </DropDownMenu>
             </div>
             <div class="add-capture-item">
@@ -284,7 +333,7 @@ class HomePage extends Component {
                 maxHeight={300} 
                 value={this.state.s3Value} 
                 onChange={this.handleS3Change}>
-                {items}
+                {this.state.s3Items != undefined ? this.state.s3Items : []}
               </DropDownMenu>
             </div>
             <div class="add-capture-item">
@@ -304,7 +353,7 @@ class HomePage extends Component {
             </div>
             {this.state.isErrorVisible && 
               <div class="error-message">
-                End time must be after start time.
+                End time must be at least one minute after start time.
               </div>
             }
             <div class="add-capture-item">
