@@ -32,10 +32,9 @@ class TestCaptureHelper(unittest.TestCase):
         testBoto = mockBoto(3)
         response = getRDSInstances(testBoto)
         print(response)
-        expected = {}
+        expected = {'Error': {'Code': '400', 'Message': 'Generic Error'}}
 
         self.assertEqual(response, expected)
-
 
     def test_get_s3_instances_singular(self):
         testBoto = mockBoto(1)
