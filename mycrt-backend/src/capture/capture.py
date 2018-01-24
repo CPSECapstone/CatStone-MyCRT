@@ -1,36 +1,41 @@
 import argparse
 import os.path
 import sys
+import pymysql
 import boto3
 from botocore.exceptions import NoRegionError, ClientError
+from datetime import datetime
+from rds_config import db_query
 
 #s3 setup
 s3 = boto3.client('s3')
 
-def capture(region, rds_instance, log_file, local_log_file, bucket_name):
-    try:
-        rds = boto3.client('rds', region)
-    except NoRegionError:
-        rds = boto3.client('rds','us-west-1')
-
+def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, local_log_file, bucket_name):
+    print('hello')
     with open(local_log_file, 'w') as f:
-        print('downloading {rds} log file {file}'.format(rds=rds_instance, file=log_file))
-        token = '0'
         try:
-            response = rds.download_db_log_file_portion(
-                DBInstanceIdentifier=rds_instance,
-                LogFileName=log_file,
-                Marker=token)
-            while response['AdditionalDataPending']:
-                f.write(response['LogFileData'])
-                token=response['Marker']
-                response = rds.download_db_log_file_portion(
-                    DBInstanceIdentifier=rds_instance,
-                    LogFileName=log_file,
-                    Marker=token)
-            f.write(response['LogFileData'])
+            sql = db_query
+
+            connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
+            queries = []
+
+            try:
+                with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+                    cursor.execute(sql)
+                    for row in cursor.fetchall():
+                        if row["event_time"] >= start_time and row["event_time"] <= end_time:
+                            queries.insert(0, row["argument"] + ";\n")
+
+            finally:
+                connection.close()
+
+            for query in queries:
+                f.write(query)
         except ClientError as e:
             print(e)
-            return 0
+            return 1
+
     s3.upload_file(local_log_file, bucket_name, local_log_file)
-    return 1
+    print()
+    return 0
+
