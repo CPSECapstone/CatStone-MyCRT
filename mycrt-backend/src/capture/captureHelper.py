@@ -26,7 +26,6 @@ def getS3Instances(botoAPI = boto3):
 
     try:
         response = s3.list_buckets()
-        print(response)
     except ClientError as e:
         print(e)
         return e.response

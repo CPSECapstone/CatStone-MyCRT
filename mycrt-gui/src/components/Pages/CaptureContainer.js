@@ -16,6 +16,7 @@ class CaptureContainer extends Component {
           <div class = "capture-subcontainer">
           {this.props.cards.slice(0).reverse().map((card) => 
               <CaptureReplayItem
+                key={card.alias}
                 alias={card.alias}
                 s3={card.s3}
                 rds={card.rds}
