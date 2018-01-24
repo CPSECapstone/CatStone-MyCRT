@@ -48,6 +48,7 @@ class mockBoto:
             return exampleResponse
     class mockRDS3:
         def describe_db_instances(self):
+            raise ClientError({'Error': {'Code': '400', 'Message': 'Generic Error'}}, 'describe_db_instances ')
 
     class mockS3:
         def list_buckets(self):
