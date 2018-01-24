@@ -5,6 +5,8 @@ from flask_jsonpify import jsonify
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
+import .database.models
+import .database.getRecords
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
 app = Flask(__name__, static_url_path='')
@@ -14,6 +16,15 @@ api = Api(app)
 @app.route('/test/api', methods=['GET'])
 def get_test():
 	return jsonify({'test': 'test'})
+
+@app.route(/'capture', methods=['GET'])
+def get_capture():
+    jsonData = request.json
+    newCapture = getCaptureRDSInformation(jsonData[captureId])
+    return jsonify(newCapture)
+
+
+
 
 @app.route('/capture', methods=['POST'])
 def post_capture():
@@ -30,6 +41,11 @@ def post_capture():
                 jsonData['end_time'],
                 jsonData['alias'],
                 jsonData['bucket_name'])
+
+        newCapture = Capture(0, jsonData['alias'], jsonData['start_time'],
+            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
+            jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
+            jsonData['db_name'])
 
         if (isinstance(response, int)):
             return jsonify({'status': 201})
