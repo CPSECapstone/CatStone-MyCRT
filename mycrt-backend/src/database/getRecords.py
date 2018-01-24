@@ -38,8 +38,8 @@ def getCaptureFromId(captureId):
 		captureId -- the id of the capture you want to access
 	"""
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
-	print(captureInformation)
 	return db.session.execute(captureInformation).fetchall()
+
 
 
 
