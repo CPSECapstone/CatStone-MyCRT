@@ -13,6 +13,7 @@ class NavBar extends Component {
             href={item.href} 
             name={item.name}
             itemIdx={item.idx} 
+            key={item.idx}
             icon={item.icon}
             onNavItemClick={this.props.switchTab}
           />

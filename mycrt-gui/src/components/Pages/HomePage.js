@@ -41,6 +41,7 @@ class HomePage extends Component {
     // This binding is necessary to make `this` work in the callback
     this.getRdsData = this.getRdsData.bind(this);
     this.getS3Data = this.getS3Data.bind(this);
+    this.sendCaptureData = this.sendCaptureData.bind(this);
 
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
@@ -58,6 +59,24 @@ class HomePage extends Component {
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
+  }
+
+  sendCaptureData(formDataValues) {
+    console.log(formDataValues);
+    $.ajax({
+      url: SERVER_PATH + "/capture",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json'},
+      type: 'POST',
+      data: JSON.stringify(formDataValues),
+      success: function(data) {
+        console.log("SUCCESS capture form");
+        console.log(data);
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   }
 
   getS3Data() {
@@ -254,11 +273,13 @@ class HomePage extends Component {
     //TODO: send information to capture card
     var card = {
       alias: this.state.aliasValue,
-      rds: this.state.rdsValue,
-      s3: this.state.s3Value,
-      start: this.state.captureStartDay,
-      end: this.state.captureEndDay
+      rds_endpoint: this.state.rdsValue,
+      bucket_name: this.state.s3Value,
+      end_time: this.state.captureStartDay,
+      start_time: this.state.captureEndDay
     };
+    this.sendCaptureData(card);
+
     var newCards = this.state.captureCards;
     newCards.push(card);
     this.setState(prevState => ({
