@@ -7,7 +7,7 @@ from tests.mocking.mockBoto import mockBoto
 from capture.captureHelper import getRDSInstances, getS3Instances
 
 class TestCaptureHelper(unittest.TestCase):
-    def test_get_rds_instances_many(self):
+    def test_get_rds_instances_none(self):
         testBoto = mockBoto(0)
         response = getRDSInstances(testBoto)
         expected = []
@@ -27,6 +27,15 @@ class TestCaptureHelper(unittest.TestCase):
         expected = ['test1', 'test2']
 
         self.assertEqual(response, expected)
+
+    def test_get_rds_instances_clientError(self):
+        testBoto = mockBoto(3)
+        response = getRDSInstances(testBoto)
+        print(response)
+        expected = {}
+
+        self.assertEqual(response, expected)
+
 
     def test_get_s3_instances_singular(self):
         testBoto = mockBoto(1)

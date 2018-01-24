@@ -1,5 +1,6 @@
 import datetime
 from dateutil.tz import tzutc
+from botocore.exceptions import NoRegionError, ClientError
 
 class mockBoto:
     def __init__(self, testNum):
@@ -45,6 +46,8 @@ class mockBoto:
                     }]
             }
             return exampleResponse
+    class mockRDS3:
+        def describe_db_instances(self):
 
     class mockS3:
         def list_buckets(self):
@@ -65,6 +68,8 @@ class mockBoto:
                 return self.mockRDS1()
             elif (self.testNum == 2):
                 return self.mockRDS2()
+            elif (self.testNum == 3):
+                return self.mockRDS3()
             return self.mockRDS0()
         elif (awsApplication == 's3'):
             return self.mockS3()
