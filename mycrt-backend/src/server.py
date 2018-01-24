@@ -22,11 +22,14 @@ def post_capture():
         print("-----JSON OBJ -------")
         jsonData = request.json
 
-        capture(jsonData["region"],
-        	    jsonData["rdsInstance"],
-        	    jsonData["logFile"],
-        	    jsonData["localLogFile"],
-        	    jsonData["bucketName"])
+        response = capture(jsonData['rds_endpoint'],
+        	    jsonData['db_user'],
+        	    jsonData['db_password'],
+        	    jsonData['db_name'],
+        	    jsonData['start_time'],
+                jsonData['end_time'],
+                jsonData['alias'],
+                jsonData['bucket_name'])
 
     return jsonify("{'capture_status': 'running'}")
 
