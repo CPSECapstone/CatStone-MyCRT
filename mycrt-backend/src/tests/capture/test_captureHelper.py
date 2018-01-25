@@ -12,7 +12,14 @@ class TestCaptureHelper(unittest.TestCase):
         response = getRDSInstances(testBoto)
         expected = []
 
+<<<<<<< HEAD
         self.assertEqual(response, expected)
+=======
+   def test_get_rds_instances_many(self):
+      testBoto = mockBoto()
+      response = getRDSInstances(testBoto)
+      expected = ['testcrt.cc5daflqza1y.us-west-1.rds.amazonaws.com', 'testdb.cc5daflqza1y.us-west-1.rds.amazonaws.com']
+>>>>>>> refs/remotes/origin/master
 
     def test_get_rds_instances_singular(self):
         testBoto = mockBoto(1)
