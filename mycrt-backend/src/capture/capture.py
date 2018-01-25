@@ -6,7 +6,24 @@ import boto3
 from botocore.exceptions import NoRegionError, ClientError
 from datetime import datetime
 from pymysql import OperationalError
-from rds_config import db_query
+
+db_query = """Select event_time, argument from mysql.general_log where 
+user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\' 
+and user_host NOT LIKE \'[%%\' 
+and argument NOT LIKE \'%%_schema.%%\' 
+and argument NOT LIKE \'%%use %%\' 
+and argument NOT LIKE \'%%testcatstonedb%%\' 
+and argument NOT LIKE \'%%mysql%%\' 
+and argument NOT LIKE \'SELECT %%()%%\' 
+and argument NOT LIKE \'%%general_log%%\' 
+and argument NOT LIKE \'SET AUTOCOMMIT%%\' 
+and argument NOT LIKE \'Access denied%%\' 
+and argument NOT LIKE \'set %% utf8%%\' 
+and argument NOT LIKE \'set sql_safe_updates%%\' 
+and argument NOT LIKE \'SHOW %%\' 
+and argument NOT LIKE \'SET SESSION %% READ\' 
+and LENGTH(argument) > 0 
+ORDER by event_time desc"""
 
 s3 = boto3.client('s3')
 
