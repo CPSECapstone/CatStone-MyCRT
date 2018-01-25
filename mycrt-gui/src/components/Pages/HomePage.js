@@ -151,7 +151,7 @@ class HomePage extends Component {
   showCaptureCallout() {
     this.getRdsData();
     this.getS3Data();
-    
+
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
       isReplayCalloutVisible: false
@@ -231,7 +231,7 @@ class HomePage extends Component {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
       newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes()); 
+      newDate.setMinutes(value.getMinutes());
     } else {
       var newDate = value;
     }
@@ -246,7 +246,7 @@ class HomePage extends Component {
     if (this.state.captureEndDay != undefined) {
       var newDate = this.state.captureEndDay;
       newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes()); 
+      newDate.setMinutes(value.getMinutes());
     } else {
       var newDate = value;
     }
@@ -360,7 +360,7 @@ class HomePage extends Component {
       <div className="HomePage">
       	<h2>Dashboard</h2>
       	<h3>Captures</h3>
-      	<Button 
+      	<Button
       		onClick={this.showCaptureCallout}
       		content="Add Capture"
       	/>
@@ -406,19 +406,19 @@ class HomePage extends Component {
             </div>
             <div class="add-capture-item">
               RDS Instance
-              <DropDownMenu 
+              <DropDownMenu
                 style={dropdownStyle.customWidth}
-                value={this.state.rdsValue} 
+                value={this.state.rdsValue}
                 onChange={this.handleRdsChange}>
                 {this.state.rdsItems != undefined ? this.state.rdsItems : []}
               </DropDownMenu>
             </div>
             <div class="add-capture-item">
                S3 Bucket
-              <DropDownMenu 
+              <DropDownMenu
                 style={dropdownStyle.customWidth}
-                maxHeight={300} 
-                value={this.state.s3Value} 
+                maxHeight={300}
+                value={this.state.s3Value}
                 onChange={this.handleS3Change}>
                 {this.state.s3Items != undefined ? this.state.s3Items : []}
               </DropDownMenu>
@@ -426,8 +426,8 @@ class HomePage extends Component {
             <div class="add-capture-item">
               Start Time
               <div class="capture-row">
-                <DatePicker 
-                  hintText="Day" 
+                <DatePicker
+                  hintText="Day"
                   value={this.state.captureStartDay}
                   onChange={this.handleStartDayChange}
                 />
@@ -438,7 +438,7 @@ class HomePage extends Component {
                 />
               </div>
             </div>
-            {this.state.isErrorVisible && 
+            {this.state.isErrorVisible &&
               <div class="error-message">
                 End time must be at least one minute after start time.
               </div>
@@ -446,8 +446,8 @@ class HomePage extends Component {
             <div class="add-capture-item">
               End Time
               <div class="capture-row">
-                <DatePicker 
-                  hintText="Day" 
+                <DatePicker
+                  hintText="Day"
                   value={this.state.captureEndDay}
                   onChange={this.handleEndDayChange}
                 />
@@ -460,24 +460,24 @@ class HomePage extends Component {
             </div>
           </div>
         </Dialog>
-      	<CaptureContainer 
+      	<CaptureContainer
           cards={this.state.captureCards}
           sampleDate={this.state.captureEndDay}
         />
       	<h3>Replays</h3>
-      	<Button 
+      	<Button
       		onClick={this.showReplayCallout}
       		content="Add Replay"
       	/>
       	{this.state.isReplayCalloutVisible &&
-      		<Callout class="add-replay-callout" 
-      			isVisible={true} 
+      		<Callout class="add-replay-callout"
+      			isVisible={true}
       			content={<AddReplayForm
             			onDismiss = {this.hideReplayCallout}
           			/>}
       		/>
       	}
-      	<ReplayContainer 
+      	<ReplayContainer
         />
       </div>
     );

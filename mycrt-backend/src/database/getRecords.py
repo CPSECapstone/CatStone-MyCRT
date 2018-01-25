@@ -1,11 +1,11 @@
 import pymysql
 
-from dbConnector import db
-from models import *
+from .dbConnector import db
+from .models import *
 
 def getAllCaptures(username):
 	''' Function to get All Captures
-		
+
 		Keyword arguments:
 		username -- the uesrname of the user you want to get all captures from
 	'''
@@ -15,7 +15,7 @@ def getAllCaptures(username):
 def getUserEmail(username):
 	"""
 		Function to get a user email
-    	
+
 		Keyword arguments:
 		username -- the username of the user you want to obtain an email from
 	"""
@@ -24,7 +24,7 @@ def getUserEmail(username):
 
 def getCaptureRDSInformation(captureAlias):
 	""" Function to get RDS Information from Capture
-		
+
 		Keyword arguments:
 		captureAlias -- the alias of the capture you want RDS Information from
 	"""
@@ -39,7 +39,3 @@ def getCaptureFromId(captureId):
 	"""
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
 	return db.session.execute(captureInformation).fetchall()
-
-
-
-
