@@ -28,6 +28,9 @@ ORDER by event_time desc"""
 s3 = boto3.client('s3')
 
 def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, local_log_file, bucket_name):
+    parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
+    parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
+
     with open(local_log_file, 'w') as f:
         try:
             sql = db_query
@@ -42,7 +45,7 @@ def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, l
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(sql)
                 for row in cursor.fetchall():
-                    if row["event_time"] >= start_time and row["event_time"] <= end_time:
+                    if row["event_time"] >= parsed_start and row["event_time"] <= parsed_end:
                         queries.insert(0, row["argument"] + ";\n")
         except MySQLError as e:
             return e
