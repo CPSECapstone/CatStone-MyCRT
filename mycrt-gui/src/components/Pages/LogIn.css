@@ -1,0 +1,38 @@
+.LogIn {
+	text-align: center;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 400px;
+	height: 400px;
+	margin: -200px 0 0 -200px;
+	background: white;
+	border-radius: 5px;
+}
+
+.LogIn > .log-in-content {
+	align-items: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.log-in-item {
+	display: flex;
+	flex-direction: column;
+	text-align: left;
+	padding: 15px;
+}
+
+.log-in-item > h3 {
+	color: #00bcd4;
+}
+
+.log-in-register-link {
+	color: #00bcd4;
+}
+
+.log-in-register-link:hover {
+	color: #79d3de;
+	text-decoration: underline;
+	cursor: pointer;
+}
