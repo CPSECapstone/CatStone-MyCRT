@@ -29,6 +29,9 @@ class HomePage extends Component {
       rdsValue: undefined,
       s3Value: undefined,
       aliasValue: undefined,
+      dbUsernameValue: undefined,
+      dbNameValue: undefined,
+      dbPasswordValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
       isErrorVisible: false,
@@ -41,6 +44,7 @@ class HomePage extends Component {
     // This binding is necessary to make `this` work in the callback
     this.getRdsData = this.getRdsData.bind(this);
     this.getS3Data = this.getS3Data.bind(this);
+    this.getCaptureData = this.getCaptureData.bind(this);
     this.sendCaptureData = this.sendCaptureData.bind(this);
 
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
@@ -55,6 +59,9 @@ class HomePage extends Component {
     this.handleStartTimeChange = this.handleStartTimeChange.bind(this);
     this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
     this.handleAliasChange = this.handleAliasChange.bind(this);
+    this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this);
+    this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this);
+    this.handleDBNameChange = this.handleDBNameChange.bind(this);
 
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
@@ -76,6 +83,20 @@ class HomePage extends Component {
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
       }.bind(this)
+    });
+  }
+
+  getCaptureData() {
+    $.getJSON(SERVER_PATH + "/capture")
+      .done(function( json ) {
+        console.log( "JSON capture data: " + json.Capture );
+        if (json.Capture != undefined) {
+          // TODO: parse object and store as a card
+        }
+      }.bind(this))
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Capture Request Failed: " + err );
     });
   }
 
@@ -252,10 +273,30 @@ class HomePage extends Component {
     }))
   }
 
+  handleDBUsernameChange(event, value) {
+    this.setState(prevState => ({
+      dbUsernameValue: value
+    }))
+  }
+
+  handleDBNameChange(event, value) {
+    this.setState(prevState => ({
+      dbNameValue: value
+    }))
+  }
+
+  handleDBPasswordChange(event, value) {
+    this.setState(prevState => ({
+      dbPasswordValue: value
+    }))
+  }
+
   isCaptureFieldsFilled() {
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
       && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
-      && this.state.aliasValue != undefined && !this.state.isErrorVisible;
+      && this.state.dbUsernameValue != undefined && this.state.dbNameValue != undefined
+      && this.state.dbPasswordValue != undefined && this.state.aliasValue != undefined 
+      && !this.state.isErrorVisible;
   }
 
   onCaptureButton() {
@@ -273,6 +314,9 @@ class HomePage extends Component {
     //TODO: send information to capture card
     var card = {
       alias: this.state.aliasValue,
+      db_user: this.state.dbUsernameValue,
+      db_password: this.state.dbPasswordValue,
+      db_name: this.state.dbNameValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
       end_time: this.state.captureStartDay,
@@ -336,6 +380,28 @@ class HomePage extends Component {
                <TextField
                   hintText="Type alias here"
                   onChange={this.handleAliasChange}
+                />
+            </div>
+            <div class="add-capture-item">
+              Database Username
+               <TextField
+                  hintText="Type username here"
+                  onChange={this.handleDBUsernameChange}
+                />
+            </div>
+            <div class="add-capture-item">
+              Database Password
+               <TextField
+                  hintText="Type password here"
+                  onChange={this.handleDBPasswordChange}
+                  type="password"
+                />
+            </div>
+            <div class="add-capture-item">
+              Database Name
+               <TextField
+                  hintText="Type name here"
+                  onChange={this.handleDBNameChange}
                 />
             </div>
             <div class="add-capture-item">
