@@ -1,22 +1,22 @@
 import pymysql
 
-from dbConnector import db
-from models import *
+from .dbConnector import db
+from .models import *
 '''Function used to insert a capture into the database
-   Example usage: insertCapture(1, 
-                                "test-capture-2", 
-                                "2018-01-01 00:00:01", 
-                                "2018-01-01 00:00:02", 
-                                "testBucket", 
-                                "test-capture-1.log", 
-                                "test-rds", 
-                                "test", 
-                                "testPW", 
+   Example usage: insertCapture(1,
+                                "test-capture-2",
+                                "2018-01-01 00:00:01",
+                                "2018-01-01 00:00:02",
+                                "testBucket",
+                                "test-capture-1.log",
+                                "test-rds",
+                                "test",
+                                "testPW",
                                 "testDB")
 '''
 def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
 	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
-	
+
 	try:
 		db.session.add(capture)
 		db.session.commit()
@@ -25,8 +25,8 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 
 
 '''Simple function to insert a capture metric
-   Example: insertCaptureMetric("test-capture-2", 
-                                "testBucket", 
+   Example: insertCaptureMetric("test-capture-2",
+                                "testBucket",
                                 "test-capture-1.log")
 
 '''
@@ -37,7 +37,7 @@ def insertCaptureMetric(capture, bucket, metricFile):
 def insertReplayMetric(replay, bucket, metricFile):
 	insertMetric(replayAlias=replay, s3Bucket=bucket, metricFileName=metricFile)
 
-#Function used to insert MetricFiles 
+#Function used to insert MetricFiles
 #Note: This should NOT be used anywhere else in the system.
 def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileName=None):
 	if captureAlias is not None:
@@ -52,10 +52,10 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
 		db.session.rollback()
 
 ''' Function to insert a user into the database
-   Example: insertUser("AndrewTest", 
+   Example: insertUser("AndrewTest",
                        "HashedPassword",
-                       "test@gmail.com", 
-                       "testAccess", 
+                       "test@gmail.com",
+                       "testAccess",
                        "testSecret")
 '''
 def insertUser(userName, userPassword, email, accessKey, secretKey):
@@ -66,5 +66,3 @@ def insertUser(userName, userPassword, email, accessKey, secretKey):
 			db.session.commit()
 		except:
 			db.session.rollback()
-
-

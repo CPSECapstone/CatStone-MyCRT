@@ -7,6 +7,9 @@ from flask_login import LoginManager
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
+from .database.getRecords import *
+from .database.addRecords import *
+
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
 app = Flask(__name__, static_url_path='')
@@ -19,19 +22,37 @@ login_manager.init_app(app)
 def get_test():
 	return jsonify({'test': 'test'})
 
+@app.route('/capture', methods=['GET'])
+def get_capture():
+    jsonData = request.json
+    newCapture = getCaptureRDSInformation(jsonData[captureId])
+    return jsonify(newCapture)
+
 @app.route('/capture', methods=['POST'])
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
         print("JSON Message: " + json.dumps(request.json))
         print("-----JSON OBJ -------")
         jsonData = request.json
-        capture(jsonData["region"],
-        	    jsonData["rdsInstance"],
-        	    jsonData["logFile"],
-        	    jsonData["localLogFile"],
-        	    jsonData["bucketName"])
+        response = capture(jsonData['rds_endpoint'],
+        	    jsonData['db_user'],
+        	    jsonData['db_password'],
+        	    jsonData['db_name'],
+        	    jsonData['start_time'],
+                jsonData['end_time'],
+                jsonData['alias'],
+                jsonData['bucket_name'])
 
-    return jsonify("{'capture_status': 'running'}")
+        newCapture = Capture(0, jsonData['alias'], jsonData['start_time'],
+            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
+            jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
+            jsonData['db_name'])
+
+        if (isinstance(response, int)):
+            return jsonify({'status': 201})
+        else:
+            return jsonify({'status': 400, 'Error': response})
+
 
 @app.route('/s3', methods=['GET'])
 def get_s3_instances():

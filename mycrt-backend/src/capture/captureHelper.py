@@ -15,8 +15,10 @@ def getRDSInstances(botoAPI = boto3):
         return e.response
 
     DBInstancesInfo = response['DBInstances']
+
     for instance in DBInstancesInfo:
-        DBInstances.append(instance['DBInstanceIdentifier'])
+        #DBInstances.append(instance['DBInstanceIdentifier'])
+        DBInstances.append(instance['Endpoint']['Address'])
 
     return DBInstances
 
@@ -26,7 +28,6 @@ def getS3Instances(botoAPI = boto3):
 
     try:
         response = s3.list_buckets()
-        print(response)
     except ClientError as e:
         print(e)
         return e.response

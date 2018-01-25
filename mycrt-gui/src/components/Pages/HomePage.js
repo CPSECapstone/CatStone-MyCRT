@@ -18,6 +18,8 @@ import DatePicker from 'material-ui/DatePicker';
 
 import $ from 'jquery';
 
+var SERVER_PATH = "http://localhost:5000";
+
 class HomePage extends Component {
 	constructor(props) {
     super(props);
@@ -27,15 +29,23 @@ class HomePage extends Component {
       rdsValue: undefined,
       s3Value: undefined,
       aliasValue: undefined,
+      dbUsernameValue: undefined,
+      dbNameValue: undefined,
+      dbPasswordValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
       isErrorVisible: false,
-      captureCards: []
+      captureCards: [],
+      rdsItems: [],
+      s3Items: []
     };
 
 
     // This binding is necessary to make `this` work in the callback
-    //this.getRdsData = this.getRdsData.bind(this);
+    this.getRdsData = this.getRdsData.bind(this);
+    this.getS3Data = this.getS3Data.bind(this);
+    this.getCaptureData = this.getCaptureData.bind(this);
+    this.sendCaptureData = this.sendCaptureData.bind(this);
 
     this.showCaptureCallout = this.showCaptureCallout.bind(this);
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
@@ -49,24 +59,99 @@ class HomePage extends Component {
     this.handleStartTimeChange = this.handleStartTimeChange.bind(this);
     this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
     this.handleAliasChange = this.handleAliasChange.bind(this);
+    this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this);
+    this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this);
+    this.handleDBNameChange = this.handleDBNameChange.bind(this);
 
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
   }
-/*
-  getRdsData() {
-    $.getJSON( "test.js" )
+
+  sendCaptureData(formDataValues) {
+    console.log(formDataValues);
+    $.ajax({
+      url: SERVER_PATH + "/capture",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json'},
+      type: 'POST',
+      data: JSON.stringify(formDataValues),
+      success: function(data) {
+        console.log("SUCCESS capture form");
+        console.log(data);
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  }
+
+  getCaptureData() {
+    $.getJSON(SERVER_PATH + "/capture")
       .done(function( json ) {
-        console.log( "JSON Data: " + json.users[ 3 ].name );
-      })
+        console.log( "JSON capture data: " + json.Capture );
+        if (json.Capture != undefined) {
+          // TODO: parse object and store as a card
+        }
+      }.bind(this))
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Capture Request Failed: " + err );
+    });
+  }
+
+  getS3Data() {
+    $.getJSON( SERVER_PATH + "/s3" )
+      .done(function( json ) {
+        console.log( "JSON s3 instances: " + json.s3Instances );
+        console.log( "JSON count: " + json.count );
+        if (json.s3Instances != undefined) {
+          var s3Arr = json.s3Instances;
+          var newS3Items = [];
+          console.log("S3 ITEMS RECIEVED: " + this.state.s3Items);
+          for (let i = 0; i < s3Arr.length; i++ ) {
+            console.log(s3Arr[i]);
+            newS3Items.push(<MenuItem value={s3Arr[i]} key={i} primaryText={`${s3Arr[i]}`} />);
+          }
+          this.setState(prevState => ({
+            s3Items: newS3Items
+          }));
+        }
+      }.bind(this))
       .fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ", " + error;
         console.log( "Request Failed: " + err );
     });
   }
-*/
+
+  getRdsData() {
+    $.getJSON( SERVER_PATH + "/rds" )
+      .done(function( json ) {
+        console.log( "JSON rds instances: " + json.rdsInstances );
+        console.log( "JSON count: " + json.count );
+        if (json.rdsInstances != undefined) {
+          var rdsArr = json.rdsInstances;
+          var newRdsItems = [];
+          console.log("RDS ITEMS RECIEVED: " + this.state.rdsItems);
+          for (let i = 0; i < rdsArr.length; i++ ) {
+            console.log(rdsArr[i]);
+            newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
+          }
+          this.setState(prevState => ({
+            rdsItems: newRdsItems
+          }));
+        }
+      }.bind(this))
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
+    });
+  }
+
   showCaptureCallout() {
+    this.getRdsData();
+    this.getS3Data();
+
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
       isReplayCalloutVisible: false
@@ -127,7 +212,9 @@ class HomePage extends Component {
     }
 
     // check if end date is after start date
-    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+    var newDateWithBuffer = newDate;
+    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
+    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
       this.setState(prevState => ({
         isErrorVisible: true
       }))
@@ -144,7 +231,7 @@ class HomePage extends Component {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
       newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes()); 
+      newDate.setMinutes(value.getMinutes());
     } else {
       var newDate = value;
     }
@@ -159,13 +246,15 @@ class HomePage extends Component {
     if (this.state.captureEndDay != undefined) {
       var newDate = this.state.captureEndDay;
       newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes()); 
+      newDate.setMinutes(value.getMinutes());
     } else {
       var newDate = value;
     }
 
     // check if end date is after start date
-    if (this.state.captureStartDay != undefined && newDate <= this.state.captureStartDay) {
+    var newDateWithBuffer = newDate;
+    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
+    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
       this.setState(prevState => ({
         isErrorVisible: true
       }))
@@ -184,10 +273,30 @@ class HomePage extends Component {
     }))
   }
 
+  handleDBUsernameChange(event, value) {
+    this.setState(prevState => ({
+      dbUsernameValue: value
+    }))
+  }
+
+  handleDBNameChange(event, value) {
+    this.setState(prevState => ({
+      dbNameValue: value
+    }))
+  }
+
+  handleDBPasswordChange(event, value) {
+    this.setState(prevState => ({
+      dbPasswordValue: value
+    }))
+  }
+
   isCaptureFieldsFilled() {
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
       && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
-      && this.state.aliasValue != undefined && !this.state.isErrorVisible;
+      && this.state.dbUsernameValue != undefined && this.state.dbNameValue != undefined
+      && this.state.dbPasswordValue != undefined && this.state.aliasValue != undefined 
+      && !this.state.isErrorVisible;
   }
 
   onCaptureButton() {
@@ -205,11 +314,16 @@ class HomePage extends Component {
     //TODO: send information to capture card
     var card = {
       alias: this.state.aliasValue,
-      rds: this.state.rdsValue,
-      s3: this.state.s3Value,
-      start: this.state.captureStartDay,
-      end: this.state.captureEndDay
+      db_user: this.state.dbUsernameValue,
+      db_password: this.state.dbPasswordValue,
+      db_name: this.state.dbNameValue,
+      rds_endpoint: this.state.rdsValue,
+      bucket_name: this.state.s3Value,
+      end_time: this.state.captureEndDay,
+      start_time: this.state.captureStartDay
     };
+    this.sendCaptureData(card);
+
     var newCards = this.state.captureCards;
     newCards.push(card);
     this.setState(prevState => ({
@@ -220,6 +334,8 @@ class HomePage extends Component {
   }
 
   render() {
+    //TODO: refactor form to be a separate component
+
     const actions = [
       <FlatButton
         label="Cancel"
@@ -234,11 +350,6 @@ class HomePage extends Component {
       />
     ];
 
-    const items = [];
-    for (let i = 0; i < 100; i++ ) {
-      items.push(<MenuItem value={i} key={i} primaryText={`Item ${i}`} />);
-    }
-
     const dropdownStyle = {
       customWidth: {
         width: 300,
@@ -249,7 +360,7 @@ class HomePage extends Component {
       <div className="HomePage">
       	<h2>Dashboard</h2>
       	<h3>Captures</h3>
-      	<Button 
+      	<Button
       		onClick={this.showCaptureCallout}
       		content="Add Capture"
       	/>
@@ -261,6 +372,9 @@ class HomePage extends Component {
           autoScrollBodyContent={true}
         >
           <div class="add-capture-content">
+            <div class="notif-message">
+              Ensure that General Logging is enabled before starting a capture.
+            </div>
             <div class="add-capture-item">
               Capture Alias
                <TextField
@@ -269,29 +383,51 @@ class HomePage extends Component {
                 />
             </div>
             <div class="add-capture-item">
+              Database Username
+               <TextField
+                  hintText="Type username here"
+                  onChange={this.handleDBUsernameChange}
+                />
+            </div>
+            <div class="add-capture-item">
+              Database Password
+               <TextField
+                  hintText="Type password here"
+                  onChange={this.handleDBPasswordChange}
+                  type="password"
+                />
+            </div>
+            <div class="add-capture-item">
+              Database Name
+               <TextField
+                  hintText="Type name here"
+                  onChange={this.handleDBNameChange}
+                />
+            </div>
+            <div class="add-capture-item">
               RDS Instance
-              <DropDownMenu 
+              <DropDownMenu
                 style={dropdownStyle.customWidth}
-                value={this.state.rdsValue} 
+                value={this.state.rdsValue}
                 onChange={this.handleRdsChange}>
-                {items}
+                {this.state.rdsItems != undefined ? this.state.rdsItems : []}
               </DropDownMenu>
             </div>
             <div class="add-capture-item">
                S3 Bucket
-              <DropDownMenu 
+              <DropDownMenu
                 style={dropdownStyle.customWidth}
-                maxHeight={300} 
-                value={this.state.s3Value} 
+                maxHeight={300}
+                value={this.state.s3Value}
                 onChange={this.handleS3Change}>
-                {items}
+                {this.state.s3Items != undefined ? this.state.s3Items : []}
               </DropDownMenu>
             </div>
             <div class="add-capture-item">
               Start Time
               <div class="capture-row">
-                <DatePicker 
-                  hintText="Day" 
+                <DatePicker
+                  hintText="Day"
                   value={this.state.captureStartDay}
                   onChange={this.handleStartDayChange}
                 />
@@ -302,16 +438,16 @@ class HomePage extends Component {
                 />
               </div>
             </div>
-            {this.state.isErrorVisible && 
+            {this.state.isErrorVisible &&
               <div class="error-message">
-                End time must be after start time.
+                End time must be at least one minute after start time.
               </div>
             }
             <div class="add-capture-item">
               End Time
               <div class="capture-row">
-                <DatePicker 
-                  hintText="Day" 
+                <DatePicker
+                  hintText="Day"
                   value={this.state.captureEndDay}
                   onChange={this.handleEndDayChange}
                 />
@@ -324,24 +460,24 @@ class HomePage extends Component {
             </div>
           </div>
         </Dialog>
-      	<CaptureContainer 
+      	<CaptureContainer
           cards={this.state.captureCards}
           sampleDate={this.state.captureEndDay}
         />
       	<h3>Replays</h3>
-      	<Button 
+      	<Button
       		onClick={this.showReplayCallout}
       		content="Add Replay"
       	/>
       	{this.state.isReplayCalloutVisible &&
-      		<Callout class="add-replay-callout" 
-      			isVisible={true} 
+      		<Callout class="add-replay-callout"
+      			isVisible={true}
       			content={<AddReplayForm
             			onDismiss = {this.hideReplayCallout}
           			/>}
       		/>
       	}
-      	<ReplayContainer 
+      	<ReplayContainer
         />
       </div>
     );
