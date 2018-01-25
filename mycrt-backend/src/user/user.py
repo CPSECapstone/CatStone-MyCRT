@@ -21,9 +21,21 @@ class User(Base, UserMixin):
     id = Column(Integer, primary_key=True)
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(80), nullable=False)
+    email = Column(String(255), unique=True)
     access_key = Column(String(80), nullable=False)
     secret_key = Column(String(80), nullable=False)
     active = Column(Boolean())
     roles = relationship('Role', secondary='roles_users',
             backref=backref('users', lazy='dynamic'))
 
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return self.active
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
