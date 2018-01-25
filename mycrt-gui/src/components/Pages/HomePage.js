@@ -319,8 +319,8 @@ class HomePage extends Component {
       db_name: this.state.dbNameValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
-      end_time: this.state.captureStartDay,
-      start_time: this.state.captureEndDay
+      end_time: this.state.captureEndDay,
+      start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
 
