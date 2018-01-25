@@ -18,14 +18,11 @@ api = Api(app)
 def get_test():
 	return jsonify({'test': 'test'})
 
-@app.route(/'capture', methods=['GET'])
+@app.route('/capture', methods=['GET'])
 def get_capture():
     jsonData = request.json
     newCapture = getCaptureRDSInformation(jsonData[captureId])
     return jsonify(newCapture)
-
-
-
 
 @app.route('/capture', methods=['POST'])
 def post_capture():
