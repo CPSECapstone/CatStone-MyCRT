@@ -11,7 +11,7 @@ class TestCaptureHelper(unittest.TestCase):
    def test_get_rds_instances_many(self):
       testBoto = mockBoto()
       response = getRDSInstances(testBoto)
-      expected = ['test1', 'test2']
+      expected = ['testcrt.cc5daflqza1y.us-west-1.rds.amazonaws.com', 'testdb.cc5daflqza1y.us-west-1.rds.amazonaws.com']
 
       self.assertEqual(response, expected)
 

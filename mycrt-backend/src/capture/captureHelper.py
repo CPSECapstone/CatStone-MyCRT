@@ -15,8 +15,10 @@ def getRDSInstances(botoAPI = boto3):
         return e.response
 
     DBInstancesInfo = response['DBInstances']
+
     for instance in DBInstancesInfo:
-        DBInstances.append(instance['DBInstanceIdentifier'])
+        #DBInstances.append(instance['DBInstanceIdentifier'])
+        DBInstances.append(instance['Endpoint']['Address'])
 
     return DBInstances
 
