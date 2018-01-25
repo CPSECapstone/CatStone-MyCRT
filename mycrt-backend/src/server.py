@@ -21,7 +21,7 @@ from flask_login import LoginManager, current_user
 
 # app configuration
 app = Flask(__name__, static_url_path='')
-app.config.from_envvar('MYCRT_SETTINGS')
+app.config.from_object('config')
 
 # flask-security
 user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
