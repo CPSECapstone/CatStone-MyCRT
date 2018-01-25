@@ -5,8 +5,9 @@ from flask_jsonpify import jsonify
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
-import .database.models
-import .database.getRecords
+from .database.getRecords import *
+from .database.addRecords import *
+
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
 app = Flask(__name__, static_url_path='')

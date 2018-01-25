@@ -1,4 +1,4 @@
-from dbConnector import db
+from .dbConnector import db
 
 class User(db.Model):
 
