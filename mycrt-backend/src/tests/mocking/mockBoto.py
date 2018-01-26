@@ -27,8 +27,13 @@ class mockBoto:
                     'RetryAttempts': 0
                 },
                 'DBInstances': [{
-                    'DBInstanceIdentifier': 'test1'
-                    }]
+                    'DBInstanceIdentifier': 'test1',
+                    'Endpoint': {
+                        'HostedZoneId': 'Z10WI91S59XXQN',
+                        'Address': 'test1',
+                        'Port': 3306
+                    },
+                }]
             }
             return exampleResponse
     class mockRDS2:
@@ -40,10 +45,18 @@ class mockBoto:
                     'RetryAttempts': 0
                 },
                 'DBInstances': [{
-                    'DBInstanceIdentifier': 'test1'
-                    }, {
-                    'DBInstanceIdentifier': 'test2',
-                    }]
+                    'Endpoint': {
+                        'HostedZoneId': 'Z10WI91S59XXQN',
+                        'Address': 'test1',
+                        'Port': 3306
+                    },
+                }, {
+                    'Endpoint': {
+                        'HostedZoneId': 'Z10WI91S59XXQN',
+                        'Address': 'test2',
+                        'Port': 3306
+                    },
+                }]
             }
             return exampleResponse
     class mockRDS3:
