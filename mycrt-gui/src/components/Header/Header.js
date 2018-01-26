@@ -56,7 +56,7 @@ class Header extends Component {
 
   render() {
     return (
-      <div className="Header">
+      <div class="Header">
       	<div class="header-title">
       		<h5>My Capture Replay Tool</h5>
       	</div>
@@ -74,7 +74,7 @@ class Header extends Component {
               </IconButton>
             }
           >
-            <MenuItem primaryText="Notifications (2 new)" disabled="true" />
+            <MenuItem primaryText="Notifications (2 new)" disabled={true} />
             <div class="notif-menu-card">
             <MenuItem> 
               <div class="notif-menu-card-content">Capture 23 completed. Click to view capture results.</div>

@@ -8,10 +8,12 @@ import NavBar from './components/Header/NavBar.js';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
+const WINDOW_HREF = window.location.href;
+
 var navLinks = [
   {
     name: "Dashboard",
-    href: "",
+    href: "dashboard",
     idx: 0,
     icon: "glyphicon-dashboard"
   },
@@ -38,6 +40,7 @@ class App extends Component {
   switchTab(idx) {
     // e.preventDefault();
     this.setState({selected: idx});
+    window.location.hash = navLinks[idx].href;
   }
 
   render() {

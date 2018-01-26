@@ -11,6 +11,11 @@
 	font-size: 0.8em;
 }
 
+.add-capture-content > .notif-message {
+	padding-top: 5px;
+	color: #00bcd4;
+}
+
 .add-capture-item {
 	display: flex;
 	flex-direction: column;
