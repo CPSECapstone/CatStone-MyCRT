@@ -1,6 +1,6 @@
 .Button {
   text-align: center;
-  background: #409ff7;
+  background: #00bcd4;
   color: white;
   padding: 10px;
   width: 200px;
@@ -10,6 +10,6 @@
 
 .Button:hover {
   text-align: center;
-  background: #3c8ad2;
+  background: #79d3de;
   cursor: pointer;
 }

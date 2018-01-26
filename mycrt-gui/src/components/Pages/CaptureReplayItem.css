@@ -1,9 +1,60 @@
 .CaptureReplayItem {
-  text-align: center;
-  height: 200px;
+  height: 180px;
   flex: 0 0 180px;
+  display: flex;
+  flex-direction: row;
   background: white;
   margin-right: 10px;
-  border: 2px solid #d2d2d2;
   border-radius: 5px;
+  padding-right: 5px;
+}
+
+.status-bar {
+    width: 20px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.capture-complete-bar {
+	background: #8be262;
+}
+
+.capture-in-progress-bar {
+	background: #5dd1e0;
+}
+
+.capture-error-bar {
+	background: #ff6161;
+}
+
+.capture-not-started-bar {
+	background: #aaaaaa;
+}
+
+.capture-complete {
+	color: #8be262;
+}
+
+.capture-in-progress {
+	color: #5dd1e0;
+}
+
+.capture-error {
+	color: #ff6161;
+}
+
+.capture-not-started {
+	color: #aaaaaa;
+}
+
+.capture-replay-item-content {
+	text-align: left;
+	padding-left: 5px;
+	width:160px;
+}
+
+.capture-sub-item {
+	overflow:hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

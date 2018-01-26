@@ -1,10 +1,8 @@
 matrix:
    include:
       - language: python
-        python: 3.2
+        python: 3.4.3
         install:
-           - pip install flask flask_restful flask_cors flask_jsonpify flask_script flask_migrate
-           - pip install boto3
-           - pip install pymysql
+           - pip install -r requirements.txt
         script:
            - py.test

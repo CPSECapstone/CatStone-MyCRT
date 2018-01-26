@@ -6,10 +6,14 @@ import Header from './components/Header/Header.js';
 import NavPage from './components/Pages/NavPage.js';
 import NavBar from './components/Header/NavBar.js';
 
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
+const WINDOW_HREF = window.location.href;
+
 var navLinks = [
   {
     name: "Dashboard",
-    href: "",
+    href: "dashboard",
     idx: 0,
     icon: "glyphicon-dashboard"
   },
@@ -36,11 +40,13 @@ class App extends Component {
   switchTab(idx) {
     // e.preventDefault();
     this.setState({selected: idx});
+    window.location.hash = navLinks[idx].href;
   }
 
   render() {
     console.log("Im in App " + this.state.selected);
     return (
+      <MuiThemeProvider>
       <div class="App">
         <Header/>
         <div class="app-content">
@@ -48,6 +54,7 @@ class App extends Component {
           <NavPage selected={this.state.selected}/>
         </div>
       </div>
+      </MuiThemeProvider>
     );
   }
 }
