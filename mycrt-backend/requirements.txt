@@ -1,0 +1,10 @@
+boto3==1.4.7
+Flask==0.12.2
+Flask-Cors==3.0.3
+Flask-Jsonpify==1.5.0
+Flask-Migrate==2.1.1
+Flask-RESTful==0.3.6
+Flask-Script==2.0.6
+Flask-Security==3.0.0
+Flask-SQLAlchemy==2.1
+PyMySQL==0.8.0
