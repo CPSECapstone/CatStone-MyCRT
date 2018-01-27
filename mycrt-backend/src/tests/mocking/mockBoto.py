@@ -1,20 +1,122 @@
 import datetime
 from dateutil.tz import tzutc
+from botocore.exceptions import NoRegionError, ClientError
 
 class mockBoto:
+    def __init__(self, testNum):
+        self.testNum = testNum
 
-    class mockRDS:
+    class mockRDS0:
         def describe_db_instances(self):
-            exampleResponse = {'ResponseMetadata': {'HTTPStatusCode': 200, 'RequestId': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'HTTPHeaders': {'content-type': 'text/xml', 'x-amzn-requestid': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'vary': 'Accept-Encoding', 'content-length': '7680', 'date': 'Mon, 22 Jan 2018 23:16:30 GMT'}, 'RetryAttempts': 0}, 'DBInstances': [{'LatestRestorableTime': datetime.datetime(2018, 1, 22, 23, 10, tzinfo=tzutc()), 'DomainMemberships': [], 'LicenseModel': 'general-public-license', 'AllocatedStorage': 20, 'PreferredBackupWindow': '09:30-10:00', 'InstanceCreateTime': datetime.datetime(2017, 11, 27, 4, 20, 56, 37000, tzinfo=tzutc()), 'BackupRetentionPeriod': 7, 'DBInstanceIdentifier': 'test1', 'PendingModifiedValues': {}, 'MasterUsername': 'testMaster', 'DbiResourceId': 'db-HQ43YQE4RYSBKAQUK665W6PUAY', 'DbInstancePort': 0, 'Endpoint': {'HostedZoneId': 'Z10WI91S59XXQN', 'Address': 'testcrt.cc5daflqza1y.us-west-1.rds.amazonaws.com', 'Port': 3306}, 'ReadReplicaDBInstanceIdentifiers': [], 'DBSubnetGroup': {'Subnets': [{'SubnetStatus': 'Active', 'SubnetIdentifier': 'subnet-aec107c9', 'SubnetAvailabilityZone': {'Name': 'us-west-1a'}}, {'SubnetStatus': 'Active', 'SubnetIdentifier': 'subnet-c6ebff9e', 'SubnetAvailabilityZone': {'Name': 'us-west-1c'}}], 'DBSubnetGroupName': 'default', 'SubnetGroupStatus': 'Complete', 'DBSubnetGroupDescription': 'default', 'VpcId': 'vpc-977356f3'}, 'Engine': 'mysql', 'DBName': 'testDB', 'CACertificateIdentifier': 'rds-ca-2015', 'EngineVersion': '5.6.37', 'DBInstanceClass': 'db.t2.micro', 'PerformanceInsightsEnabled': False, 'DBInstanceArn': 'arn:aws:rds:us-west-1:212791612695:db:testcrt', 'OptionGroupMemberships': [{'OptionGroupName': 'default:mysql-5-6', 'Status': 'in-sync'}], 'PreferredMaintenanceWindow': 'fri:13:24-fri:13:54', 'AutoMinorVersionUpgrade': True, 'CopyTagsToSnapshot': False, 'DBParameterGroups': [{'ParameterApplyStatus': 'in-sync', 'DBParameterGroupName': 'testgeneral'}], 'MultiAZ': False, 'PubliclyAccessible': True, 'DBInstanceStatus': 'available', 'IAMDatabaseAuthenticationEnabled': False, 'StorageType': 'gp2', 'DBSecurityGroups': [], 'StorageEncrypted': False, 'MonitoringInterval': 0, 'VpcSecurityGroups': [{'VpcSecurityGroupId': 'sg-1a73497c', 'Status': 'active'}], 'AvailabilityZone': 'us-west-1a'}, {'LatestRestorableTime': datetime.datetime(2018, 1, 22, 23, 10, tzinfo=tzutc()), 'DomainMemberships': [], 'LicenseModel': 'general-public-license', 'AllocatedStorage': 20, 'PreferredBackupWindow': '06:54-07:24', 'InstanceCreateTime': datetime.datetime(2017, 11, 15, 23, 13, 57, 63000, tzinfo=tzutc()), 'BackupRetentionPeriod': 7, 'DBInstanceIdentifier': 'test2', 'PendingModifiedValues': {}, 'MasterUsername': 'testMaster', 'DbiResourceId': 'db-YQWJXF4XXOAGNJ4XXNEMXNLRCQ', 'DbInstancePort': 0, 'Endpoint': {'HostedZoneId': 'Z10WI91S59XXQN', 'Address': 'testdb.cc5daflqza1y.us-west-1.rds.amazonaws.com', 'Port': 3306}, 'ReadReplicaDBInstanceIdentifiers': [], 'DBSubnetGroup': {'Subnets': [{'SubnetStatus': 'Active', 'SubnetIdentifier': 'subnet-aec107c9', 'SubnetAvailabilityZone': {'Name': 'us-west-1a'}}, {'SubnetStatus': 'Active', 'SubnetIdentifier': 'subnet-c6ebff9e', 'SubnetAvailabilityZone': {'Name': 'us-west-1c'}}], 'DBSubnetGroupName': 'default', 'SubnetGroupStatus': 'Complete', 'DBSubnetGroupDescription': 'default', 'VpcId': 'vpc-977356f3'}, 'Engine': 'mysql', 'DBName': 'testDatabase', 'CACertificateIdentifier': 'rds-ca-2015', 'EngineVersion': '5.6.37', 'DBInstanceClass': 'db.t2.micro', 'PerformanceInsightsEnabled': False, 'DBInstanceArn': 'arn:aws:rds:us-west-1:212791612695:db:testdb', 'OptionGroupMemberships': [{'OptionGroupName': 'default:mysql-5-6', 'Status': 'in-sync'}], 'PreferredMaintenanceWindow': 'tue:09:08-tue:09:38', 'AutoMinorVersionUpgrade': True, 'CopyTagsToSnapshot': False, 'DBParameterGroups': [{'ParameterApplyStatus': 'in-sync', 'DBParameterGroupName': 'testgeneral'}], 'MultiAZ': False, 'PubliclyAccessible': True, 'DBInstanceStatus': 'available', 'IAMDatabaseAuthenticationEnabled': False, 'StorageType': 'gp2', 'DBSecurityGroups': [], 'StorageEncrypted': False, 'MonitoringInterval': 0, 'VpcSecurityGroups': [{'VpcSecurityGroupId': 'sg-e9b7998f', 'Status': 'active'}, {'VpcSecurityGroupId': 'sg-5363fc35', 'Status': 'active'}], 'AvailabilityZone': 'us-west-1c'}]}
+            exampleResponse = {
+                'ResponseMetadata': {
+                'HTTPStatusCode': 200, 'RequestId': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'HTTPHeaders': {
+                    'content-type': 'text/xml', 'x-amzn-requestid': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'vary': 'Accept-Encoding', 'content-length': '7680', 'date': 'Mon, 22 Jan 2018 23:16:30 GMT'},
+                    'RetryAttempts': 0
+                },
+                'DBInstances': []
+            }
             return exampleResponse
 
-    class mockS3:
-        def list_buckets(self):
-            exampleResponse = {'Owner': {'DisplayName': 'agupta09', 'ID': 'fb58bd8602028b21eb564ccb2743c44481d96f9f999bc480ed1854dd977236f0'}, 'Buckets': [{'CreationDate': datetime.datetime(2017, 11, 27, 4, 53, tzinfo=tzutc()), 'Name': 'testBucket1'}], 'ResponseMetadata': {'RequestId': '173A70D1BF9097D9', 'RetryAttempts': 0, 'HTTPHeaders': {'server': 'AmazonS3', 'x-amz-request-id': '173A70D1BF9097D9', 'transfer-encoding': 'chunked', 'content-type': 'application/xml', 'x-amz-id-2': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'date': 'Tue, 23 Jan 2018 02:52:17 GMT'}, 'HostId': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'HTTPStatusCode': 200}}
+    class mockRDS1:
+        def describe_db_instances(self):
+            exampleResponse = {
+                'ResponseMetadata': {
+                'HTTPStatusCode': 200, 'RequestId': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'HTTPHeaders': {
+                    'content-type': 'text/xml', 'x-amzn-requestid': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'vary': 'Accept-Encoding', 'content-length': '7680', 'date': 'Mon, 22 Jan 2018 23:16:30 GMT'},
+                    'RetryAttempts': 0
+                },
+                'DBInstances': [{
+                    'DBInstanceIdentifier': 'test1',
+                    'Endpoint': {
+                        'HostedZoneId': 'Z10WI91S59XXQN',
+                        'Address': 'test1',
+                        'Port': 3306
+                    },
+                }]
+            }
             return exampleResponse
+    class mockRDS2:
+        def describe_db_instances(self):
+            exampleResponse = {
+                'ResponseMetadata': {
+                'HTTPStatusCode': 200, 'RequestId': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'HTTPHeaders': {
+                    'content-type': 'text/xml', 'x-amzn-requestid': '28ce93d0-ed9d-4999-a067-fa1e91fa294e', 'vary': 'Accept-Encoding', 'content-length': '7680', 'date': 'Mon, 22 Jan 2018 23:16:30 GMT'},
+                    'RetryAttempts': 0
+                },
+                'DBInstances': [{
+                    'Endpoint': {
+                        'HostedZoneId': 'Z10WI91S59XXQN',
+                        'Address': 'test1',
+                        'Port': 3306
+                    },
+                }, {
+                    'Endpoint': {
+                        'HostedZoneId': 'Z10WI91S59XXQN',
+                        'Address': 'test2',
+                        'Port': 3306
+                    },
+                }]
+            }
+            return exampleResponse
+    class mockRDS3:
+        def describe_db_instances(self):
+            raise ClientError({'Error': {'Code': '400', 'Message': 'Generic Error'}}, 'describe_db_instances')
+
+    class mockS30:
+        def list_buckets(self):
+            exampleResponse = {
+            'Owner': {
+                'DisplayName': 'agupta09', 'ID': 'fb58bd8602028b21eb564ccb2743c44481d96f9f999bc480ed1854dd977236f0'},
+                'Buckets': [],
+                'ResponseMetadata': {'RequestId': '173A70D1BF9097D9', 'RetryAttempts': 0,
+                'HTTPHeaders': {'server': 'AmazonS3', 'x-amz-request-id': '173A70D1BF9097D9', 'transfer-encoding': 'chunked', 'content-type': 'application/xml', 'x-amz-id-2': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'date': 'Tue, 23 Jan 2018 02:52:17 GMT'}, 'HostId': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'HTTPStatusCode': 200}
+            }
+            return exampleResponse
+
+    class mockS31:
+        def list_buckets(self):
+            exampleResponse = {
+            'Owner': {
+                'DisplayName': 'agupta09', 'ID': 'fb58bd8602028b21eb564ccb2743c44481d96f9f999bc480ed1854dd977236f0'},
+                'Buckets': [{'CreationDate': datetime.datetime(2017, 11, 27, 4, 53, tzinfo=tzutc()), 'Name': 'testBucket1'}],
+                'ResponseMetadata': {'RequestId': '173A70D1BF9097D9', 'RetryAttempts': 0,
+                'HTTPHeaders': {'server': 'AmazonS3', 'x-amz-request-id': '173A70D1BF9097D9', 'transfer-encoding': 'chunked', 'content-type': 'application/xml', 'x-amz-id-2': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'date': 'Tue, 23 Jan 2018 02:52:17 GMT'}, 'HostId': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'HTTPStatusCode': 200}
+            }
+            return exampleResponse
+
+    class mockS32:
+        def list_buckets(self):
+            exampleResponse = {
+            'Owner': {
+                'DisplayName': 'agupta09', 'ID': 'fb58bd8602028b21eb564ccb2743c44481d96f9f999bc480ed1854dd977236f0'},
+                'Buckets': [{'CreationDate': datetime.datetime(2017, 11, 27, 4, 53, tzinfo=tzutc()), 'Name': 'testBucket1'},
+                    {'CreationDate': datetime.datetime(2017, 11, 27, 4, 53, tzinfo=tzutc()), 'Name': 'testBucket2'}],
+                'ResponseMetadata': {'RequestId': '173A70D1BF9097D9', 'RetryAttempts': 0,
+                'HTTPHeaders': {'server': 'AmazonS3', 'x-amz-request-id': '173A70D1BF9097D9', 'transfer-encoding': 'chunked', 'content-type': 'application/xml', 'x-amz-id-2': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'date': 'Tue, 23 Jan 2018 02:52:17 GMT'}, 'HostId': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'HTTPStatusCode': 200}
+            }
+            return exampleResponse
+
+    class mockS33:
+        def list_buckets(self):
+            raise ClientError({'Error': {'Code': '400', 'Message': 'Generic Error'}}, 'list_buckets')
 
     def client(self, awsApplication):
         if (awsApplication == 'rds'):
-            return self.mockRDS()
+            if (self.testNum == 0):
+                return self.mockRDS0()
+            elif (self.testNum == 1):
+                return self.mockRDS1()
+            elif (self.testNum == 2):
+                return self.mockRDS2()
+            elif (self.testNum == 3):
+                return self.mockRDS3()
         elif (awsApplication == 's3'):
-            return self.mockS3()
+            if (self.testNum == 0):
+                return self.mockS30()
+            elif (self.testNum == 1):
+                return self.mockS31()
+            elif (self.testNum == 2):
+                return self.mockS32()
+            elif (self.testNum == 3):
+                return self.mockS33()
