@@ -109,6 +109,25 @@ def get_rds_instances():
 
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
+@app.route('/User', methods=['POST'])
+def register_user():
+	jsonData = request.json
+	errList = []
+
+	#check if username exists
+	if (checkUserExists(jsonData['user_name'])):
+		errList.append("User already exists.")
+	#check if email exists
+	if (checkEmailExists(jsonData['user_email']))
+		errList.append("An account with this email already exists.")
+	if (errList):
+		return jsonify({'status': 200, 'errors': errList})
+	else:
+		newUser = insertUser(jsonData['user_name'], jsonData['user_password'],
+			jsonData['user_email'], jsonData['user_accessKey'], jsonData['user_secretKey']
+		return jsonify({'status': 201, 'user': jsonify(newUser)})
+	
+
 @app.route('/login', methods=['PUT', 'GET'])
 def login():
     if request.headers['Content-Type'] == 'application/json':
