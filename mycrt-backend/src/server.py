@@ -95,18 +95,19 @@ def post_capture():
 def get_s3_instances():
     response = getS3Instances()
 
-    if (isinstance(response, int)):
-        return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
+    if (isinstance(response, list)):
+        return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
 
-    return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
+    return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
+
 
 @app.route('/rds', methods=['GET'])
 def get_rds_instances():
     response = getRDSInstances()
-    if (isinstance(response, int)):
-        return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
+    if (isinstance(response, list)):
+        return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
 
-    return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
+    return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 @app.route('/login', methods=['PUT', 'GET'])
 def login():
