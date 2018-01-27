@@ -1,25 +1,6 @@
 from .dbConnector import db
+from src.user.user import User
 
-class User(db.Model):
-
-	userId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-	username = db.Column(db.String(128), unique=True)
-	userPassword = db.Column(db.String(128))
-	email = db.Column(db.String(128))
-	acessKey = db.Column(db.String(128))
-	secretKey = db.Column(db.String(128))
-	notificationLife = db.Column(db.Integer)
-
-	def __init__(self, username, userPassword, email, accessKey, secretKey, notificationLife=10):
-		self.username = username
-		self.userPassword = userPassword
-		self.email = email
-		self.accessKey = accessKey
-		self.secretKey = secretKey
-		self.notificationLife = notificationLife
-
-	def __repr__(self):
-		return '<User %r %r %r %r %r %r' % (self.username, self.userPassword, self.email, self.accessKey, self.secretKey, self.notificationLife)
 
 class Notification(db.Model):
 
