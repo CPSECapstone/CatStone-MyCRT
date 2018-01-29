@@ -83,3 +83,20 @@ def getCaptureFromId(captureId):
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
 	return db.session.execute(captureInformation).fetchall()
 
+def getCaptureStatus(captureId):
+	"""Function to get a capture's status after receiving a captureId
+
+		Keyword arguments:
+		captureId -- the id of the capture you want to access
+	"""
+	captureInformation = Capture.query(Capture.wasSuccessful).filter(Capture.captureId == captureId)
+	return db.session.execute(captureInformation).fetchall()
+
+def getUsersSuccessfulCaptures(userId):
+	"""Function to get a user's succesful captures after receiving a userId
+
+		Keyboard arguments:
+		userId -- the id of the user whose successful captures you want to access
+	"""
+	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.wasSuccessful == True)
+	return db.session.execute(captureInformation).fetchall()
