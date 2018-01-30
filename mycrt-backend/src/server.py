@@ -1,7 +1,7 @@
-from flask import Flask, request, json
+from flask import Flask, request, json, redirect
 from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
 from .database.user_database import db_session, init_db
-from .user.user import User, Role
+from .database.user import User, Role
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -43,17 +43,22 @@ api = Api(app)
 @app.before_first_request
 def create_user():
     init_db()
-    # this code can be used to create
-    user_datastore.create_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
-    db_session.commit()
+    # this code can be used to create a test user
+    if find_user_by_email("test@test.com") == None:
+        print("User found")
+        user_datastore.create_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
+        db_session.commit()
 
 @app.route('/')
-@login_required
 def home():
     # temp example on how to access current user
-    return jsonify({'username': current_user.username,
+    if current_user.is_authenticated:
+        return jsonify({'username': current_user.username,
                     'access_key': current_user.access_key,
                     'secret_key': current_user.secret_key})
+    else:
+        return 'Not logged in'
+
 
 @app.route('/test/api', methods=['GET'])
 def get_test():
@@ -109,7 +114,7 @@ def get_rds_instances():
 
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
-@app.route('/login', methods=['PUT', 'GET'])
+@app.route('/login2', methods=['PUT', 'GET'])
 def login():
     if request.headers['Content-Type'] == 'application/json':
         print("JSON Message: " + json.dumps(request.json))
@@ -121,6 +126,12 @@ def login():
 
     return jsonify("{'login_status': 'Success'}")
 
+@login_required
+@app.route('/logout', methods=['POST'])
+def logout():
+    login_manager.logout_user(current_user)
+    return redirect('/', code=302)
+
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
 	return jsonify(get_metrics())
@@ -128,3 +139,6 @@ def get_user_metrics():
 @login_manager.user_loader
 def load_user(user_id):
     return user_datastore.find_user(id=user_id)
+
+def find_user_by_email(email):
+    return user_datastore.find_user(email=email)
