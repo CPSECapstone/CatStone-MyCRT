@@ -36,3 +36,20 @@
 	text-decoration: underline;
 	cursor: pointer;
 }
+
+.register-content {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.8em;
+}
+
+.register-item {
+	display: flex;
+	flex-direction: column;
+	padding-top: 15px;
+}
+
+.register-item > div {
+	font-size: 1em !important;
+	height: 40px !important;
+}
