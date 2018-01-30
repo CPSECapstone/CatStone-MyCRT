@@ -1,7 +1,7 @@
 from flask import Flask, request, json
 from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
 from .database.user_database import db_session, init_db
-from .user.user import User, Role
+from .database.user import User, Role
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -44,7 +44,7 @@ api = Api(app)
 def create_user():
     init_db()
     # this code can be used to create
-    user_datastore.create_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
+    user_datastore.create_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secretKey="test_secret_key")
     db_session.commit()
 
 @app.route('/')
