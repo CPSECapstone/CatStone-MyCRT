@@ -2,6 +2,7 @@
   text-align: center;
   height: 100%;
   overflow: hidden;
+  background: #f7f7f7;
 }
 
 .app-content {
@@ -30,6 +31,10 @@
 
 .App-intro {
   font-size: large;
+}
+
+body {
+  background-color: #f7f7f7;
 }
 
 @keyframes App-logo-spin {

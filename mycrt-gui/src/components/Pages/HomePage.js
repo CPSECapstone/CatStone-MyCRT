@@ -323,6 +323,7 @@ class HomePage extends Component {
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
+    this.getCaptureData();
 
     var newCards = this.state.captureCards;
     newCards.push(card);
