@@ -1,6 +1,5 @@
 .Button {
   text-align: center;
-  background: #00bcd4;
   color: white;
   padding: 10px;
   width: 200px;
@@ -8,8 +7,16 @@
   border: none;
 }
 
-.Button:hover {
+.active-button {
+  background: #00bcd4;
+}
+
+.active-button:hover {
   text-align: center;
   background: #79d3de;
   cursor: pointer;
+}
+
+.disabled-button {
+  background: #eeeeee;
 }
