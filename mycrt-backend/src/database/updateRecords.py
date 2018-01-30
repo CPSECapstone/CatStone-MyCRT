@@ -16,4 +16,4 @@ def updateCapture(captureId, captureStatus):
         capture.captureStatus = captureStatus
         db.session.commit()
     except:
-		db.session.rollback()
+	    db.session.rollback()
