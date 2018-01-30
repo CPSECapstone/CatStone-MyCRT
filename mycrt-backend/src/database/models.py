@@ -32,6 +32,7 @@ class Capture(db.Model):
 	rdsUsername = db.Column(db.String(64))
 	rdsPassword = db.Column(db.String(64))
 	rdsDatabase = db.Column(db.String(64))
+	wasSuccessful = db.Column(db.Boolean, default=False)
 
 	def __init__(self, userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
 		self.userId = userId
@@ -46,7 +47,7 @@ class Capture(db.Model):
 		self.rdsDatabase = rdsDatabase
 
 	def __repr__(self):
-		return '<Capture %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureAlias, self.startTime, self.endTime, self.s3Bucket, self.logFileName, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
+		return '<Capture %r %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureAlias, self.startTime, self.endTime, self.s3Bucket, self.logFileName, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.wasSuccessful)
 
 	user = db.relationship('User', foreign_keys='Capture.userId')
 
