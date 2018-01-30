@@ -32,7 +32,7 @@ class Capture(db.Model):
 	rdsUsername = db.Column(db.String(64))
 	rdsPassword = db.Column(db.String(64))
 	rdsDatabase = db.Column(db.String(64))
-	wasSuccessful = db.Column(db.Boolean, default=False)
+	captureStatus = db.Column(db.Integer, default=0)
 
 	def __init__(self, userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
 		self.userId = userId

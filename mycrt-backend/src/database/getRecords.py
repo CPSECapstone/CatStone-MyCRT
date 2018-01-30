@@ -98,5 +98,12 @@ def getUsersSuccessfulCaptures(userId):
 		Keyboard arguments:
 		userId -- the id of the user whose successful captures you want to access
 	"""
-	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.wasSuccessful == True)
+	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.captureStatus == 1)
 	return db.session.execute(captureInformation).fetchall()
+
+def getAllCapturesThatHaveNotCompleted():
+	"""Function to get all incomplete captures
+	"""
+
+	captureInfoQuery = Capture.query(Capture.captureId, Capture.endTime).filter(Capture.wasSuccessful == False)
+	return db.session.execute(captureInfoQuery).fetchall()
