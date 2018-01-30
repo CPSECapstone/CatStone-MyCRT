@@ -1,7 +1,8 @@
-from src.database.user_database import Base
 from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from .user_database import Base
+
 
 class RolesUsers(Base):
     __tablename__ = 'roles_users'
