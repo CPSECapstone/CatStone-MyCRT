@@ -105,5 +105,5 @@ def getAllCapturesThatHaveNotCompleted():
 	"""Function to get all incomplete captures
 	"""
 
-	captureInfoQuery = Capture.query(Capture.captureId, Capture.endTime).filter(Capture.wasSuccessful == False)
+	captureInfoQuery = Capture.query(Capture.captureId, Capture.endTime).filter(Capture.wasSuccessful == 0)
 	return db.session.execute(captureInfoQuery).fetchall()
