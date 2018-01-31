@@ -1,7 +1,9 @@
 import pymysql
 
-from .dbConnector import db
+from .user_database import Base, user_repository
 from .models import *
+
+session = user_repository.db_session
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1,
                                 "test-capture-2",
@@ -18,10 +20,10 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
 
 	try:
-		db.session.add(capture)
-		db.session.commit()
+		session.add(capture)
+		session.commit()
 	except:
-		db.session.rollback()
+		session.rollback()
 
 
 '''Simple function to insert a capture metric
@@ -46,10 +48,10 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
 		metric = Metric(s3Bucket, metricFileName, replayAlias=replayAlias)
 
 	try:
-		db.session.add(metric)
-		db.session.commit()
+		session.add(metric)
+		session.commit()
 	except:
-		db.session.rollback()
+		session.rollback()
 
 ''' Function to insert a user into the database
    Example: insertUser("AndrewTest",
@@ -59,10 +61,4 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testSecret")
 '''
 def insertUser(userName, userPassword, email, accessKey, secretKey):
-		user = User(userName, userPassword, email, accessKey, secretKey)
-
-		try:
-			db.session.add(user)
-			db.session.commit()
-		except:
-			db.session.rollback()
+		user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
