@@ -1,4 +1,4 @@
-from src.user.user import User
+from src.database.user import User
 import unittest
 
 
@@ -12,16 +12,16 @@ class TestUser(unittest.TestCase):
 
     def test_user_created(self):
         username = "test_user"
-        userPassword = "test_password"
-        accessKey = "access_key"
-        secretKey = "secret_key"
+        password = "test_password"
+        access_key = "access_key"
+        secret_key = "secret_key"
 
-        user = User(username=username, userPassword=userPassword,
-                accessKey=accessKey, secretKey=secretKey)
+        user = User(username=username, password=password,
+                access_key=access_key, secret_key=secret_key)
         assert username == user.username
-        assert userPassword == user.userPassword
-        assert accessKey == user.accessKey
-        assert secretKey == user.secretKey
+        assert password == user.password
+        assert access_key == user.access_key
+        assert secret_key == user.secret_key
 
 
 if __name__ == '__main__':

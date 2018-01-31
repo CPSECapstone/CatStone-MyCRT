@@ -1,28 +1,28 @@
 from .dbConnector import db
-from src.user.user import User
+from src.database.user import User
 
 
 class Notification(db.Model):
 
 	notificationId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-	userId = db.Column(db.Integer, db.ForeignKey(User.userId))
+	id = db.Column(db.Integer, db.ForeignKey(User.id))
 	notificationMessage = db.Column(db.String(128))
 	timeActive = db.Column(db.Integer)
 
-	def __init__(self, userId, notificationMessage, timeActive):
-		self.userId = userId
+	def __init__(self, id, notificationMessage, timeActive):
+		self.id = id
 		self.notificationMessage = notificationMessage
 		self.timeActive = timeActive
 
 	def __repr__(self):
-		return '<Notification %r %r %r' % (self.userId, self.notificationMessage, self.timeActive)
+		return '<Notification %r %r %r' % (self.id, self.notificationMessage, self.timeActive)
 
-	user = db.relationship('User', foreign_keys='Notification.userId')
+	#user = db.relationship('User', foreign_keys='Notification.id')
 
 class Capture(db.Model):
 
 	captureId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-	userId = db.Column(db.Integer, db.ForeignKey(User.userId))
+	id = db.Column(db.Integer, db.ForeignKey(User.id))
 	captureAlias = db.Column(db.String(64), unique=True)
 	startTime = db.Column(db.DateTime(timezone=True))
 	endTime = db.Column(db.DateTime(timezone=True))
@@ -32,9 +32,10 @@ class Capture(db.Model):
 	rdsUsername = db.Column(db.String(64))
 	rdsPassword = db.Column(db.String(64))
 	rdsDatabase = db.Column(db.String(64))
+	wasSuccessful = db.Column(db.Boolean, default=False)
 
-	def __init__(self, userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
-		self.userId = userId
+	def __init__(self, id, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
+		self.id = id
 		self.captureAlias = captureAlias
 		self.startTime = startTime
 		self.endTime = endTime
@@ -46,14 +47,14 @@ class Capture(db.Model):
 		self.rdsDatabase = rdsDatabase
 
 	def __repr__(self):
-		return '<Capture %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureAlias, self.startTime, self.endTime, self.s3Bucket, self.logFileName, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
+		return '<Capture %r %r %r %r %r %r %r %r %r %r %r' % (self.id, self.captureAlias, self.startTime, self.endTime, self.s3Bucket, self.logFileName, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.wasSuccessful)
 
-	user = db.relationship('User', foreign_keys='Capture.userId')
+	#user = db.relationship('User', foreign_keys='Capture.id')
 
 class Replay(db.Model):
 
 	replayId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-	userId = db.Column(db.Integer, db.ForeignKey(User.userId))
+	id = db.Column(db.Integer, db.ForeignKey(User.id))
 	captureId = db.Column(db.Integer, db.ForeignKey(Capture.captureId))
 	replayAlias = db.Column(db.String(64), unique=True)
 	rdsInstance = db.Column(db.String(64))
@@ -61,8 +62,8 @@ class Replay(db.Model):
 	rdsPassword = db.Column(db.String(64))
 	rdsDatabase = db.Column(db.String(64))
 
-	def __init__(self, userId, captureId, replayAlias, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
-		self.userId = userId
+	def __init__(self, id, captureId, replayAlias, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
+		self.id = id
 		self.captureId = captureId
 		self.replayAlias = replayAlias
 		self.rdsInstance = rdsInstance
@@ -71,9 +72,9 @@ class Replay(db.Model):
 		self.rdsDatabase = rdsDatabase
 
 	def __repr__(self):
-		return '<Replay %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
+		return '<Replay %r %r %r %r %r %r %r' % (self.id, self.captureId, self.replayAlias, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
 
-	user = db.relationship('User', foreign_keys='Replay.userId')
+	#user = db.relationship('User', foreign_keys='Replay.id')
 	capture = db.relationship('Capture', foreign_keys='Replay.captureId')
 
 class Metric(db.Model):

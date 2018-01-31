@@ -12,5 +12,5 @@ Base.query = db_session.query_property()
 
 def init_db():
     # import any sqlalchemy models so they can be exported
-    import src.user
+    import src.database.user
     Base.metadata.create_all(bind=engine)
