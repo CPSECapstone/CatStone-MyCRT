@@ -42,8 +42,5 @@ def email(captureId):
    except:
       return 1
 
-def main():
-   email('aly16@calpoly.edu', 'Capture status: Complete', 'Your capture status was "Success"')
-
 if __name__ == '__main__':
    main()
