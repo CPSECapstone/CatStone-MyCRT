@@ -1,16 +1,34 @@
+import unittest
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../..'))
+
 import smtplib
 from email.mime.text import MIMEText
+from src.database.getRecords import getCaptureFromId
 
 EMAIL = "mycrtNotifications@gmail.com"
 PASS = "myCRTTool"
 
-def email(recipient, subject, body):
+def email(captureId):
    s = smtplib.SMTP('smtp.gmail.com', port=587)
+
+   userCapture = getCaptureFromId(captureId)
+
+   if (userCapture.captureStatus):
+      body =  ("Capture " + userCapture.captureAlias + " on RDS instance " +
+                userCapture.rdsInstance + " has succeeded. Please refer to your " +
+                userCapture.s3Bucket + " S3 bucket to view the relevant log and metric files")
+      subject = "Sucess: Capture " + userCapture.captureAlias
+   else:
+      body = ("Capture " + userCapture.captureAlias + " on RDS instance " +
+                userCapture.rdsInstance + " has failed. Please refer to your " +
+                userCapture.s3Bucket + " S3 bucket to view the relevant log and metric files")
+      subject = "Failure: Capture " + userCapture.captureAlias
 
    msg = MIMEText(body)
    msg['Subject'] = subject
    msg['From'] = EMAIL
-   msg['To'] = recipient
 
    try:
       s.ehlo()
@@ -26,4 +44,4 @@ def main():
    email('aly16@calpoly.edu', 'Capture status: Complete', 'Your capture status was "Success"')
 
 if __name__ == '__main__':
-   main()   
+   main()
