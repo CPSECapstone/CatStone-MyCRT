@@ -2,7 +2,7 @@ import boto3
 import datetime
 from botocore.exceptions import ClientError
 
-def get_metrics(local_log_file, start_time, end_time, bucket_name):
+def get_metrics(local_log_file, start_time, end_time, bucket_name, db_identifier):
     # can remove once attached to capture function because will be passed as parsed datetimes
     # parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
     # parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
@@ -18,7 +18,7 @@ def get_metrics(local_log_file, start_time, end_time, bucket_name):
         Dimensions=[
             {
                 'Name': 'DBInstanceIdentifier',
-                'Value': 'rds-catstone-metric-test'
+                'Value': db_identifier
             },
         ],
         StartTime=datetime.datetime.utcnow() - datetime.timedelta(days=1),
