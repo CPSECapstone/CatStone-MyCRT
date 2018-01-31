@@ -119,11 +119,9 @@ def register_user():
 	jsonData = request.json
 	errList = []
 
-	#check if username exists
-	if (checkUserExists(jsonData['user_name'])):
+	if (!getUserFromUsername(jsonData['user_name'])):
 		errList.append("User already exists.")
-	#check if email exists
-	if (checkEmailExists(jsonData['user_email']))
+	if (!getUserFromEmail(jsonData['user_email']))
 		errList.append("An account with this email already exists.")
 	if (errList):
 		return jsonify({'status': 200, 'errors': errList})

@@ -3,38 +3,15 @@ import pymysql
 from .dbConnector import db
 from .models import *
 
-
-def checkUsernameExists(username):
-	""" Function to check if a username already exists inside the database
-	
-		Keyword arguments:
-		username -- the username that we want to check that exists
-
-		Return value:
-		returns True if the username exists
-		        False if the username doesn't exist
-	"""
-
-	getUserQuery = db.session.query(User).filter(User.username == username)
-	users = db.session.execute(getUserQuery).fetchall()
-
-	return True if users.length else False
-
-def checkEmailExists(email):
+def getUserFromEmail(email):
 	""" Function to check if an email already exists inside the database
-	
+
 		Keyword arguments:
 		email -- the email that we want to check that exists
-
-		Return value:
-		returns True if the email exists
-		        False if the email doesn't exist
 	"""
 
 	getUserQuery = db.session.query(User).filter(User.email == email)
-	users = db.session.execute(getUserQuery).fetchall()
-
-	return True if users.length else False
+	return db.session.execute(getUserQuery).fetchall()
 
 def getUserFromUsername(username):
 	"""
