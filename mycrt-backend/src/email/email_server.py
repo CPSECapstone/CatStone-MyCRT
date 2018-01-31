@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../..'))
 
 import smtplib
 from email.mime.text import MIMEText
+from flask_login import current_user
 from src.database.getRecords import getCaptureFromId
 
 EMAIL = "mycrtNotifications@gmail.com"
@@ -29,6 +30,7 @@ def email(captureId):
    msg = MIMEText(body)
    msg['Subject'] = subject
    msg['From'] = EMAIL
+   msg['To'] = current_user.email
 
    try:
       s.ehlo()
