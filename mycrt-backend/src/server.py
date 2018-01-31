@@ -69,6 +69,7 @@ def post_capture():
         print("JSON Message: " + json.dumps(request.json))
         print("-----JSON OBJ -------")
         jsonData = request.json
+
         response = capture(jsonData['rds_endpoint'],
         	    jsonData['db_user'],
         	    jsonData['db_password'],
@@ -88,6 +89,12 @@ def post_capture():
         else:
             return jsonify({'status': 400, 'Error': response})
 
+@app.route("/users/captures", methods=['GET'])
+def get_users_captures():
+    if request.headers['Content-Type'] == 'application/json':
+        user = getUserFromUsername(current_user.userName)
+        usersCaptures = getAllCaptures(user.get_id())
+        return jsonify(usersCaptures)
 
 @app.route('/s3', methods=['GET'])
 def get_s3_instances():
