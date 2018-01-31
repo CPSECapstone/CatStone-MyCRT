@@ -5,6 +5,7 @@ import './App.css';
 import Header from './components/Header/Header.js';
 import NavPage from './components/Pages/NavPage.js';
 import NavBar from './components/Header/NavBar.js';
+import LogIn from './components/Pages/LogIn.js';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
@@ -33,14 +34,35 @@ var navLinks = [
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {selected: 0};
+    this.state = {
+      selected: 0,
+      loggedIn: false
+    };
     this.switchTab = this.switchTab.bind(this);
+    this.onLogIn = this.onLogIn.bind(this);
+    this.onLogOut = this.onLogOut.bind(this);
+
+    document.body.style.background = "#333b44";
   }
 
   switchTab(idx) {
     // e.preventDefault();
-    this.setState({selected: idx});
-    window.location.hash = navLinks[idx].href;
+    this.setState(prevState => ({
+      selected: idx
+    }));
+    //window.location.hash = navLinks[idx].href;
+  }
+
+  onLogIn() {
+    this.setState(prevState => ({
+      loggedIn: true
+    }));
+  }
+
+  onLogOut() {
+    this.setState(prevState => ({
+      loggedIn: false
+    }));
   }
 
   render() {
@@ -48,11 +70,20 @@ class App extends Component {
     return (
       <MuiThemeProvider>
       <div class="App">
-        <Header/>
+      {this.state.loggedIn &&
+        <div>
+        <Header onLogOut={this.onLogOut}/>
         <div class="app-content">
           <NavBar navLinks={navLinks} switchTab={this.switchTab}/>
           <NavPage selected={this.state.selected}/>
         </div>
+        </div>
+      }
+      {!this.state.loggedIn &&
+        <LogIn 
+          onLogIn={this.onLogIn}
+        />
+      }
       </div>
       </MuiThemeProvider>
     );
