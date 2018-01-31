@@ -11,7 +11,7 @@ from src.database.getRecords import getCaptureFromId
 EMAIL = "mycrtNotifications@gmail.com"
 PASS = "myCRTTool"
 
-def email(captureId):
+def sendEmail(captureId):
    s = smtplib.SMTP('smtp.gmail.com', port=587)
 
    userCapture = getCaptureFromId(captureId)
@@ -41,6 +41,3 @@ def email(captureId):
       return 0
    except:
       return 1
-
-if __name__ == '__main__':
-   main()
