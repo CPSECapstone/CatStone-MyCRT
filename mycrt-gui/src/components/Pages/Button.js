@@ -10,9 +10,14 @@ class Button extends Component {
     	<input type="submit" value={this.props.content} class="Button" onClick={this.props.onClick} />
         );	
   	}
+    else if (this.props.isDisabled) {
+      return (
+      <input value={this.props.content} class="Button disabled-button" />
+        );
+    }
     else {
        return (
-       <div class="Button" onClick={this.props.onClick}>
+       <div class="Button active-button" onClick={this.props.onClick}>
           {this.props.content}
        </div>
       );

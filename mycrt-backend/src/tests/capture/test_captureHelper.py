@@ -3,25 +3,65 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../..'))
-from tests.mocking.mockBoto import mockBoto
+from src.tests.mocking.mockBoto import mockBoto
 from capture.captureHelper import getRDSInstances, getS3Instances
 
 class TestCaptureHelper(unittest.TestCase):
+    def test_get_rds_instances_none(self):
+        testBoto = mockBoto(0)
+        response = getRDSInstances(testBoto)
+        expected = []
 
-   def test_get_rds_instances_many(self):
-      testBoto = mockBoto()
-      response = getRDSInstances(testBoto)
-      expected = ['testcrt.cc5daflqza1y.us-west-1.rds.amazonaws.com', 'testdb.cc5daflqza1y.us-west-1.rds.amazonaws.com']
+        self.assertEqual(response, expected)
 
-      self.assertEqual(response, expected)
+    def test_get_rds_instances_singular(self):
+        testBoto = mockBoto(1)
+        response = getRDSInstances(testBoto)
+        expected = ['test1']
 
-   def test_get_s3_instances_singular(self):
-      testBoto = mockBoto()
-      response = getS3Instances(testBoto)
-      expected = ['testBucket1']
+        self.assertEqual(response, expected)
 
-      self.assertEqual(response, expected)
+    def test_get_rds_instances_many(self):
+       testBoto = mockBoto(2)
+       response = getRDSInstances(testBoto)
+       expected = ['test1', 'test2']
 
+       self.assertEqual(response, expected)
+
+    def test_get_rds_instances_clientError(self):
+        testBoto = mockBoto(3)
+        response = getRDSInstances(testBoto)
+        expected = {'Error': {'Code': '400', 'Message': 'Generic Error'}}
+
+        self.assertEqual(response, expected)
+
+    def test_get_s3_instances_none(self):
+        testBoto = mockBoto(0)
+        response = getS3Instances(testBoto)
+        expected = []
+
+        self.assertEqual(response, expected)
+
+    def test_get_s3_instances_singular(self):
+        testBoto = mockBoto(1)
+        response = getS3Instances(testBoto)
+        expected = ['testBucket1']
+
+        self.assertEqual(response, expected)
+
+    def test_get_s3_instances_many(self):
+       testBoto = mockBoto(2)
+       response = getS3Instances(testBoto)
+       expected = ['testBucket1', 'testBucket2']
+
+       self.assertEqual(response, expected)
+
+    def test_get_s3_instances_clientError(self):
+        testBoto = mockBoto(3)
+        response = getS3Instances(testBoto)
+        expected = {'Error': {'Code': '400', 'Message': 'Generic Error'}}
+
+        self.assertEqual(response, expected)
 
 if __name__ == '__main__':
    unittest.main()

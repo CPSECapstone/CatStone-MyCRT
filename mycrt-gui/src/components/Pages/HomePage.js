@@ -66,6 +66,7 @@ class HomePage extends Component {
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
+    this.renderCaptureForm = this.renderCaptureForm.bind(this);
   }
 
   sendCaptureData(formDataValues) {
@@ -311,7 +312,7 @@ class HomePage extends Component {
   }
 
   onCaptureSubmit() {
-    //TODO: send information to capture card
+    //TODO: send information from API to capture card
     var card = {
       alias: this.state.aliasValue,
       db_user: this.state.dbUsernameValue,
@@ -323,6 +324,7 @@ class HomePage extends Component {
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
+    this.getCaptureData();
 
     var newCards = this.state.captureCards;
     newCards.push(card);
@@ -333,9 +335,7 @@ class HomePage extends Component {
     this.onCaptureButton();
   }
 
-  render() {
-    //TODO: refactor form to be a separate component
-
+  renderCaptureForm() {
     const actions = [
       <FlatButton
         label="Cancel"
@@ -357,6 +357,107 @@ class HomePage extends Component {
     };
 
     return (
+      <Dialog
+        title="Add Capture"
+        actions={actions}
+        modal={true}
+        open={this.state.isCaptureCalloutVisible}
+        autoScrollBodyContent={true}
+      >
+        <div class="add-capture-content">
+          <div class="notif-message">
+            Ensure that General Logging is enabled before starting a capture.
+          </div>
+          <div class="add-capture-item">
+            Capture Alias
+             <TextField
+                hintText="Type alias here"
+                onChange={this.handleAliasChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Username
+             <TextField
+                hintText="Type username here"
+                onChange={this.handleDBUsernameChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Password
+             <TextField
+                hintText="Type password here"
+                onChange={this.handleDBPasswordChange}
+                type="password"
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Name
+             <TextField
+                hintText="Type name here"
+                onChange={this.handleDBNameChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            RDS Instance
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              value={this.state.rdsValue}
+              onChange={this.handleRdsChange}>
+              {this.state.rdsItems != undefined ? this.state.rdsItems : []}
+            </DropDownMenu>
+          </div>
+          <div class="add-capture-item">
+             S3 Bucket
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              maxHeight={300}
+              value={this.state.s3Value}
+              onChange={this.handleS3Change}>
+              {this.state.s3Items != undefined ? this.state.s3Items : []}
+            </DropDownMenu>
+          </div>
+          <div class="add-capture-item">
+            Start Time
+            <div class="capture-row">
+              <DatePicker
+                hintText="Day"
+                value={this.state.captureStartDay}
+                onChange={this.handleStartDayChange}
+              />
+              <TimePicker
+                hintText="Time"
+                value={this.state.captureStartDay}
+                onChange={this.handleStartTimeChange}
+              />
+            </div>
+          </div>
+          {this.state.isErrorVisible &&
+            <div class="error-message">
+              End time must be at least one minute after start time.
+            </div>
+          }
+          <div class="add-capture-item">
+            End Time
+            <div class="capture-row">
+              <DatePicker
+                hintText="Day"
+                value={this.state.captureEndDay}
+                onChange={this.handleEndDayChange}
+              />
+              <TimePicker
+                hintText="Time"
+                value={this.state.captureEndDay}
+                onChange={this.handleEndTimeChange}
+              />
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    );
+  }
+
+  render() {
+    return (
       <div className="HomePage">
       	<h2>Dashboard</h2>
       	<h3>Captures</h3>
@@ -364,102 +465,7 @@ class HomePage extends Component {
       		onClick={this.showCaptureCallout}
       		content="Add Capture"
       	/>
-         <Dialog
-          title="Add Capture"
-          actions={actions}
-          modal={true}
-          open={this.state.isCaptureCalloutVisible}
-          autoScrollBodyContent={true}
-        >
-          <div class="add-capture-content">
-            <div class="notif-message">
-              Ensure that General Logging is enabled before starting a capture.
-            </div>
-            <div class="add-capture-item">
-              Capture Alias
-               <TextField
-                  hintText="Type alias here"
-                  onChange={this.handleAliasChange}
-                />
-            </div>
-            <div class="add-capture-item">
-              Database Username
-               <TextField
-                  hintText="Type username here"
-                  onChange={this.handleDBUsernameChange}
-                />
-            </div>
-            <div class="add-capture-item">
-              Database Password
-               <TextField
-                  hintText="Type password here"
-                  onChange={this.handleDBPasswordChange}
-                  type="password"
-                />
-            </div>
-            <div class="add-capture-item">
-              Database Name
-               <TextField
-                  hintText="Type name here"
-                  onChange={this.handleDBNameChange}
-                />
-            </div>
-            <div class="add-capture-item">
-              RDS Instance
-              <DropDownMenu
-                style={dropdownStyle.customWidth}
-                value={this.state.rdsValue}
-                onChange={this.handleRdsChange}>
-                {this.state.rdsItems != undefined ? this.state.rdsItems : []}
-              </DropDownMenu>
-            </div>
-            <div class="add-capture-item">
-               S3 Bucket
-              <DropDownMenu
-                style={dropdownStyle.customWidth}
-                maxHeight={300}
-                value={this.state.s3Value}
-                onChange={this.handleS3Change}>
-                {this.state.s3Items != undefined ? this.state.s3Items : []}
-              </DropDownMenu>
-            </div>
-            <div class="add-capture-item">
-              Start Time
-              <div class="capture-row">
-                <DatePicker
-                  hintText="Day"
-                  value={this.state.captureStartDay}
-                  onChange={this.handleStartDayChange}
-                />
-                <TimePicker
-                  hintText="Time"
-                  value={this.state.captureStartDay}
-                  onChange={this.handleStartTimeChange}
-                />
-              </div>
-            </div>
-            {this.state.isErrorVisible &&
-              <div class="error-message">
-                End time must be at least one minute after start time.
-              </div>
-            }
-            <div class="add-capture-item">
-              End Time
-              <div class="capture-row">
-                <DatePicker
-                  hintText="Day"
-                  value={this.state.captureEndDay}
-                  onChange={this.handleEndDayChange}
-                />
-                <TimePicker
-                  hintText="Time"
-                  value={this.state.captureEndDay}
-                  onChange={this.handleEndTimeChange}
-                />
-              </div>
-            </div>
-          </div>
-        </Dialog>
+        { this.renderCaptureForm() }
       	<CaptureContainer
           cards={this.state.captureCards}
           sampleDate={this.state.captureEndDay}
