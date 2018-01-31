@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_security import SQLAlchemySessionUserDatastore
-from sqlalchemy.ext.declarative import declarative_base
+from flask_sqlalchemy import *
 
-Base = declarative_base()
+from .base import Base
 from .user import User, Role, RolesUsers
 
 class UserRepository:
@@ -32,3 +32,4 @@ class UserRepository:
         else:
             return False
 
+user_repository = UserRepository('sqlite:///test.db')

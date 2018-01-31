@@ -1,6 +1,6 @@
 from flask import Flask, request, json, redirect
 from flask_security import Security, login_required
-from .database.user_database import UserRepository
+from .database.user_database import user_repository
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -22,9 +22,6 @@ from flask_login import LoginManager, current_user
 app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 
-
-user_repository = UserRepository('sqlite:///test.db')
-
 # flask-security
 user_datastore = user_repository.user_datastore
 security = Security(app, user_datastore)
@@ -42,11 +39,8 @@ CORS(app)
 # flask-restful
 api = Api(app)
 
-@app.before_first_request
-def create_user():
-    user_repository.init_db()
-    # this code can be used to create a test user
-    user_repository.register_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
+#Initialize the database
+user_repository.init_db()
 
 @app.route('/')
 def home():
