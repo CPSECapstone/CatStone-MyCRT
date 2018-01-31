@@ -89,7 +89,7 @@ def post_capture():
         else:
             return jsonify({'status': 400, 'Error': response})
 
-@app.route("/users/captures", methods=['GET'])
+@app.route('/users/captures', methods=['GET'])
 def get_users_captures():
     if request.headers['Content-Type'] == 'application/json':
         user = getUserFromUsername(current_user.userName)
