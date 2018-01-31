@@ -1,4 +1,3 @@
-#from .onnector import db
 from src.database.user import User
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, backref
