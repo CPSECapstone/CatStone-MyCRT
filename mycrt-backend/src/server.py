@@ -78,8 +78,8 @@ def post_capture():
                 jsonData['alias'],
                 jsonData['bucket_name'])
 
-        newCapture = Capture(0, jsonData['alias'], jsonData['start_time'],
-            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
+        newCapture = insertCapture(0, jsonData['alias'], jsonData['start_time'],
+            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'] + ".log",
             jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
             jsonData['db_name'])
 
