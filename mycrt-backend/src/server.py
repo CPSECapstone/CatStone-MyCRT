@@ -124,7 +124,7 @@ def register_user():
 	if (!getUserFromEmail(jsonData['user_email']))
 		errList.append("An account with this email already exists.")
 	if (errList):
-		return jsonify({'status': 200, 'errors': errList})
+		return jsonify({'status': 400, 'errors': errList})
 	else:
 		newUser = insertUser(jsonData['user_name'], jsonData['user_password'],
 			jsonData['user_email'], jsonData['user_accessKey'], jsonData['user_secretKey']
