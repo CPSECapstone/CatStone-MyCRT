@@ -84,7 +84,7 @@ def post_capture():
             jsonData['db_name'])
 
         if (isinstance(response, int)):
-            return jsonify({'status': 201})
+            return jsonify({'status': 201, 'captureId': newCapture})
         else:
             return jsonify({'status': 400, 'Error': response})
 
