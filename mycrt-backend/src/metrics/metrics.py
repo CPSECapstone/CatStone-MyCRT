@@ -39,10 +39,3 @@ def get_metrics(local_log_file, start_time, end_time, bucket_name, db_identifier
         return e
 
     return metrics_list
-
-
-def main():
-   get_metrics("capture001", None, None, "s3-catstone-capture-test")
-
-if __name__ == '__main__':
-   main()
