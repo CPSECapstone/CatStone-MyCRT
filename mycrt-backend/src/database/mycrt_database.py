@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_security import SQLAlchemySessionUserDatastore
-from flask_sqlalchemy import *
 
 from .base import Base
 from .user import User, Role, RolesUsers
+import src.database.models
+
+from .db_config import db_string
 
 class UserRepository:
 
@@ -16,10 +18,6 @@ class UserRepository:
         Base.query = self.db_session.query_property()
         self.user_datastore = SQLAlchemySessionUserDatastore(
                 self.db_session, User, Role)
-
-    def init_db(self):
-        # import any sqlalchemy models so they can be exported
-        import src.database.models
         Base.metadata.create_all(bind=self.engine)
 
     def register_user(self, username, password, email, access_key, secret_key):
@@ -32,4 +30,4 @@ class UserRepository:
         else:
             return False
 
-user_repository = UserRepository('sqlite:///test.db')
+db = UserRepository(db_string)

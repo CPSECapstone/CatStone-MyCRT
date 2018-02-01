@@ -1,6 +1,6 @@
 from flask import Flask, request, json, redirect
 from flask_security import Security, login_required
-from .database.user_database import user_repository
+from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -23,7 +23,7 @@ app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 
 # flask-security
-user_datastore = user_repository.user_datastore
+user_datastore = db.user_datastore
 security = Security(app, user_datastore)
 
 # flask-login
@@ -40,7 +40,7 @@ CORS(app)
 api = Api(app)
 
 #Initialize the database
-user_repository.init_db()
+#user_repository.init_db()
 
 @app.route('/')
 def home():
