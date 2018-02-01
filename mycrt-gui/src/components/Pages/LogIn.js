@@ -24,6 +24,9 @@ class LogIn extends Component {
       secretKeyValue: undefined
       };
 
+    this.sendLoginData = this.sendLoginData.bind(this);
+    this.onLogIn = this.onLogIn.bind(this);
+
     this.onUsernameChange = this.onUsernameChange.bind(this);
     this.onPasswordChange = this.onPasswordChange.bind(this);
     this.onRegisterClick = this.onRegisterClick.bind(this);
@@ -36,6 +39,36 @@ class LogIn extends Component {
     this.onAWSKeyChange = this.onAWSKeyChange.bind(this);
     this.onSecretKeyChange = this.onSecretKeyChange.bind(this);
     this.isRegisterFieldsFilled = this.isRegisterFieldsFilled.bind(this);
+  }
+
+  sendLoginData(formDataValues) {
+    //TODO: uncomment after server path /login is created
+    /*
+    console.log(formDataValues);
+    $.ajax({
+      url: SERVER_PATH + "/login",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json'},
+      type: 'POST',
+      data: JSON.stringify(formDataValues),
+      success: function(data) {
+        console.log("SUCCESS login form");
+        console.log(data);
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+    */
+  }
+
+  onLogIn() {
+    var userInfo = {
+      username: this.state.usernameValue,
+      password: this.state.passwordValue
+    };
+    this.sendLoginData(userInfo);
+    this.props.onLogIn();
   }
 
   onUsernameChange(event, value) {
@@ -182,7 +215,7 @@ class LogIn extends Component {
           </div>
           <div class="log-in-item">
             <Button 
-              onClick={this.props.onLogIn}
+              onClick={this.onLogIn}
               content="Log In"
               isDisabled={!this.isSubmitDisabled()}
             />
