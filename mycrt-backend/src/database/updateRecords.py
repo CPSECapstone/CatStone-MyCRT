@@ -1,7 +1,9 @@
 import pymysql
 
-from .dbConnector import db
+from .user_database import Base, user_repository
 from .models import *
+
+session = user_repository.db_session
 
 def updateCapture(captureId, captureStatus):
     """Function to update a given capture's status
@@ -12,8 +14,7 @@ def updateCapture(captureId, captureStatus):
     """
 
     try:
-        capture = Capture.query.get(captureId)
-        capture.captureStatus = captureStatus
-        db.session.commit()
+        capture = session.query(Capture).filter(Capture.captureId == captureId).update({"captureStatus": captureStatus})
+        session.commit()
     except:
-	    db.session.rollback()
+	    session.rollback()

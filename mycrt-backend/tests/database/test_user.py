@@ -1,7 +1,6 @@
 from src.database.user import User
 import unittest
 
-
 class TestUser(unittest.TestCase):
 
     def setUp(self):
