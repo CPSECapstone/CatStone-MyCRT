@@ -18,7 +18,6 @@ def runScheduler():
         time.sleep(1)
 
         #Get all of the current captures
-        print("Currently getting all captures")
         currentCaptures = getAllCapturesThatHaveNotCompleted()
 
         #The current time 
@@ -31,12 +30,9 @@ def runScheduler():
             endTime = capture[1]
 
             # strAsDateTime = datetime.datetime.strptime(capture[1], timeFormat)
-            print("Comparing time at now: ", now, " to time of ", endTime)
             if endTime <= now:
                 updateCapture(id, 1)
-                print("capture ", id, "is done")
             else:
-                print("capture ", id, "is not done")
 
 
 def main():
