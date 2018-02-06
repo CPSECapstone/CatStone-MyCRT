@@ -8,7 +8,7 @@ import src.database.models
 
 from .db_config import db_string
 
-class MycrtDatabase:
+class MyCRTDatabase:
 
     def __init__(self, db_string):
         self.engine = create_engine(db_string, convert_unicode=True)
@@ -30,4 +30,4 @@ class MycrtDatabase:
         else:
             return False
 
-db = MycrtDatabase(db_string)
+db = MyCRTDatabase(db_string)
