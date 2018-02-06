@@ -15,8 +15,6 @@ from .database.addRecords import *
 from flask_mail import Mail
 from flask_login import LoginManager, current_user, login_user
 
-import base64
-
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
 
@@ -159,6 +157,14 @@ def register():
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
 	return jsonify(get_metrics())
+
+@app.before_first_request
+def add_test_users():
+    '''This method adds a user for testing purposes when the server starts up.
+    This happens the first time the server gets a request.
+    '''
+    db.register_user('test-user', 'password123', 'test@test.com',
+                        'test-access-key', 'test-secret-key')
 
 @login_manager.user_loader
 def load_user(user_id):
