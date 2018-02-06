@@ -144,7 +144,7 @@ def logout():
     login_manager.logout_user(current_user)
     return redirect('/', code=302)
 
-@app.route('/register', methods=['POST'])
+@app.route('/user', methods=['POST'])
 def register():
     json = request.get_json()
     username = json['username']
