@@ -1,5 +1,6 @@
 from flask import Flask, request, json, redirect
 from flask_security import Security, login_required
+from flask_security.utils import verify_password
 from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
@@ -12,7 +13,9 @@ from .database.getRecords import *
 from .database.addRecords import *
 
 from flask_mail import Mail
-from flask_login import LoginManager, current_user
+from flask_login import LoginManager, current_user, login_user
+
+import base64
 
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
@@ -39,18 +42,16 @@ CORS(app)
 # flask-restful
 api = Api(app)
 
-#Initialize the database
-#user_repository.init_db()
-
 @app.route('/')
 def home():
     # temp example on how to access current user
     if current_user.is_authenticated:
-        return jsonify({'username': current_user.username,
-                    'access_key': current_user.access_key,
-                    'secret_key': current_user.secret_key})
+        return jsonify({'user' : {'username': current_user.username,
+                            'email' : current_user.email
+                        }
+                    }), 200
     else:
-        return 'Not logged in'
+        return jsonify({'user' : {}}), 200
 
 
 @app.route('/test/api', methods=['GET'])
@@ -107,16 +108,51 @@ def get_rds_instances():
 
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
-@app.route('/login-test', methods=['PUT'])
-def login():
-    user_repository.register_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
+@login_manager.request_loader
+def load_user_from_request(request):
+    auth = request.authorization
+    if auth:
+        username = auth.username
+        password = auth.password
+        user = user_datastore.find_user(username=username)
+        if user is not None and verify_password(password, user.password):
+            return user
+    return None
 
+@app.route('/login', methods=['POST'])
+def login():
+    user = current_user
+    if user is not None:
+        login_user(user)
+        return jsonify({"status" : "success",
+            "user" : {
+                "username" : user.username,
+                "password" : user.password,
+                "access_key" : user.access_key,
+                "secret_key" : user.secret_key,
+                "email" : user.email
+                }
+            }), 200
+    else:
+        return jsonify({"status" : "fail",
+            "user" : {}
+            })
 
 @login_required
 @app.route('/logout', methods=['POST'])
 def logout():
     login_manager.logout_user(current_user)
     return redirect('/', code=302)
+
+@app.route('/register', methods=['POST'])
+def register():
+    json = request.get_json()
+    username = json['username']
+    password = json['password']
+    email = json['email']
+    secret_key = json['secret_key']
+    access_key = json['access_key']
+    return jsonify({"success" : db.register_user(username, password, email, secret_key, access_key)})
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
