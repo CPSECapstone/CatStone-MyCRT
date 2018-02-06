@@ -48,10 +48,12 @@ def home():
     if current_user.is_authenticated:
         return jsonify({'user' : {'username': current_user.username,
                             'email' : current_user.email
-                        }
+                        },
+                        'authenticated' : True
                     }), 200
     else:
-        return jsonify({'user' : {}}), 200
+        return jsonify({'user' : {},
+                        'authenticated' : False }), 200
 
 
 @app.route('/test/api', methods=['GET'])
