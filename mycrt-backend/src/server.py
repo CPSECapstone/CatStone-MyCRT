@@ -44,14 +44,9 @@ api = Api(app)
 def home():
     # temp example on how to access current user
     if current_user.is_authenticated:
-        return jsonify({'user' : {'username': current_user.username,
-                            'email' : current_user.email
-                        },
-                        'authenticated' : True
-                    }), 200
+        return jsonify({ 'authenticated' : True }), 200
     else:
-        return jsonify({'user' : {},
-                        'authenticated' : False }), 200
+        return jsonify({ 'authenticated' : False }), 200
 
 
 @app.route('/test/api', methods=['GET'])
@@ -124,19 +119,9 @@ def login():
     user = current_user
     if user is not None:
         login_user(user)
-        return jsonify({"status" : "success",
-            "user" : {
-                "username" : user.username,
-                "password" : user.password,
-                "access_key" : user.access_key,
-                "secret_key" : user.secret_key,
-                "email" : user.email
-                }
-            }), 200
+        return 200
     else:
-        return jsonify({"status" : "fail",
-            "user" : {}
-            })
+        return 400
 
 @login_required
 @app.route('/logout', methods=['POST'])
@@ -152,7 +137,8 @@ def register():
     email = json['email']
     secret_key = json['secret_key']
     access_key = json['access_key']
-    return jsonify({"success" : db.register_user(username, password, email, secret_key, access_key)})
+    success = db.register_user(username, password, email, secret_key, access_key)
+    return jsonify({"status" : 200 if success else 400 })
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
