@@ -4,6 +4,8 @@ from .mycrt_database import db
 from .models import Capture
 from .user import User
 
+session = db.db_session
+
 def getUserFromEmail(email):
 	""" Function to check if an email already exists inside the database
 
