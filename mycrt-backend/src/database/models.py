@@ -2,7 +2,7 @@ from src.database.user import User
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from .user_database import Base
+from .mycrt_database import Base
 
 class Notification(Base):
     __tablename__ = 'notifications'
