@@ -1,9 +1,9 @@
 import pymysql
 
-from .user_database import Base, user_repository
-from .models import *
+from .mycrt_database import db
+from .models import Capture, Metric
 
-session = user_repository.db_session
+session = db.db_session
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1,
                                 "test-capture-2",
@@ -61,4 +61,4 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testSecret")
 '''
 def insertUser(userName, userPassword, email, accessKey, secretKey):
-		user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
+		db.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
