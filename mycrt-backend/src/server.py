@@ -128,15 +128,47 @@ def login():
 def logout():
     login_manager.logout_user(current_user)
     return redirect('/', code=302)
+'''
+@app.route('/User', methods=['POST'])
+def register_user():
+	jsonData = request.json
+	errList = []
 
+	if (!getUserFromUsername(jsonData['user_name'])):
+		errList.append("User already exists.")
+	if (!getUserFromEmail(jsonData['user_email']))
+		errList.append("An account with this email already exists.")
+	if (errList):
+		return jsonify({'status': 400, 'errors': errList})
+	else:
+		newUser = insertUser(jsonData['user_name'], jsonData['user_password'],
+			jsonData['user_email'], jsonData['user_accessKey'], jsonData['user_secretKey']
+		return jsonify({'status': 201, 'user': jsonify(newUser)})
+'''
+'''
+if ('username' not in jsonData ||
+'password' not in jsonData ||
+'email' not in jsonData ||
+'secret_key' not in jsonData ||
+'access_key' not in jsonData) {
+errList.append("Missing field in request.")
+}
+if (!getUserFromUsername(jsonData['user_name'])):
+    errList.append("User already exists.")
+    if (!getUserFromEmail(jsonData['user_email']))
+    errList.append("An account with this email already exists.")
+    if (errList):
+        return jsonify({'status': 400, 'errors': errList})
+        '''
 @app.route('/user', methods=['POST'])
-def register():
-    json = request.get_json()
-    username = json['username']
-    password = json['password']
-    email = json['email']
-    secret_key = json['secret_key']
-    access_key = json['access_key']
+def register_user():
+    jsonData = request.get_json()
+    errList = []
+    username = jsonData['username']
+    password = jsonData['password']
+    email = jsonData['email']
+    secret_key = jsonData['secret_key']
+    access_key = jsonData['access_key']
     success = db.register_user(username, password, email, secret_key, access_key)
     return jsonify({"status" : 200 if success else 400 })
 
