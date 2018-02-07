@@ -1,7 +1,6 @@
 from flask import Flask, request, json, redirect
-from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
-from .database.user_database import db_session, init_db
-from .database.user import User, Role
+from flask_security import Security, login_required
+from .database.user_database import user_repository
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -24,7 +23,7 @@ app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 
 # flask-security
-user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
+user_datastore = user_repository.user_datastore
 security = Security(app, user_datastore)
 
 # flask-login
@@ -40,14 +39,8 @@ CORS(app)
 # flask-restful
 api = Api(app)
 
-@app.before_first_request
-def create_user():
-    init_db()
-    # this code can be used to create a test user
-    if find_user_by_email("test@test.com") == None:
-        print("User found")
-        user_datastore.create_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
-        db_session.commit()
+#Initialize the database
+user_repository.init_db()
 
 @app.route('/')
 def home():
@@ -133,15 +126,8 @@ def register_user():
 
 @app.route('/login', methods=['PUT', 'GET'])
 def login():
-    if request.headers['Content-Type'] == 'application/json':
-        print("JSON Message: " + json.dumps(request.json))
-        print("------ JSON OBJ -------")
-        jsonData = request.json
-        print(jsonData)
+    user_repository.register_user(username="test-user", password="test123", email='test@test.com', access_key="test_access_key", secret_key="test_secret_key")
 
-        #Call login method here verifies/authenticates user
-
-    return jsonify("{'login_status': 'Success'}")
 
 @login_required
 @app.route('/logout', methods=['POST'])
@@ -159,3 +145,6 @@ def load_user(user_id):
 
 def find_user_by_email(email):
     return user_datastore.find_user(email=email)
+
+def find_user_by_username(username):
+    return user_datastore.find_user(username=username)

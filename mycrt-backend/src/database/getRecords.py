@@ -1,6 +1,6 @@
 import pymysql
 
-from .dbConnector import db
+from .user_database import Base, user_repository
 from .models import *
 
 def getUserFromEmail(email):
@@ -9,9 +9,10 @@ def getUserFromEmail(email):
 		Keyword arguments:
 		email -- the email that we want to check that exists
 	"""
+	getUserQuery = session.query(User).filter(User.email == email)
+	users = session.execute(getUserQuery).fetchall()
 
-	getUserQuery = db.session.query(User).filter(User.email == email)
-	return db.session.execute(getUserQuery).fetchall()
+	return True if len(users) else False
 
 def getUserFromUsername(username):
 	"""
@@ -20,8 +21,8 @@ def getUserFromUsername(username):
 		Keyword arguments:
 		username -- the username of the user you want to obtain
 	"""
-	userQuery = db.session.query(User).filter(User.username == username)
-	return db.session.execute(userquery).fetchall()
+	userQuery = session.query(User).filter(User.username == username)
+	return session.execute(userQuery).fetchall()
 
 def getUserEmail(username):
 	"""
@@ -30,8 +31,8 @@ def getUserEmail(username):
 		Keyword arguments:
 		username -- the username of the user you want to obtain an email from
 	"""
-	userEmail = db.session.query(User.email).filter(User.username == username)
-	return db.session.execute(userEmail).fetchall()
+	userEmail = session.query(User.email).filter(User.username == username)
+	return session.execute(userEmail).fetchall()
 
 def getAllCaptures(username):
 	''' Function to get All Captures
@@ -39,8 +40,8 @@ def getAllCaptures(username):
 		Keyword arguments:
 		username -- the uesrname of the user you want to get all captures from
 	'''
-	user_captures = db.session.query(Capture).join(User).filter(User.username == username)
-	return db.session.execute(user_captures).fetchall()
+	user_captures = session.query(Capture).join(User).filter(User.username == username)
+	return session.execute(user_captures).fetchall()
 
 def getCaptureRDSInformation(captureAlias):
 	""" Function to get RDS Information from Capture
@@ -48,8 +49,8 @@ def getCaptureRDSInformation(captureAlias):
 		Keyword arguments:
 		captureAlias -- the alias of the capture you want RDS Information from
 	"""
-	rdsInformation = db.session.query(Capture.rdsInstance, Capture.rdsUsername, Capture.rdsPassword, Capture.rdsDatabase).filter(Capture.captureAlias == captureAlias)
-	return db.session.execute(rdsInformation).fetchall()
+	rdsInformation = session.query(Capture.rdsInstance, Capture.rdsUsername, Capture.rdsPassword, Capture.rdsDatabase).filter(Capture.captureAlias == captureAlias)
+	return session.execute(rdsInformation).fetchall()
 
 def getCaptureFromId(captureId):
 	""" Function to get a capture after receiving a captureId
@@ -58,7 +59,7 @@ def getCaptureFromId(captureId):
 		captureId -- the id of the capture you want to access
 	"""
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
-	return db.session.execute(captureInformation).fetchall()
+	return session.execute(captureInformation).fetchall()
 
 def getCaptureStatus(captureId):
 	"""Function to get a capture's status after receiving a captureId
@@ -66,8 +67,8 @@ def getCaptureStatus(captureId):
 		Keyword arguments:
 		captureId -- the id of the capture you want to access
 	"""
-	captureInformation = Capture.query(Capture.wasSuccessful).filter(Capture.captureId == captureId)
-	return db.session.execute(captureInformation).fetchall()
+	captureInformation = session.query(Capture.captureId, Capture.captureStatus).filter(Capture.captureId == captureId)
+	return session.execute(captureInformation).fetchall()
 
 def getUsersSuccessfulCaptures(userId):
 	"""Function to get a user's succesful captures after receiving a userId
@@ -75,5 +76,5 @@ def getUsersSuccessfulCaptures(userId):
 		Keyboard arguments:
 		userId -- the id of the user whose successful captures you want to access
 	"""
-	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.wasSuccessful == True)
-	return db.session.execute(captureInformation).fetchall()
+	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.captureStatus == 1)
+	return session.execute(captureInformation).fetchall()

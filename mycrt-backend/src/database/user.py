@@ -1,7 +1,8 @@
-from src.database.user_database import Base
 from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from .base import Base
+
 
 class RolesUsers(Base):
     __tablename__ = 'roles_users'
@@ -25,6 +26,7 @@ class User(Base, UserMixin):
     secret_key = Column(String(128), nullable=False)
     active = Column(Boolean())
     notificationLife = Column(Integer())
+
     roles = relationship('Role', secondary='roles_users',
             backref=backref('users', lazy='dynamic'))
 
