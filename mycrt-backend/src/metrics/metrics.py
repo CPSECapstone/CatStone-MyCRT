@@ -5,8 +5,6 @@ from operator import itemgetter
 from botocore.exceptions import ClientError
 
 def get_all_metrics(local_log_file, start_time, end_time, bucket_name, db_identifier):
-    # can remove once attached to capture function because will be passed as parsed datetimes
-
     local_metric_file = local_log_file + "_metrics"
     all_metrics = {"timestamps": [], "CPUUtilization": [], "ReadIOPS": [], "WriteIOPS": [], "FreeableMemory": []}
 
