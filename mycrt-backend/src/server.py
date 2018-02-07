@@ -66,31 +66,24 @@ def post_capture():
         print("-----JSON OBJ -------")
         jsonData = request.json
 
-        response = capture(jsonData['rds_endpoint'],
-        	    jsonData['db_user'],
-        	    jsonData['db_password'],
-        	    jsonData['db_name'],
-        	    jsonData['start_time'],
-                jsonData['end_time'],
-                jsonData['alias'],
-                jsonData['bucket_name'])
+        #response = capture(jsonData['rds_endpoint'],
+        	    #jsonData['db_user'],
+        	    #jsonData['db_password'],
+        	    #jsonData['db_name'],
+        	    #jsonData['start_time'],
+                #jsonData['end_time'],
+                #jsonData['alias'],
+                #jsonData['bucket_name'])
 
-        newCapture = Capture(0, jsonData['alias'], jsonData['start_time'],
+        newCapture = insertCapture(2, jsonData['alias'], jsonData['start_time'],
             jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
             jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
             jsonData['db_name'])
 
-        if (isinstance(response, int)):
+        if (1):#isinstance(newCapture, int)):
             return jsonify({'status': 201})
         else:
-            return jsonify({'status': 400, 'Error': response})
-
-@app.route('/users/captures', methods=['GET'])
-def get_users_captures():
-    if request.headers['Content-Type'] == 'application/json':
-        user = getUserFromUsername(current_user.userName)
-        usersCaptures = getAllCaptures(user.get_id())
-        return jsonify(usersCaptures)
+            return jsonify({'status': 400, 'Error': newCapture})
 
 @app.route('/s3', methods=['GET'])
 def get_s3_instances():
@@ -146,6 +139,18 @@ def register():
     access_key = json['access_key']
     success = db.register_user(username, password, email, secret_key, access_key)
     return jsonify({"status" : 200 if success else 400 })
+
+@login_required
+@app.route('/users/captures', methods=['GET'])
+def get_users_captures():
+    if request.headers['Content-Type'] == 'application/json':
+        #user = getUserFromUsername(current_user.userName)
+        #usersCaptures = getAllCaptures(user.get_id())
+        #usersCaptures = getAllCaptures(current_user.get_id())
+        user = getUserFromUsername('userA')
+        print(user)
+        response = getAllCaptures('userA')
+        return jsonify({'status': 200, 'count': len(response), 'userCaptures': response})
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
