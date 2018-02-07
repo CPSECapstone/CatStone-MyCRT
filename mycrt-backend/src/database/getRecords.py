@@ -1,7 +1,8 @@
 import pymysql
 
-from .user_database import Base, user_repository
-from .models import *
+from .mycrt_database import db
+from .models import Capture
+from .user import User
 
 def getUserFromEmail(email):
 	""" Function to check if an email already exists inside the database
