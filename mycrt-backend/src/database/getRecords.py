@@ -10,9 +10,7 @@ def getUserFromEmail(email):
 		email -- the email that we want to check that exists
 	"""
 	getUserQuery = session.query(User).filter(User.email == email)
-	users = session.execute(getUserQuery).fetchall()
-
-	return True if len(users) else False
+	return session.execute(getUserQuery).fetchall()
 
 def getUserFromUsername(username):
 	"""
