@@ -164,6 +164,23 @@ if (!getUserFromUsername(jsonData['user_name'])):
 def register_user():
     jsonData = request.get_json()
     errList = []
+
+    if ('username' not in jsonData ||
+     'password' not in jsonData ||
+     'email' not in jsonData ||
+     'secret_key' not in jsonData ||
+     'access_key' not in jsonData) {
+        errList.append("Missing field in request.")
+    }
+    else {
+        if (!getUserFromUsername(jsonData['user_name'])):
+            errList.append("User already exists.")
+        if (!getUserFromEmail(jsonData['user_email']))
+            errList.append("An account with this email already exists.")
+    }
+    if (errList):
+        return jsonify({'status': 400, 'errors': errList})
+
     username = jsonData['username']
     password = jsonData['password']
     email = jsonData['email']
