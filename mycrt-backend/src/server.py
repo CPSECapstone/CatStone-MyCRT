@@ -187,7 +187,7 @@ def register_user():
     secret_key = jsonData['secret_key']
     access_key = jsonData['access_key']
     success = db.register_user(username, password, email, secret_key, access_key)
-    return jsonify({"status" : 200 if success else 400 })
+    return jsonify({"status" : 201 if success else 400 })
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
