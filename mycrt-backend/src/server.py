@@ -132,23 +132,17 @@ def logout():
 @app.route('/user', methods=['POST'])
 def register_user():
     jsonData = request.get_json()
-    errList = []
 
-    if ('username' not in jsonData ||
-     'password' not in jsonData ||
-     'email' not in jsonData ||
-     'secret_key' not in jsonData ||
-     'access_key' not in jsonData) {
-        errList.append("Missing field in request.")
-    }
-    else {
-        if (!getUserFromUsername(jsonData['user_name'])):
-            errList.append("User already exists.")
-        if (!getUserFromEmail(jsonData['user_email']))
-            errList.append("An account with this email already exists.")
-    }
-    if (errList):
-        return jsonify({'status': 400, 'errors': errList})
+    if ('username' not in jsonData or
+        'password' not in jsonData or
+        'email' not in jsonData or
+        'secret_key' not in jsonData or
+        'access_key' not in jsonData):
+            return jsonify({"status": 400, "error": "Missing field in request."})
+    if (getUserFromUsername(jsonData['username'])):
+        return jsonify({"status": 400, "error": "User already exists."})
+    if (getUserFromEmail(jsonData['email'])):
+        return jsonify({"status": 400, "error": "An account with this email already exists."})
 
     username = jsonData['username']
     password = jsonData['password']
