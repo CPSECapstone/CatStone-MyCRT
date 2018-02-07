@@ -75,11 +75,6 @@ def post_capture():
                 jsonData['alias'],
                 jsonData['bucket_name'])
 
-        #newCapture = insertCapture(current_user.id, jsonData['alias'], jsonData['start_time'],
-            #jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'] + ".log",
-            #jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
-            #jsonData['db_name'])
-
         if (isinstance(response, int)):
             return jsonify({'status': 201, 'captureId': newCapture})
         else:
