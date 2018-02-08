@@ -1,12 +1,13 @@
 import pymysql
 
-from .user_database import Base, user_repository
-from .models import *
+from .mycrt_database import db
+from .models import Capture
+from .user import User
 
-session = user_repository.db_session
+session = db.db_session
 def checkUsernameExists(username):
 	""" Function to check if a username already exists inside the database
-	
+
 		Keyword arguments:
 		username -- the username that we want to check that exists
 
@@ -22,7 +23,7 @@ def checkUsernameExists(username):
 
 def checkEmailExists(email):
 	""" Function to check if an email already exists inside the database
-	
+
 		Keyword arguments:
 		email -- the email that we want to check that exists
 
@@ -100,6 +101,7 @@ def getUsersSuccessfulCaptures(userId):
 	"""
 	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.captureStatus == 1)
 	return session.execute(captureInformation).fetchall()
+<<<<<<< HEAD
 
 def getAllCapturesThatHaveNotCompleted():
 	"""Function to get all current captures that have a status of 0
@@ -107,3 +109,5 @@ def getAllCapturesThatHaveNotCompleted():
 
 	captureInformation = session.query(Capture.captureId, Capture.endTime, Capture.captureStatus).filter(Capture.captureStatus == 0)
 	return session.execute(captureInformation).fetchall()
+=======
+>>>>>>> 8a8f4e4d930ce315f3fe6c59bc963de18eeeebc9
