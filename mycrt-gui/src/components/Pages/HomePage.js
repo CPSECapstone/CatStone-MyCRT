@@ -90,8 +90,8 @@ class HomePage extends Component {
   getCaptureData() {
     $.getJSON(SERVER_PATH + "/capture")
       .done(function( json ) {
-        console.log( "JSON capture data: " + json.Capture );
-        if (json.Capture != undefined) {
+        console.log( "JSON capture data: " + json.captureId );
+        if (json.captureId != undefined) {
           // TODO: parse object and store as a card
         }
       }.bind(this))
@@ -369,35 +369,6 @@ class HomePage extends Component {
             Ensure that General Logging is enabled before starting a capture.
           </div>
           <div class="add-capture-item">
-            Capture Alias
-             <TextField
-                hintText="Type alias here"
-                onChange={this.handleAliasChange}
-              />
-          </div>
-          <div class="add-capture-item">
-            Database Username
-             <TextField
-                hintText="Type username here"
-                onChange={this.handleDBUsernameChange}
-              />
-          </div>
-          <div class="add-capture-item">
-            Database Password
-             <TextField
-                hintText="Type password here"
-                onChange={this.handleDBPasswordChange}
-                type="password"
-              />
-          </div>
-          <div class="add-capture-item">
-            Database Name
-             <TextField
-                hintText="Type name here"
-                onChange={this.handleDBNameChange}
-              />
-          </div>
-          <div class="add-capture-item">
             RDS Instance
             <DropDownMenu
               style={dropdownStyle.customWidth}
@@ -415,6 +386,35 @@ class HomePage extends Component {
               onChange={this.handleS3Change}>
               {this.state.s3Items != undefined ? this.state.s3Items : []}
             </DropDownMenu>
+          </div>
+          <div class="add-capture-item">
+            Capture Alias
+             <TextField
+                hintText="Type alias here"
+                onChange={this.handleAliasChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Name
+             <TextField
+                hintText="Type name here"
+                onChange={this.handleDBNameChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Username
+             <TextField
+                hintText="Type username here"
+                onChange={this.handleDBUsernameChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Password
+             <TextField
+                hintText="Type password here"
+                onChange={this.handleDBPasswordChange}
+                type="password"
+              />
           </div>
           <div class="add-capture-item">
             Start Time
