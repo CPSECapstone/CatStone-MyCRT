@@ -151,13 +151,8 @@ def register_user():
 @app.route('/users/captures', methods=['GET'])
 def get_users_captures():
     if request.headers['Content-Type'] == 'application/json':
-        #user = getUserFromUsername(current_user.userName)
-        #usersCaptures = getAllCaptures(user.get_id())
-        #usersCaptures = getAllCaptures(current_user.get_id())
-        user = getUserFromUsername('userA')
-        print(user)
-        response = getAllCaptures('userA')
-        return jsonify({'status': 200, 'count': len(response), 'userCaptures': response})
+        response = getAllCaptures(current_user.username)
+        return jsonify({'status': 200, 'count': len(response), 'userCaptures': Capture.convertToDict(response)})
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
