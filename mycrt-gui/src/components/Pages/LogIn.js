@@ -24,6 +24,8 @@ class LogIn extends Component {
       secretKeyValue: undefined
       };
 
+    this.onLogIn = this.onLogIn.bind(this);
+
     this.onUsernameChange = this.onUsernameChange.bind(this);
     this.onPasswordChange = this.onPasswordChange.bind(this);
     this.onRegisterClick = this.onRegisterClick.bind(this);
@@ -36,6 +38,14 @@ class LogIn extends Component {
     this.onAWSKeyChange = this.onAWSKeyChange.bind(this);
     this.onSecretKeyChange = this.onSecretKeyChange.bind(this);
     this.isRegisterFieldsFilled = this.isRegisterFieldsFilled.bind(this);
+  }
+
+  onLogIn() {
+    var userInfo = {
+      username: this.state.usernameValue,
+      password: this.state.passwordValue
+    };
+    this.props.onLogIn();
   }
 
   onUsernameChange(event, value) {
@@ -182,7 +192,7 @@ class LogIn extends Component {
           </div>
           <div class="log-in-item">
             <Button 
-              onClick={this.props.onLogIn}
+              onClick={this.onLogIn}
               content="Log In"
               isDisabled={!this.isSubmitDisabled()}
             />
