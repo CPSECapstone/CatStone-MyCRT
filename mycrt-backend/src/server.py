@@ -147,15 +147,27 @@ def logout():
     return redirect('/', code=302)
 
 @app.route('/user', methods=['POST'])
-def register():
-    json = request.get_json()
-    username = json['username']
-    password = json['password']
-    email = json['email']
-    secret_key = json['secret_key']
-    access_key = json['access_key']
+def register_user():
+    jsonData = request.get_json()
+
+    if ('username' not in jsonData or
+        'password' not in jsonData or
+        'email' not in jsonData or
+        'secret_key' not in jsonData or
+        'access_key' not in jsonData):
+            return jsonify({"status": 400, "error": "Missing field in request."})
+    if (getUserFromUsername(jsonData['username'])):
+        return jsonify({"status": 400, "error": "User already exists."})
+    if (getUserFromEmail(jsonData['email'])):
+        return jsonify({"status": 400, "error": "An account with this email already exists."})
+
+    username = jsonData['username']
+    password = jsonData['password']
+    email = jsonData['email']
+    secret_key = jsonData['secret_key']
+    access_key = jsonData['access_key']
     success = db.register_user(username, password, email, secret_key, access_key)
-    return jsonify({"status" : 200 if success else 400 })
+    return jsonify({"status" : 201 if success else 400 })
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():

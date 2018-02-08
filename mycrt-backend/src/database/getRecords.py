@@ -5,37 +5,15 @@ from .models import Capture
 from .user import User
 
 session = db.db_session
-def checkUsernameExists(username):
-	""" Function to check if a username already exists inside the database
 
-		Keyword arguments:
-		username -- the username that we want to check that exists
-
-		Return value:
-		returns True if the username exists
-		        False if the username doesn't exist
-	"""
-
-	getUserQuery = session.query(User).filter(User.username == username)
-	users = session.execute(getUserQuery).fetchall()
-
-	return True if len(users) else False
-
-def checkEmailExists(email):
+def getUserFromEmail(email):
 	""" Function to check if an email already exists inside the database
 
 		Keyword arguments:
 		email -- the email that we want to check that exists
-
-		Return value:
-		returns True if the email exists
-		        False if the email doesn't exist
 	"""
-
 	getUserQuery = session.query(User).filter(User.email == email)
-	users = session.execute(getUserQuery).fetchall()
-
-	return True if len(users) else False
+	return session.execute(getUserQuery).fetchall()
 
 def getUserFromUsername(username):
 	"""
