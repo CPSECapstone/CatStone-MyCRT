@@ -101,7 +101,7 @@ class mockBoto:
         def list_buckets(self):
             raise ClientError({'Error': {'Code': '400', 'Message': 'Generic Error'}}, 'list_buckets')
 
-    def client(self, awsApplication):
+    def client(self, awsApplication, access_key, secret_key):
         if (awsApplication == 'rds'):
             if (self.testNum == 0):
                 return self.mockRDS0()
