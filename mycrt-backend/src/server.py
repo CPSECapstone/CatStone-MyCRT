@@ -75,10 +75,10 @@ def post_capture():
                 jsonData['alias'],
                 jsonData['bucket_name'])
 
-        if (response > -1):
+        if (isinstance(response, int) and response > -1):
             return jsonify({'status': 201, 'captureId': response})
         else:
-            return jsonify({'status': 400, 'Error': newCapture})
+            return jsonify({'status': 400})
 
 @app.route('/s3', methods=['GET'])
 def get_s3_instances():
