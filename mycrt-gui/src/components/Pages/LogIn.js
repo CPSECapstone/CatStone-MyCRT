@@ -40,6 +40,7 @@ class LogIn extends Component {
     this.isRegisterFieldsFilled = this.isRegisterFieldsFilled.bind(this);
 
     this.logInUser = this.logInUser.bind(this);
+    this.onRegisterSubmit = this.onRegisterSubmit.bind(this);
   }
 
   logInUser() {
@@ -49,7 +50,6 @@ class LogIn extends Component {
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(this.state.usernameValue + ":" + this.state.passwordValue)},
       type: 'POST',
-      // data: JSON.stringify({username: 'test', password: 'test'}),
       success: function(data) {
         console.log("Successful Login");
         console.log(data);
@@ -60,6 +60,28 @@ class LogIn extends Component {
       }.bind(this)
   });
 }
+
+  onRegisterSubmit() {
+    $.ajax({
+      url: SERVER_PATH + "/user",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json'},
+      type: 'POST',
+      data: JSON.stringify({username: this.state.regUsernameValue, 
+        password: this.state.regPasswordValue,
+        email: this.state.emailValue,
+        access_key: this.state.awsKeyValue,
+        secret_key: this.state.secretKeyValue}),
+      success: function(data) {
+        console.log("Successful Register");
+        console.log(data);
+        this.onRegisterDismiss();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  }
 
   onUsernameChange(event, value) {
     if (value.length == 0) {
@@ -178,7 +200,7 @@ class LogIn extends Component {
         label="Register"
         primary={true}
         disabled={!this.isRegisterFieldsFilled()}
-        onClick={this.onRegisterDismiss}
+        onClick={this.onRegisterSubmit}
       />
     ];
 

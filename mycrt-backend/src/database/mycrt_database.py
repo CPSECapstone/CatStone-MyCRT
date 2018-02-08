@@ -24,7 +24,7 @@ class UserRepository:
     def register_user(self, username, password, email, access_key, secret_key):
         if self.user_datastore.find_user(username=username) == None and \
             self.user_datastore.find_user(email=email) == None:
-            self.user_datastore.create_user(username=username, password=hash_password(password),
+            self.user_datastore.create_user(username=username, password=password,
                     email=email, access_key=access_key, secret_key=secret_key)
             self.user_datastore.commit()
             return True

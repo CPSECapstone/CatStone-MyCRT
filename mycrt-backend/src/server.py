@@ -40,23 +40,6 @@ CORS(app)
 # flask-restful
 api = Api(app)
 
-insertUser("AndrewTest",
-                       "HashedPassword",
-                       "test@gmail.com",
-                       "testAccess",
-                       "testSecret")
-insertCapture(1,
-                                "test-capture-2",
-                                "2018-01-01 00:00:01",
-                                "2018-01-01 00:00:02",
-                                "testBucket",
-                                "test-capture-1.log",
-                                "test-rds",
-                                "test",
-                                "testPW",
-                                "testDB")
-print(getAllCaptures("AndrewTest"))
-
 @app.route('/')
 def home():
     # temp example on how to access current user
