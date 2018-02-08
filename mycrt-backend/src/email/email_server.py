@@ -7,6 +7,7 @@ import smtplib
 from email.mime.text import MIMEText
 from flask_login import current_user
 from src.database.getRecords import getCaptureFromId
+from flask_login import current_user
 
 EMAIL = "mycrtNotifications@gmail.com"
 PASS = "myCRTTool"
