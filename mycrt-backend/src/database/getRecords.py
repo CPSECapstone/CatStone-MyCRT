@@ -84,6 +84,15 @@ def getCaptureFromId(captureId):
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
 	return session.execute(captureInformation).fetchall()
 
+def getCaptureFromAlias(captureAlias):
+	""" Function to get a capture after receiving a captureId
+
+		Keyword arguments:
+		captureId -- the id of the capture you want to access
+	"""
+	captureInformation = Capture.query.filter(Capture.captureAlias == captureAlias)
+	return session.execute(captureInformation).fetchall()
+
 def getCaptureStatus(captureId):
 	"""Function to get a capture's status after receiving a captureId
 
@@ -101,7 +110,6 @@ def getUsersSuccessfulCaptures(userId):
 	"""
 	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.captureStatus == 1)
 	return session.execute(captureInformation).fetchall()
-<<<<<<< HEAD
 
 def getAllCapturesThatHaveNotCompleted():
 	"""Function to get all current captures that have a status of 0
@@ -109,5 +117,3 @@ def getAllCapturesThatHaveNotCompleted():
 
 	captureInformation = session.query(Capture.captureId, Capture.endTime, Capture.captureStatus).filter(Capture.captureStatus == 0)
 	return session.execute(captureInformation).fetchall()
-=======
->>>>>>> 8a8f4e4d930ce315f3fe6c59bc963de18eeeebc9

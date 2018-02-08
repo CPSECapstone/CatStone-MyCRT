@@ -5,7 +5,7 @@ from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
-from .metrics.metrics import get_metrics
+from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
@@ -39,6 +39,23 @@ CORS(app)
 
 # flask-restful
 api = Api(app)
+
+insertUser("AndrewTest",
+                       "HashedPassword",
+                       "test@gmail.com",
+                       "testAccess",
+                       "testSecret")
+insertCapture(1,
+                                "test-capture-2",
+                                "2018-01-01 00:00:01",
+                                "2018-01-01 00:00:02",
+                                "testBucket",
+                                "test-capture-1.log",
+                                "test-rds",
+                                "test",
+                                "testPW",
+                                "testDB")
+print(getAllCaptures("AndrewTest"))
 
 @app.route('/')
 def home():
