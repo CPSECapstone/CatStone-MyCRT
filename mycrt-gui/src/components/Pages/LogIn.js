@@ -9,6 +9,8 @@ import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 
+var SERVER_PATH = "http://localhost:5000";
+
 class LogIn extends Component {
   constructor(props) {
     super(props);
@@ -36,7 +38,28 @@ class LogIn extends Component {
     this.onAWSKeyChange = this.onAWSKeyChange.bind(this);
     this.onSecretKeyChange = this.onSecretKeyChange.bind(this);
     this.isRegisterFieldsFilled = this.isRegisterFieldsFilled.bind(this);
+
+    this.logInUser = this.logInUser.bind(this);
   }
+
+  logInUser() {
+    $.ajax({
+      url: SERVER_PATH + "/login",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(this.state.usernameValue + ":" + this.state.passwordValue)},
+      type: 'POST',
+      // data: JSON.stringify({username: 'test', password: 'test'}),
+      success: function(data) {
+        console.log("Successful Login");
+        console.log(data);
+        this.props.onLogIn();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+  });
+}
 
   onUsernameChange(event, value) {
     if (value.length == 0) {
@@ -182,7 +205,7 @@ class LogIn extends Component {
           </div>
           <div class="log-in-item">
             <Button 
-              onClick={this.props.onLogIn}
+              onClick={this.logInUser}
               content="Log In"
               isDisabled={!this.isSubmitDisabled()}
             />
