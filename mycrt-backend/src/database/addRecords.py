@@ -25,7 +25,6 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 		session.commit()
 	except:
 		session.rollback()
-
 	return getCaptureFromAlias(captureAlias)
 
 

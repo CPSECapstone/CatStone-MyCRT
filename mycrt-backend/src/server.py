@@ -59,6 +59,7 @@ def get_capture():
     newCapture = getCaptureRDSInformation(jsonData[captureId])
     return jsonify(newCapture)
 
+@login_required
 @app.route('/capture', methods=['POST'])
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
@@ -74,13 +75,8 @@ def post_capture():
                 jsonData['alias'],
                 jsonData['bucket_name'])
 
-        newCapture = Capture(0, jsonData['alias'], jsonData['start_time'],
-            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
-            jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
-            jsonData['db_name'])
-
-        if (isinstance(response, int)):
-            return jsonify({'status': 201})
+        if (response > -1):
+            return jsonify({'status': 201, 'captureId': response})
         else:
             return jsonify({'status': 400, 'Error': response})
 

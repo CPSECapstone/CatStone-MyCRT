@@ -85,7 +85,7 @@ class App extends Component {
         </div>
       }
       {!this.state.loggedIn &&
-        <LogIn 
+        <LogIn
           onLogIn={this.onLogIn}
           parentContext={this}
         />
