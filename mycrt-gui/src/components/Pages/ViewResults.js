@@ -29,6 +29,7 @@ const styles = {
   },
 };
 
+//TODO: replace with pulled data from API
 const tableData = [
   {
     alias: 'Test Alias 1',
@@ -74,7 +75,6 @@ class ViewResults extends Component {
     // This binding is necessary to make `this` work in the callback
     this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
-    //this.onOpenDetailsClick = this.onOpenDetailsClick.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
@@ -197,7 +197,7 @@ class ViewResults extends Component {
         {this.renderReplayTable()}
         {this.state.captureDetails &&
           <Dialog
-            title={this.state.captureDetails.alias}
+            title={"Capture: " + this.state.captureDetails.alias}
             actions={actions}
             modal={true}
             autoScrollBodyContent={true}
@@ -207,12 +207,19 @@ class ViewResults extends Component {
             }}
             open={this.state.isLogOpen}
           >
-            This dialog spans the entire width of the screen.
+            <div>
+              <h5>Status: 
+                <div class= {this.state.captureDetails.complete ? "result-complete" : "result-fail"}>
+                {this.state.captureDetails.complete ? "Completed Successfully" : "Terminated With Errors"}
+                </div>
+              </h5>
+            </div>
           </Dialog>
         }
       </div>
       );
   }
+//TODO: remove
 /*
   render() {
     return (
