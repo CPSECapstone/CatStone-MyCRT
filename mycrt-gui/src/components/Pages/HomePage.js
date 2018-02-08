@@ -90,8 +90,8 @@ class HomePage extends Component {
   getCaptureData() {
     $.getJSON(SERVER_PATH + "/capture")
       .done(function( json ) {
-        console.log( "JSON capture data: " + json.Capture );
-        if (json.Capture != undefined) {
+        console.log( "JSON capture data: " + json.captureId );
+        if (json.captureId != undefined) {
           // TODO: parse object and store as a card
         }
       }.bind(this))
