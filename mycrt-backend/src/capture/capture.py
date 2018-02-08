@@ -62,8 +62,7 @@ def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, a
     except ClientError as e:
         return e
 
-    newCapture = insertCapture(current_user.id, local_log_file, start_time,
-        end_time, bucket_name, local_log_file + '.log', rds_endpoint,
-        db_user, db_password, db_name)
-
-    return newCapture
+    newCapture = insertCapture(current_user.id, alias, start_time.split('.', 1)[0].replace('T', ' '),end_time.split('.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name)
+    if (newCapture):
+        return newCapture[0][0]
+    return -1
