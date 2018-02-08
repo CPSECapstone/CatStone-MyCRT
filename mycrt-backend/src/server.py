@@ -75,11 +75,10 @@ def post_capture():
                 jsonData['alias'],
                 jsonData['bucket_name'])
 
-        if (response > -1):
+        if (isinstance(response, int) and response > -1):
             return jsonify({'status': 201, 'captureId': response})
         else:
-            return jsonify({'status': 400, 'Error': response})
-
+            return jsonify({'status': 400})
 
 @app.route('/s3', methods=['GET'])
 def get_s3_instances():
@@ -147,6 +146,13 @@ def register_user():
     access_key = jsonData['access_key']
     success = db.register_user(username, password, email, secret_key, access_key)
     return jsonify({"status" : 201 if success else 400 })
+
+@login_required
+@app.route('/users/captures', methods=['GET'])
+def get_users_captures():
+    if request.headers['Content-Type'] == 'application/json':
+        response = getAllCaptures(current_user.username)
+        return jsonify({'status': 200, 'count': len(response), 'userCaptures': Capture.convertToDict(response)})
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
