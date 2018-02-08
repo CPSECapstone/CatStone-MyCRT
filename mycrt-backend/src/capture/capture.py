@@ -6,7 +6,8 @@ import boto3
 from botocore.exceptions import NoRegionError, ClientError
 from datetime import datetime
 from pymysql import OperationalError
-from .database.addRecords import *
+from src.database.addRecords import *
+from flask_login import current_user
 
 db_query = """Select event_time, argument from mysql.general_log where 
 user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\' 
