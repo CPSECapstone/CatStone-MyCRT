@@ -23,7 +23,8 @@ class LogIn extends Component {
       regPasswordValue: undefined,
       emailValue: undefined,
       awsKeyValue: undefined,
-      secretKeyValue: undefined
+      secretKeyValue: undefined,
+      showLogInError: false
       };
 
     this.onUsernameChange = this.onUsernameChange.bind(this);
@@ -53,10 +54,16 @@ class LogIn extends Component {
       success: function(data) {
         console.log("Successful Login");
         console.log(data);
+        this.setState(prevState => ({
+          showLogInError: false
+        }));
         this.props.onLogIn();
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
+        this.setState(prevState => ({
+          showLogInError: true
+        }));
       }.bind(this)
   });
 }
@@ -211,6 +218,11 @@ class LogIn extends Component {
             <h3>My Capture Replay Tool</h3>
           </div>
           <div class="log-in-item">
+            {this.state.showLogInError &&
+              <div class="log-in-error">
+                Invalid username or password.
+              </div>
+            }
             <h5>Username</h5>
              <TextField
                 hintText="Type username here"
@@ -232,11 +244,9 @@ class LogIn extends Component {
               isDisabled={!this.isSubmitDisabled()}
             />
           </div>
-          <div class="log-in-item">
-            <div class="log-in-register-link" onClick={this.onRegisterClick}>
-              <h5>Don't have an account? Click here to register.</h5>
-            </div>
-          </div>
+        </div>
+        <div class="log-in-register-link" onClick={this.onRegisterClick}>
+          <h5>Don't have an account? Click here to register.</h5>
         </div>
         <Dialog
           title="Register Account"
