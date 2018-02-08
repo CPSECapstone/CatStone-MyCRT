@@ -4,3 +4,33 @@
   box-sizing: border-box;
   flex-grow: 1;
 }
+
+.results-help-text {
+	color: #aaaaaa;
+}
+
+.refresh-result-button {
+	padding-bottom: 15px;
+}
+
+.open-log-link:hover {
+	cursor: pointer;
+}
+
+.result-complete {
+	color: #8be262;
+}
+
+.result-fail {
+	color: #ff6161;
+}
+
+.result-complete:hover {
+	color: #8be262;
+	cursor: default;
+}
+
+.result-fail:hover {
+	color: #ff6161;
+	cursor: default;
+}

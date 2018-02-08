@@ -57,12 +57,16 @@ class App extends Component {
     this.setState(prevState => ({
       loggedIn: true
     }));
+
+    document.body.style.background = "#f7f7f7";
   }
 
   onLogOut() {
     this.setState(prevState => ({
       loggedIn: false
     }));
+
+    document.body.style.background = "#333b44";
   }
 
   render() {
