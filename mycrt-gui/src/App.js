@@ -8,6 +8,7 @@ import NavBar from './components/Header/NavBar.js';
 import LogIn from './components/Pages/LogIn.js';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import $ from 'jquery';
 
 const WINDOW_HREF = window.location.href;
 
@@ -86,6 +87,7 @@ class App extends Component {
       {!this.state.loggedIn &&
         <LogIn 
           onLogIn={this.onLogIn}
+          parentContext={this}
         />
       }
       </div>
