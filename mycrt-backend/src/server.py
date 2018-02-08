@@ -5,7 +5,7 @@ from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
-from .metrics.metrics import get_metrics
+from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
@@ -142,7 +142,7 @@ def register():
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():
-	return jsonify(get_metrics())
+	return jsonify(get_all_metrics())
 
 @app.before_first_request
 def add_test_users():
