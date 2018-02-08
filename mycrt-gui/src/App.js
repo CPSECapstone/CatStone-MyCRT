@@ -8,6 +8,7 @@ import NavBar from './components/Header/NavBar.js';
 import LogIn from './components/Pages/LogIn.js';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import $ from 'jquery';
 
 const WINDOW_HREF = window.location.href;
 
@@ -57,12 +58,16 @@ class App extends Component {
     this.setState(prevState => ({
       loggedIn: true
     }));
+
+    document.body.style.background = "#f7f7f7";
   }
 
   onLogOut() {
     this.setState(prevState => ({
       loggedIn: false
     }));
+
+    document.body.style.background = "#333b44";
   }
 
   render() {
@@ -80,8 +85,9 @@ class App extends Component {
         </div>
       }
       {!this.state.loggedIn &&
-        <LogIn 
+        <LogIn
           onLogIn={this.onLogIn}
+          parentContext={this}
         />
       }
       </div>

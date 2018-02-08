@@ -5,7 +5,7 @@ from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
-from .metrics.metrics import get_metrics
+from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
@@ -59,29 +59,24 @@ def get_capture():
     newCapture = getCaptureRDSInformation(jsonData[captureId])
     return jsonify(newCapture)
 
+@login_required
 @app.route('/capture', methods=['POST'])
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
         print("JSON Message: " + json.dumps(request.json))
         print("-----JSON OBJ -------")
         jsonData = request.json
+        response = capture(jsonData['rds_endpoint'],
+        	    jsonData['db_user'],
+        	    jsonData['db_password'],
+        	    jsonData['db_name'],
+        	    jsonData['start_time'],
+                jsonData['end_time'],
+                jsonData['alias'],
+                jsonData['bucket_name'])
 
-        #response = capture(jsonData['rds_endpoint'],
-        	    #jsonData['db_user'],
-        	    #jsonData['db_password'],
-        	    #jsonData['db_name'],
-        	    #jsonData['start_time'],
-                #jsonData['end_time'],
-                #jsonData['alias'],
-                #jsonData['bucket_name'])
-
-        newCapture = insertCapture(2, jsonData['alias'], jsonData['start_time'],
-            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
-            jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
-            jsonData['db_name'])
-
-        if (1):#isinstance(newCapture, int)):
-            return jsonify({'status': 201})
+        if (response > -1):
+            return jsonify({'status': 201, 'captureId': response})
         else:
             return jsonify({'status': 400, 'Error': newCapture})
 
@@ -130,15 +125,27 @@ def logout():
     return redirect('/', code=302)
 
 @app.route('/user', methods=['POST'])
-def register():
-    json = request.get_json()
-    username = json['username']
-    password = json['password']
-    email = json['email']
-    secret_key = json['secret_key']
-    access_key = json['access_key']
+def register_user():
+    jsonData = request.get_json()
+
+    if ('username' not in jsonData or
+        'password' not in jsonData or
+        'email' not in jsonData or
+        'secret_key' not in jsonData or
+        'access_key' not in jsonData):
+            return jsonify({"status": 400, "error": "Missing field in request."})
+    if (getUserFromUsername(jsonData['username'])):
+        return jsonify({"status": 400, "error": "User already exists."})
+    if (getUserFromEmail(jsonData['email'])):
+        return jsonify({"status": 400, "error": "An account with this email already exists."})
+
+    username = jsonData['username']
+    password = jsonData['password']
+    email = jsonData['email']
+    secret_key = jsonData['secret_key']
+    access_key = jsonData['access_key']
     success = db.register_user(username, password, email, secret_key, access_key)
-    return jsonify({"status" : 200 if success else 400 })
+    return jsonify({"status" : 201 if success else 400 })
 
 @login_required
 @app.route('/users/captures', methods=['GET'])

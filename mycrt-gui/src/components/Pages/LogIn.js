@@ -9,6 +9,8 @@ import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 
+var SERVER_PATH = "http://localhost:5000";
+
 class LogIn extends Component {
   constructor(props) {
     super(props);
@@ -36,6 +38,49 @@ class LogIn extends Component {
     this.onAWSKeyChange = this.onAWSKeyChange.bind(this);
     this.onSecretKeyChange = this.onSecretKeyChange.bind(this);
     this.isRegisterFieldsFilled = this.isRegisterFieldsFilled.bind(this);
+
+    this.logInUser = this.logInUser.bind(this);
+    this.onRegisterSubmit = this.onRegisterSubmit.bind(this);
+  }
+
+  logInUser() {
+    $.ajax({
+      url: SERVER_PATH + "/login",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(this.state.usernameValue + ":" + this.state.passwordValue)},
+      type: 'POST',
+      success: function(data) {
+        console.log("Successful Login");
+        console.log(data);
+        this.props.onLogIn();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+  });
+}
+
+  onRegisterSubmit() {
+    $.ajax({
+      url: SERVER_PATH + "/user",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json'},
+      type: 'POST',
+      data: JSON.stringify({username: this.state.regUsernameValue, 
+        password: this.state.regPasswordValue,
+        email: this.state.emailValue,
+        access_key: this.state.awsKeyValue,
+        secret_key: this.state.secretKeyValue}),
+      success: function(data) {
+        console.log("Successful Register");
+        console.log(data);
+        this.onRegisterDismiss();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   }
 
   onUsernameChange(event, value) {
@@ -155,7 +200,7 @@ class LogIn extends Component {
         label="Register"
         primary={true}
         disabled={!this.isRegisterFieldsFilled()}
-        onClick={this.onRegisterDismiss}
+        onClick={this.onRegisterSubmit}
       />
     ];
 
@@ -182,7 +227,7 @@ class LogIn extends Component {
           </div>
           <div class="log-in-item">
             <Button 
-              onClick={this.props.onLogIn}
+              onClick={this.logInUser}
               content="Log In"
               isDisabled={!this.isSubmitDisabled()}
             />

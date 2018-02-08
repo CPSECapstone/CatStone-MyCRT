@@ -6,6 +6,8 @@ import boto3
 from botocore.exceptions import NoRegionError, ClientError
 from datetime import datetime
 from pymysql import OperationalError
+from src.database.addRecords import *
+from flask_login import current_user
 
 db_query = """Select event_time, argument from mysql.general_log where 
 user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\' 
@@ -27,11 +29,11 @@ ORDER by event_time desc"""
 
 s3 = boto3.client('s3')
 
-def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, local_log_file, bucket_name):
+def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
     parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
     parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
-    with open(local_log_file, 'w') as f:
+    with open(alias, 'w') as f:
         try:
             sql = db_query
 
@@ -56,9 +58,11 @@ def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, l
             f.write(query)
 
     try:
-        response = s3.upload_file(local_log_file, bucket_name, local_log_file)
+        response = s3.upload_file(alias, bucket_name, alias)
     except ClientError as e:
         return e
 
-    return 0
-
+    newCapture = insertCapture(current_user.id, alias, start_time.split('.', 1)[0].replace('T', ' '),end_time.split('.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name)
+    if (newCapture):
+        return newCapture[0][0]
+    return -1
