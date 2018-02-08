@@ -28,11 +28,11 @@ ORDER by event_time desc"""
 
 s3 = boto3.client('s3')
 
-def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, local_log_file, bucket_name):
+def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
     parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
     parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
-    with open(local_log_file, 'w') as f:
+    with open(alias, 'w') as f:
         try:
             sql = db_query
 
@@ -57,7 +57,7 @@ def capture(rds_endpoint, db_user, db_password, db_name, start_time, end_time, l
             f.write(query)
 
     try:
-        response = s3.upload_file(local_log_file, bucket_name, local_log_file)
+        response = s3.upload_file(alias, bucket_name, alias)
     except ClientError as e:
         return e
 
