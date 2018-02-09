@@ -29,7 +29,7 @@ ORDER by event_time desc"""
 
 s3 = boto3.client('s3')
 
-def capture(rds_endpoint, rds_region, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
+def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
     parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
     parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
@@ -62,7 +62,7 @@ def capture(rds_endpoint, rds_region, db_user, db_password, db_name, start_time,
     except ClientError as e:
         return e
 
-    newCapture = insertCapture(current_user.id, alias, start_time.split('.', 1)[0].replace('T', ' '),end_time.split('.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, rds_region, db_user, db_password, db_name)
+    newCapture = insertCapture(current_user.id, alias, start_time.split('.', 1)[0].replace('T', ' '),end_time.split('.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name)
     if (newCapture):
         return newCapture[0][0]
     return -1
