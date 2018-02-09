@@ -144,6 +144,7 @@ def register_user():
     email = jsonData['email']
     access_key = jsonData['access_key']
     secret_key = jsonData['secret_key']
+
     success = db.register_user(username, password, email, access_key, secret_key)
     return jsonify({"status" : 201 if success else 400 })
 

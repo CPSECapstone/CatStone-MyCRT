@@ -57,7 +57,7 @@ class LogIn extends Component {
         this.setState(prevState => ({
           showLogInError: false
         }));
-        this.props.onLogIn();
+        this.props.onLogIn(this.state.usernameValue, this.state.passwordValue);
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
