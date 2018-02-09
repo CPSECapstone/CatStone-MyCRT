@@ -8,7 +8,7 @@ from flask_login import current_user
 
 def getRDSInstances(rds_region, botoAPI = boto3):
     DBInstances = []
-    rds = botoAPI.client('rds', rds_region=rds_region,
+    rds = botoAPI.client('rds', region_name=rds_region,
     aws_access_key_id=current_user.access_key,
     aws_secret_access_key=current_user.secret_key)
 

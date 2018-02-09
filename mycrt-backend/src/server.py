@@ -91,9 +91,9 @@ def get_s3_instances():
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 
-@app.route('/rds/<rds_region>', methods=['GET'])
-def get_rds_instances(rds_region):
-    response = getRDSInstances(rds_region)
+@app.route('/rds/<region_name>', methods=['GET'])
+def get_rds_instances(region_name):
+    response = getRDSInstances(region_name)
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
 
