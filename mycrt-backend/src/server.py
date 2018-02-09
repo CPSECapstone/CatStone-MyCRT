@@ -56,7 +56,7 @@ def get_test():
 @app.route('/capture', methods=['GET'])
 def get_capture():
     jsonData = request.json
-    newCapture = getCaptureRDSInformation(jsonData[captureId])
+    newCapture = getCaptureRDSInformation(jsonData['captureId'])
     return jsonify(newCapture)
 
 @login_required
