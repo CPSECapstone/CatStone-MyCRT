@@ -67,6 +67,7 @@ def post_capture():
         print("-----JSON OBJ -------")
         jsonData = request.json
         response = capture(jsonData['rds_endpoint'],
+                jsonData['rds_region'],
         	    jsonData['db_user'],
         	    jsonData['db_password'],
         	    jsonData['db_name'],
@@ -90,9 +91,9 @@ def get_s3_instances():
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 
-@app.route('/rds', methods=['GET'])
-def get_rds_instances():
-    response = getRDSInstances()
+@app.route('/rds/<rds_region>', methods=['GET'])
+def get_rds_instances(rds_region):
+    response = getRDSInstances(rds_region)
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
 
