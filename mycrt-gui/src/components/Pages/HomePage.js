@@ -142,7 +142,7 @@ class HomePage extends Component {
 
     //Need to edit the url depending on how we are passing the region
     $.ajax({
-      url: SERVER_PATH + "/rds",
+      url: SERVER_PATH + "/rds/" + this.state.rdsRegionValue,
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
