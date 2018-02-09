@@ -56,7 +56,7 @@ def get_test():
 @app.route('/capture', methods=['GET'])
 def get_capture():
     jsonData = request.json
-    newCapture = getCaptureRDSInformation(jsonData[captureId])
+    newCapture = getCaptureRDSInformation(jsonData['captureId'])
     return jsonify(newCapture)
 
 @login_required
@@ -67,15 +67,14 @@ def post_capture():
         print("-----JSON OBJ -------")
         jsonData = request.json
         response = capture(jsonData['rds_endpoint'],
-                jsonData['rds_region'],
+                jsonData['region_name'],
         	    jsonData['db_user'],
         	    jsonData['db_password'],
         	    jsonData['db_name'],
         	    jsonData['start_time'],
                 jsonData['end_time'],
                 jsonData['alias'],
-                jsonData['bucket_name'],
-                jsonData['region_name'])
+                jsonData['bucket_name'])
 
         if (isinstance(response, int) and response > -1):
             return jsonify({'status': 201, 'captureId': response})
