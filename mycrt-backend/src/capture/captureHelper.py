@@ -6,9 +6,10 @@ import json
 from botocore.exceptions import NoRegionError, ClientError
 from flask_login import current_user
 
-def getRDSInstances(botoAPI = boto3):
+def getRDSInstances(rds_region, botoAPI = boto3):
     DBInstances = []
-    rds = botoAPI.client('rds', aws_access_key_id=current_user.access_key,
+    rds = botoAPI.client('rds', rds_region=rds_region,
+    aws_access_key_id=current_user.access_key,
     aws_secret_access_key=current_user.secret_key)
 
     try:
