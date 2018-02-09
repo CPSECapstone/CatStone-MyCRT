@@ -71,11 +71,14 @@ class HomePage extends Component {
   }
 
   sendCaptureData(formDataValues) {
+    var parentContextState = this.props.parentContext.state;
+
     console.log(formDataValues);
     $.ajax({
       url: SERVER_PATH + "/capture",
       dataType: 'json',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
       type: 'POST',
       data: JSON.stringify(formDataValues),
       success: function(data) {
@@ -105,6 +108,10 @@ class HomePage extends Component {
 
   getS3Data() {
     var parentContextState = this.props.parentContext.state;
+
+    this.setState(prevState =>({
+      s3Items: []
+    }));
 
     $.ajax({
       url: SERVER_PATH + "/s3",
@@ -140,9 +147,12 @@ class HomePage extends Component {
   getRdsData(value) {
     var parentContextState = this.props.parentContext.state;
 
-    //Need to edit the url depending on how we are passing the region
+    this.setState(prevState =>({
+      rdsItems: []
+    }));
+
     $.ajax({
-      url: SERVER_PATH + "/rds/" + this.state.rdsRegionValue,
+      url: SERVER_PATH + "/rds/" + value,
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
@@ -368,13 +378,14 @@ class HomePage extends Component {
       db_user: this.state.dbUsernameValue,
       db_password: this.state.dbPasswordValue,
       db_name: this.state.dbNameValue,
+      region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
       end_time: this.state.captureEndDay,
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
-    this.getCaptureData();
+    // this.getCaptureData();
 
     var newCards = this.state.captureCards;
     newCards.push(card);
