@@ -9,28 +9,28 @@ from capture.captureHelper import getRDSInstances, getS3Instances
 class TestCaptureHelper(unittest.TestCase):
     def test_get_rds_instances_none(self):
         testBoto = mockBoto(0)
-        response = getRDSInstances(testBoto)
+        response = getRDSInstances("test-region", testBoto)
         expected = []
 
         self.assertEqual(response, expected)
 
     def test_get_rds_instances_singular(self):
         testBoto = mockBoto(1)
-        response = getRDSInstances(testBoto)
+        response = getRDSInstances("test-region", testBoto)
         expected = ['test1']
 
         self.assertEqual(response, expected)
 
     def test_get_rds_instances_many(self):
        testBoto = mockBoto(2)
-       response = getRDSInstances(testBoto)
+       response = getRDSInstances("test-region", testBoto)
        expected = ['test1', 'test2']
 
        self.assertEqual(response, expected)
 
     def test_get_rds_instances_clientError(self):
         testBoto = mockBoto(3)
-        response = getRDSInstances(testBoto)
+        response = getRDSInstances("test-region", testBoto)
         expected = {'Error': {'Code': '400', 'Message': 'Generic Error'}}
 
         self.assertEqual(response, expected)
