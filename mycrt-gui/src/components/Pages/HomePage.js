@@ -4,7 +4,6 @@ import './HomePage.css';
 import Button from './Button.js';
 import CaptureContainer from './CaptureContainer.js';
 import ReplayContainer from './ReplayContainer.js';
-import AddCaptureForm from '../Forms/AddCaptureForm.js';
 import AddReplayForm from '../Forms/AddReplayForm.js';
 import Callout from './Callout.js';
 
@@ -19,7 +18,12 @@ import DatePicker from 'material-ui/DatePicker';
 import $ from 'jquery';
 
 var SERVER_PATH = "http://localhost:5000";
-
+var AWS_REGIONS = ["us-east-2", "us-east-1", "us-west-1", "us-west-2", 
+                   "ap-south-1", "ap-northeast-2", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", 
+                   "ca-central-1", 
+                   "cn-north-1", 
+                   "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", 
+                   "sa-east-1"];
 class HomePage extends Component {
 	constructor(props) {
     super(props);
@@ -89,6 +93,7 @@ class HomePage extends Component {
 
   getCaptureData() {
     $.getJSON(SERVER_PATH + "/capture")
+      .setRequestHeader("Authorization", "Basic " + btoa(this.props.parentContext.username + ":" + this.props.parentContext.password))
       .done(function( json ) {
         console.log( "JSON capture data: " + json.captureId );
         if (json.captureId != undefined) {
@@ -102,12 +107,19 @@ class HomePage extends Component {
   }
 
   getS3Data() {
-    $.getJSON( SERVER_PATH + "/s3" )
-      .done(function( json ) {
-        console.log( "JSON s3 instances: " + json.s3Instances );
-        console.log( "JSON count: " + json.count );
-        if (json.s3Instances != undefined) {
-          var s3Arr = json.s3Instances;
+    var parentContextState = this.props.parentContext.state;
+
+    $.ajax({
+      url: SERVER_PATH + "/s3",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+      type: 'GET',
+      success: function(data) {
+        console.log( "JSON s3 instances: " + data.s3Instances );
+        console.log( "JSON count: " + data.count );
+        if (data.s3Instances != undefined) {
+          var s3Arr = data.s3Instances;
           var newS3Items = [];
           console.log("S3 ITEMS RECIEVED: " + this.state.s3Items);
           for (let i = 0; i < s3Arr.length; i++ ) {
@@ -118,20 +130,30 @@ class HomePage extends Component {
             s3Items: newS3Items
           }));
         }
-      }.bind(this))
-      .fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
+      }.bind(this),
+      error: function(xhr, status, err) {
+        var err = status + ", " + err;
         console.log( "Request Failed: " + err );
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
     });
+
   }
 
   getRdsData() {
-    $.getJSON( SERVER_PATH + "/rds" )
-      .done(function( json ) {
-        console.log( "JSON rds instances: " + json.rdsInstances );
-        console.log( "JSON count: " + json.count );
-        if (json.rdsInstances != undefined) {
-          var rdsArr = json.rdsInstances;
+    var parentContextState = this.props.parentContext.state;
+
+    $.ajax({
+      url: SERVER_PATH + "/rds",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+      type: 'GET',
+      success: function(data) {
+        console.log( "JSON rds instances: " + data.rdsInstances );
+        console.log( "JSON count: " + data.count );
+        if (data.rdsInstances != undefined) {
+          var rdsArr = data.rdsInstances;
           var newRdsItems = [];
           console.log("RDS ITEMS RECIEVED: " + this.state.rdsItems);
           for (let i = 0; i < rdsArr.length; i++ ) {
@@ -142,11 +164,36 @@ class HomePage extends Component {
             rdsItems: newRdsItems
           }));
         }
-      }.bind(this))
-      .fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
+      }.bind(this),
+      error: function(xhr, status, err) {
+        var err = status + ", " + err;
         console.log( "Request Failed: " + err );
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
     });
+    // console.log(parentContext);
+    // $.getJSON( SERVER_PATH + "/rds" )
+    // .setRequestHeader("Authorization", "Basic " + btoa(parentContext.state.username + ":" + parentContext.state.password))
+    //   .done(function( json ) {
+    //     console.log( "JSON rds instances: " + json.rdsInstances );
+    //     console.log( "JSON count: " + json.count );
+    //     if (json.rdsInstances != undefined) {
+    //       var rdsArr = json.rdsInstances;
+    //       var newRdsItems = [];
+    //       console.log("RDS ITEMS RECIEVED: " + this.state.rdsItems);
+    //       for (let i = 0; i < rdsArr.length; i++ ) {
+    //         console.log(rdsArr[i]);
+    //         newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
+    //       }
+    //       this.setState(prevState => ({
+    //         rdsItems: newRdsItems
+    //       }));
+    //     }
+    //   }.bind(this))
+    //   .fail(function( jqxhr, textStatus, error ) {
+    //     var err = textStatus + ", " + error;
+    //     console.log( "Request Failed: " + err );
+    // });
   }
 
   showCaptureCallout() {
@@ -367,6 +414,15 @@ class HomePage extends Component {
         <div class="add-capture-content">
           <div class="notif-message">
             Ensure that General Logging is enabled before starting a capture.
+          </div>
+          <div class="add-capture-item">
+            RDS Instance
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              value={this.state.rdsValue}
+              onChange={this.handleRdsChange}>
+              {this.state.rdsItems != undefined ? this.state.rdsItems : []}
+            </DropDownMenu>
           </div>
           <div class="add-capture-item">
             RDS Instance
