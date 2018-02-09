@@ -74,7 +74,7 @@ def post_capture():
         	    jsonData['start_time'],
                 jsonData['end_time'],
                 jsonData['alias'],
-                jsonData['bucket_name']
+                jsonData['bucket_name'],
                 jsonData['region_name'])
 
         if (isinstance(response, int) and response > -1):
