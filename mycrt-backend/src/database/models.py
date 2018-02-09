@@ -35,7 +35,7 @@ class Capture(Base):
     rdsUsername = Column(String(64))
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
-    rdsRegion = Column(String(64))
+    regionName = Column(String(64))
     captureStatus = Column(Integer(), default=0)
 
     def __init__(self, userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, captureStatus=0):
