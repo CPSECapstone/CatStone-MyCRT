@@ -18,18 +18,14 @@ import DatePicker from 'material-ui/DatePicker';
 import $ from 'jquery';
 
 var SERVER_PATH = "http://localhost:5000";
-var AWS_REGIONS = ["us-east-2", "us-east-1", "us-west-1", "us-west-2", 
-                   "ap-south-1", "ap-northeast-2", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", 
-                   "ca-central-1", 
-                   "cn-north-1", 
-                   "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", 
-                   "sa-east-1"];
+
 class HomePage extends Component {
 	constructor(props) {
     super(props);
     this.state = {
       isCaptureCalloutVisible: false,
       isReplayCalloutVisible: false,
+      rdsRegionValue: "Select your region",
       rdsValue: undefined,
       s3Value: undefined,
       aliasValue: undefined,
@@ -56,6 +52,7 @@ class HomePage extends Component {
     this.showReplayCallout = this.showReplayCallout.bind(this);
     this.hideReplayCallout = this.hideReplayCallout.bind(this);
 
+    this.handleRegionChange = this.handleRegionChange.bind(this);
     this.handleRdsChange = this.handleRdsChange.bind(this);
     this.handleS3Change = this.handleS3Change.bind(this);
     this.handleStartDayChange = this.handleStartDayChange.bind(this);
@@ -140,9 +137,10 @@ class HomePage extends Component {
 
   }
 
-  getRdsData() {
+  getRdsData(value) {
     var parentContextState = this.props.parentContext.state;
 
+    //Need to edit the url depending on how we are passing the region
     $.ajax({
       url: SERVER_PATH + "/rds",
       dataType: 'json',
@@ -197,9 +195,6 @@ class HomePage extends Component {
   }
 
   showCaptureCallout() {
-    this.getRdsData();
-    this.getS3Data();
-
     this.setState(prevState => ({
       isCaptureCalloutVisible: true,
       isReplayCalloutVisible: false
@@ -225,6 +220,14 @@ class HomePage extends Component {
     }));
   }
 
+  handleRegionChange(event, index, value) {
+    this.getRdsData(value);
+    this.getS3Data();
+
+    this.setState(prevState => ({
+      rdsRegionValue: value
+    }));
+  }
   handleRdsChange(event, index, value) {
     this.setState(prevState => ({
       rdsValue: value
@@ -383,6 +386,14 @@ class HomePage extends Component {
   }
 
   renderCaptureForm() {
+    const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2", 
+                        "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+                        "ca-central-1", 
+                        "cn-north-1", 
+                        "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", 
+                        "sa-east-1"];
+    var rdsRegionItems = [];
+
     const actions = [
       <FlatButton
         label="Cancel"
@@ -403,6 +414,10 @@ class HomePage extends Component {
       },
     };
 
+    for (var i = 0; i < rdsRegions.length; i++) {
+      rdsRegionItems.push(<MenuItem value={rdsRegions[i]} key={i} primaryText={`${rdsRegions[i]}`} />)
+    }
+
     return (
       <Dialog
         title="Add Capture"
@@ -416,12 +431,12 @@ class HomePage extends Component {
             Ensure that General Logging is enabled before starting a capture.
           </div>
           <div class="add-capture-item">
-            RDS Instance
+            RDS Region
             <DropDownMenu
               style={dropdownStyle.customWidth}
-              value={this.state.rdsValue}
-              onChange={this.handleRdsChange}>
-              {this.state.rdsItems != undefined ? this.state.rdsItems : []}
+              value={this.state.rdsRegionValue}
+              onChange={this.handleRegionChange}>
+              {rdsRegionItems !== undefined ? rdsRegionItems : []}
             </DropDownMenu>
           </div>
           <div class="add-capture-item">
