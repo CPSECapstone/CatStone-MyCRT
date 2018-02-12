@@ -51,7 +51,6 @@ def get_capture():
     newCapture = getCaptureRDSInformation(jsonData[captureId])
     return jsonify(newCapture)
 
-@login_required
 @app.route('/capture', methods=['POST'])
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
