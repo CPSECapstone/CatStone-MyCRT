@@ -10,7 +10,8 @@ from flask_socketio import SocketIO, emit
 from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
-from .capture.captureHelper import getS3Instances, getRDSInstances, checkAllRDSInstances
+from .capture.captureHelper import getS3Instances, getRDSInstances
+from .capture.captureScheduler import checkAllRDSInstances
 from .database.getRecords import *
 from .database.addRecords import *
 
