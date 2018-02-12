@@ -1,5 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.pool import NullPool
+
 from flask_security import SQLAlchemySessionUserDatastore
 from flask_security.utils import hash_password, verify_password
 
@@ -12,7 +14,7 @@ from .db_config import db_string
 class UserRepository:
 
     def __init__(self, db_string):
-        self.engine = create_engine(db_string, convert_unicode=True)
+        self.engine = create_engine(db_string, convert_unicode=True, poolclass=NullPool)
         self.db_session = scoped_session(sessionmaker(autocommit=False,
             autoflush=False, bind=self.engine))
 
