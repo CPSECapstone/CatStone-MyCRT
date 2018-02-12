@@ -1,10 +1,11 @@
 from flask import Flask, request, json, redirect
-from flask_security import Security, login_required
-from flask_security.utils import verify_password
-from .database.mycrt_database import db
+from .database.mycrt_database import db_session, init_db
+from .database.models import User
+from .database.user_repository import UserRepository
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
+from flask_httpauth import HTTPBasicAuth
 from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
@@ -13,7 +14,6 @@ from .database.getRecords import *
 from .database.addRecords import *
 
 from flask_mail import Mail
-from flask_login import LoginManager, current_user, login_user
 
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
@@ -23,13 +23,8 @@ from flask_login import LoginManager, current_user, login_user
 app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 
-# flask-security
-user_datastore = db.user_datastore
-security = Security(app, user_datastore)
-
-# flask-login
-login_manager = LoginManager()
-login_manager.init_app(app)
+init_db()
+user_repository = UserRepository(db_session)
 
 # flask-mail
 mail = Mail(app)
@@ -39,14 +34,11 @@ CORS(app)
 
 # flask-restful
 api = Api(app)
+auth = HTTPBasicAuth()
 
 @app.route('/')
 def home():
-    # temp example on how to access current user
-    if current_user.is_authenticated:
-        return jsonify({ 'authenticated' : True }), 200
-    else:
-        return jsonify({ 'authenticated' : False }), 200
+    return jsonify({ 'message' : 'hello'}), 200
 
 
 @app.route('/test/api', methods=['GET'])
@@ -103,18 +95,26 @@ def get_rds_instances():
 
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
-@login_manager.request_loader
 def load_user_from_request(request):
     auth = request.authorization
     if auth:
         username = auth.username
         password = auth.password
-        user = user_datastore.find_user(username=username)
-        if user is not None and verify_password(password, user.password):
+        user = user_repository.find_user(username=username)
+        if user is not None and user.verify_password(password):
             return user
     return None
 
-@app.route('/login', methods=['POST'])
+@auth.verify_password
+def verify_password(username_or_token, password):
+    user = User.verify_auth_token(username_or_token)
+    if not user:
+        user = user_repository.find_user_by_username(username_or_token)
+        return user and user.verify_password(password)
+    return True
+
+@app.route('/authenticate', methods=['POST'])
+@auth.login_required
 def login():
     user = current_user
     if user is not None:
@@ -123,7 +123,6 @@ def login():
     else:
         return 400
 
-@login_required
 @app.route('/logout', methods=['POST'])
 def logout():
     login_manager.logout_user(current_user)
@@ -149,7 +148,7 @@ def register_user():
     email = jsonData['email']
     secret_key = jsonData['secret_key']
     access_key = jsonData['access_key']
-    success = db.register_user(username, password, email, secret_key, access_key)
+    success = user_repository.register_user(username, password, email, secret_key, access_key)
     return jsonify({"status" : 201 if success else 400 })
 
 @app.route('/metrics', methods=['GET'])
@@ -161,15 +160,15 @@ def add_test_users():
     '''This method adds a user for testing purposes when the server starts up.
     This happens the first time the server gets a request.
     '''
-    db.register_user('test-user', 'password123', 'test@test.com',
+    user_repository.register_user('test-user', 'password123', 'test@test.com',
                         'test-access-key', 'test-secret-key')
 
-@login_manager.user_loader
-def load_user(user_id):
-    return user_datastore.find_user(id=user_id)
-
 def find_user_by_email(email):
-    return user_datastore.find_user(email=email)
+    return user_repository.find_user_by_email(email=email)
 
 def find_user_by_username(username):
-    return user_datastore.find_user(username=username)
+    return user_repository.find_user_by_username(username=username)
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
