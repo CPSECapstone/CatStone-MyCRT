@@ -5,7 +5,6 @@ from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
-from flask_socketio import SocketIO, emit
 
 from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
@@ -18,7 +17,6 @@ from .database.addRecords import *
 from flask_mail import Mail
 from flask_login import LoginManager, current_user, login_user
 
-from threading import Thread
 import time
 
 #PROJECT_ROOT = os.path.abspath(os.pardir)
@@ -45,11 +43,10 @@ CORS(app)
 
 # flask-restful
 api = Api(app)
-socketio = SocketIO(app,async_mode='threading')
-thread = None
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
+    db.db_session.close()
     db.db_session.remove()
 
 @app.route('/')
