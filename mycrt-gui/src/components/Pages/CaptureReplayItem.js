@@ -35,6 +35,8 @@ class CaptureReplayItem extends Component {
     }
     var captureStatusBarClass = captureStatusTextClass + "-bar";
 
+    console.log(this.props.end);
+    console.log(new Date());
     return (
       <div className="CaptureReplayItem">
         <div class={"status-bar " + captureStatusBarClass} />

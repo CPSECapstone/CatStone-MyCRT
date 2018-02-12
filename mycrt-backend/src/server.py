@@ -5,15 +5,20 @@ from .database.mycrt_database import db
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
+from flask_socketio import SocketIO, emit
+
 from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
-from .capture.captureHelper import getS3Instances, getRDSInstances
+from .capture.captureHelper import getS3Instances, getRDSInstances, checkAllRDSInstances
 from .database.getRecords import *
 from .database.addRecords import *
 
 from flask_mail import Mail
 from flask_login import LoginManager, current_user, login_user
+
+from threading import Thread
+import time
 
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
@@ -39,6 +44,12 @@ CORS(app)
 
 # flask-restful
 api = Api(app)
+socketio = SocketIO(app,async_mode='threading')
+thread = None
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.db_session.remove()
 
 @app.route('/')
 def home():
@@ -53,11 +64,15 @@ def home():
 def get_test():
 	return jsonify({'test': 'test'})
 
+@login_required
 @app.route('/capture', methods=['GET'])
 def get_capture():
-    jsonData = request.json
-    newCapture = getCaptureRDSInformation(jsonData['captureId'])
-    return jsonify(newCapture)
+    # jsonData = request.json
+    checkAllRDSInstances()    
+    allCaptures = getAllCaptures(current_user.username)
+    # newCapture = getCaptureRDSInformation(jsonData['captureId'])
+    db.db_session.close()
+    return jsonify(allCaptures)
 
 @login_required
 @app.route('/capture', methods=['POST'])
@@ -75,7 +90,7 @@ def post_capture():
                 jsonData['end_time'],
                 jsonData['alias'],
                 jsonData['bucket_name'])
-
+        print("REsponse of the capture: ", response)
         if (isinstance(response, int) and response > -1):
             return jsonify({'status': 201, 'captureId': response})
         else:
@@ -88,6 +103,7 @@ def get_s3_instances():
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
 
+    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 
@@ -96,7 +112,7 @@ def get_rds_instances(region_name):
     response = getRDSInstances(region_name)
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
-
+    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 @login_manager.request_loader
@@ -177,3 +193,5 @@ def find_user_by_email(email):
 
 def find_user_by_username(username):
     return user_datastore.find_user(username=username)
+
+        

@@ -41,8 +41,11 @@ def getAllCaptures(username):
 		Keyword arguments:
 		username -- the uesrname of the user you want to get all captures from
 	'''
+	result = []
 	user_captures = session.query(Capture).join(User).filter(User.username == username)
-	return session.execute(user_captures).fetchall()
+	result = Capture.convertToDict(session.execute(user_captures).fetchall())
+
+	return result
 
 def getCaptureRDSInformation(captureAlias):
 	""" Function to get RDS Information from Capture
@@ -60,7 +63,10 @@ def getCaptureFromId(captureId):
 		captureId -- the id of the capture you want to access
 	"""
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
-	return session.execute(captureInformation).fetchall()
+	result = []
+	result = Capture.convertToDict(session.execute(captureInformation).fetchall())
+	
+	return result
 
 def getCaptureFromAlias(captureAlias):
 	""" Function to get a capture after receiving a captureId
@@ -93,5 +99,5 @@ def getAllCapturesThatHaveNotCompleted():
 	"""Function to get all current captures that have a status of 0
 	"""
 
-	captureInformation = session.query(Capture.captureId, Capture.endTime, Capture.captureStatus).filter(Capture.captureStatus == 0)
+	captureInformation = session.query(Capture.captureId, Capture.endTime, Capture.startTime, Capture.captureStatus).filter(Capture.captureStatus < 2)
 	return session.execute(captureInformation).fetchall()

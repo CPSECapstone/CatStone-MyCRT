@@ -15,6 +15,7 @@ import TextField from 'material-ui/TextField';
 import TimePicker from 'material-ui/TimePicker';
 import DatePicker from 'material-ui/DatePicker';
 
+import io from 'socket.io-client';
 import $ from 'jquery';
 
 var SERVER_PATH = "http://localhost:5000";
@@ -70,10 +71,32 @@ class HomePage extends Component {
     this.renderCaptureForm = this.renderCaptureForm.bind(this);
   }
 
+  componentDidMount() {
+    // var parentContextState = this.props.parentContext.state;
+    // this.socket = io.connect(SERVER_PATH);
+    
+    // var socket = this.socket;
+
+    // this.socket.on('connect', function() {
+    //   socket.emit('getAllCaptures', parentContextState.username, {data: 'I\'m connected!'});
+    // });
+
+    // this.socket.on('message', message => {
+    //   console.log(message);
+    // });
+
+    var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
+
+    this.setState({intervalGetAllCaptures: intervalGetAllCaptures});
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.intervalGetAllCaptures);
+  }
+
   sendCaptureData(formDataValues) {
     var parentContextState = this.props.parentContext.state;
 
-    console.log(formDataValues);
     $.ajax({
       url: SERVER_PATH + "/capture",
       dataType: 'json',
@@ -83,7 +106,6 @@ class HomePage extends Component {
       data: JSON.stringify(formDataValues),
       success: function(data) {
         console.log("SUCCESS capture form");
-        console.log(data);
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -92,18 +114,38 @@ class HomePage extends Component {
   }
 
   getCaptureData() {
-    $.getJSON(SERVER_PATH + "/capture")
-      .setRequestHeader("Authorization", "Basic " + btoa(this.props.parentContext.username + ":" + this.props.parentContext.password))
-      .done(function( json ) {
-        console.log( "JSON capture data: " + json.captureId );
-        if (json.captureId != undefined) {
-          // TODO: parse object and store as a card
-        }
-      }.bind(this))
-      .fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
-        console.log( "Capture Request Failed: " + err );
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "/capture",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+      type: 'GET',
+      success: function(json) {
+        console.log( "JSON capture data: ");
+        console.log(json);        
+        
+        component.setState(prevState => ({captureCards: json}));
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
     });
+
+    // $.getJSON(SERVER_PATH + "/capture")
+    //   .setRequestHeader("Authorization", "Basic " + btoa(this.props.parentContext.username + ":" + this.props.parentContext.password))
+    //   .done(function( json ) {
+    //     console.log( "JSON capture data: " + json.captureId );
+    //     if (json.captureId != undefined) {
+    //       // TODO: parse object and store as a card
+    //     }
+    //   }.bind(this))
+    //   .fail(function( jqxhr, textStatus, error ) {
+    //     var err = textStatus + ", " + error;
+    //     console.log( "Capture Request Failed: " + err );
+    // });
   }
 
   getS3Data() {
@@ -261,7 +303,6 @@ class HomePage extends Component {
     this.setState(prevState => ({
       captureStartDay: newDate
     }))
-    console.log(newDate);
   }
 
   handleEndDayChange(event, value) {

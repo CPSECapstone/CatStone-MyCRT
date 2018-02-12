@@ -31,7 +31,7 @@ class Capture(Base):
     endTime = Column(DateTime(timezone=True))
     s3Bucket = Column(String(64))
     logFileName = Column(String(64))
-    rdsInstance = Column(String(64))
+    rdsInstance = Column(String(128))
     rdsUsername = Column(String(64))
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
@@ -70,7 +70,8 @@ class Capture(Base):
                        'rdsUsername': capture[8],
                        'rdsPassword': capture[9],
                        'rdsDatabase': capture[10],
-                       'captureStatus': capture[11]}
+                       'regionName': capture[11],
+                       'captureStatus': capture[12]}
             allDicts.append(newDict)
 
         return allDicts
