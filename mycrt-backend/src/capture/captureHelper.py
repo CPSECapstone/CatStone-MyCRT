@@ -8,9 +8,9 @@ import datetime
 from botocore.exceptions import NoRegionError, ClientError
 from flask_login import current_user
 
-from src.database.updateRecords import *
-from src.database.getRecords import *
-from src.capture.capture import completeCapture
+#from src.database.updateRecords import *
+#from src.database.getRecords import *
+#from src.capture.capture import completeCapture
 
 def getRDSInstances(region_name, botoAPI = boto3):
     DBInstances = []
