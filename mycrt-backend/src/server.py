@@ -145,7 +145,6 @@ def register_user():
     success = user_repository.register_user(username, password, email, secret_key, access_key)
     return jsonify({"status" : 201 if success else 400 })
 
-@login_required
 @app.route('/users/captures', methods=['GET'])
 def get_users_captures():
     if request.headers['Content-Type'] == 'application/json':
