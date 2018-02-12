@@ -1,4 +1,4 @@
-from src.database.user import User
+from src.database.models import User
 import unittest
 
 class TestUser(unittest.TestCase):
