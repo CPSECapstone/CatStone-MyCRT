@@ -8,6 +8,7 @@ import NavBar from './components/Header/NavBar.js';
 import LogIn from './components/Pages/LogIn.js';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import $ from 'jquery';
 
 const WINDOW_HREF = window.location.href;
 
@@ -36,7 +37,9 @@ class App extends Component {
     super(props);
     this.state = {
       selected: 0,
-      loggedIn: false
+      loggedIn: false,
+      username: undefined,
+      password: undefined
     };
     this.switchTab = this.switchTab.bind(this);
     this.onLogIn = this.onLogIn.bind(this);
@@ -53,9 +56,11 @@ class App extends Component {
     //window.location.hash = navLinks[idx].href;
   }
 
-  onLogIn() {
+  onLogIn(username, password) {
     this.setState(prevState => ({
-      loggedIn: true
+      loggedIn: true,
+      username: username,
+      password: password
     }));
 
     document.body.style.background = "#f7f7f7";
@@ -79,13 +84,14 @@ class App extends Component {
         <Header onLogOut={this.onLogOut}/>
         <div class="app-content">
           <NavBar navLinks={navLinks} switchTab={this.switchTab}/>
-          <NavPage selected={this.state.selected}/>
+          <NavPage selected={this.state.selected} parentContext={this}/>
         </div>
         </div>
       }
       {!this.state.loggedIn &&
-        <LogIn 
+        <LogIn
           onLogIn={this.onLogIn}
+          parentContext={this}
         />
       }
       </div>

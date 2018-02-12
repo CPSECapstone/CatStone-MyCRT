@@ -3,6 +3,7 @@ import pymysql
 from .mycrt_database import db_session
 from .user_repository import UserRepository
 from .models import Capture, Metric
+from .getRecords import getCaptureFromAlias
 
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1,
@@ -24,6 +25,7 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 		db_session.commit()
 	except:
 		db_session.rollback()
+	return getCaptureFromAlias(captureAlias)
 
 
 '''Simple function to insert a capture metric
@@ -60,5 +62,6 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testAccess",
                        "testSecret")
 '''
-#def insertUser(userName, userPassword, email, accessKey, secretKey):
-#		user_repository.register_user(username=userName, password=userPassword, #email=email, access_key=accessKey, secret_key=secretKey)
+def insertUser(userName, userPassword, email, accessKey, secretKey):
+        user_repository = UserRepository(db_session)
+        user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
