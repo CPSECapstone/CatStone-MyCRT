@@ -59,6 +59,7 @@ def get_capture():
     newCapture = getCaptureRDSInformation(jsonData[captureId])
     return jsonify(newCapture)
 
+@login_required
 @app.route('/capture', methods=['POST'])
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
@@ -74,16 +75,10 @@ def post_capture():
                 jsonData['alias'],
                 jsonData['bucket_name'])
 
-        newCapture = Capture(0, jsonData['alias'], jsonData['start_time'],
-            jsonData['end_time'], jsonData['bucket_name'], jsonData['alias'],
-            jsonData['rds_endpoint'], jsonData['db_user'], jsonData['db_password'],
-            jsonData['db_name'])
-
-        if (isinstance(response, int)):
-            return jsonify({'status': 201})
+        if (isinstance(response, int) and response > -1):
+            return jsonify({'status': 201, 'captureId': response})
         else:
-            return jsonify({'status': 400, 'Error': response})
-
+            return jsonify({'status': 400})
 
 @app.route('/s3', methods=['GET'])
 def get_s3_instances():
@@ -147,10 +142,18 @@ def register_user():
     username = jsonData['username']
     password = jsonData['password']
     email = jsonData['email']
+    access_key = jsonData['access_key']    
     secret_key = jsonData['secret_key']
-    access_key = jsonData['access_key']
-    success = db.register_user(username, password, email, secret_key, access_key)
+    
+    success = db.register_user(username, password, email, access_key, secret_key)
     return jsonify({"status" : 201 if success else 400 })
+
+@login_required
+@app.route('/users/captures', methods=['GET'])
+def get_users_captures():
+    if request.headers['Content-Type'] == 'application/json':
+        response = getAllCaptures(current_user.username)
+        return jsonify({'status': 200, 'count': len(response), 'userCaptures': Capture.convertToDict(response)})
 
 @app.route('/metrics', methods=['GET'])
 def get_user_metrics():

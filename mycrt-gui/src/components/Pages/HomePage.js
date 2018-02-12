@@ -89,9 +89,10 @@ class HomePage extends Component {
 
   getCaptureData() {
     $.getJSON(SERVER_PATH + "/capture")
+      .setRequestHeader("Authorization", "Basic " + btoa(this.props.parentContext.username + ":" + this.props.parentContext.password))
       .done(function( json ) {
-        console.log( "JSON capture data: " + json.Capture );
-        if (json.Capture != undefined) {
+        console.log( "JSON capture data: " + json.captureId );
+        if (json.captureId != undefined) {
           // TODO: parse object and store as a card
         }
       }.bind(this))
@@ -102,12 +103,19 @@ class HomePage extends Component {
   }
 
   getS3Data() {
-    $.getJSON( SERVER_PATH + "/s3" )
-      .done(function( json ) {
-        console.log( "JSON s3 instances: " + json.s3Instances );
-        console.log( "JSON count: " + json.count );
-        if (json.s3Instances != undefined) {
-          var s3Arr = json.s3Instances;
+    var parentContextState = this.props.parentContext.state;
+
+    $.ajax({
+      url: SERVER_PATH + "/s3",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+      type: 'GET',
+      success: function(data) {
+        console.log( "JSON s3 instances: " + data.s3Instances );
+        console.log( "JSON count: " + data.count );
+        if (data.s3Instances != undefined) {
+          var s3Arr = data.s3Instances;
           var newS3Items = [];
           console.log("S3 ITEMS RECIEVED: " + this.state.s3Items);
           for (let i = 0; i < s3Arr.length; i++ ) {
@@ -118,20 +126,30 @@ class HomePage extends Component {
             s3Items: newS3Items
           }));
         }
-      }.bind(this))
-      .fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
+      }.bind(this),
+      error: function(xhr, status, err) {
+        var err = status + ", " + err;
         console.log( "Request Failed: " + err );
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
     });
+
   }
 
   getRdsData() {
-    $.getJSON( SERVER_PATH + "/rds" )
-      .done(function( json ) {
-        console.log( "JSON rds instances: " + json.rdsInstances );
-        console.log( "JSON count: " + json.count );
-        if (json.rdsInstances != undefined) {
-          var rdsArr = json.rdsInstances;
+    var parentContextState = this.props.parentContext.state;
+
+    $.ajax({
+      url: SERVER_PATH + "/rds",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+      type: 'GET',
+      success: function(data) {
+        console.log( "JSON rds instances: " + data.rdsInstances );
+        console.log( "JSON count: " + data.count );
+        if (data.rdsInstances != undefined) {
+          var rdsArr = data.rdsInstances;
           var newRdsItems = [];
           console.log("RDS ITEMS RECIEVED: " + this.state.rdsItems);
           for (let i = 0; i < rdsArr.length; i++ ) {
@@ -142,11 +160,36 @@ class HomePage extends Component {
             rdsItems: newRdsItems
           }));
         }
-      }.bind(this))
-      .fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
+      }.bind(this),
+      error: function(xhr, status, err) {
+        var err = status + ", " + err;
         console.log( "Request Failed: " + err );
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
     });
+    // console.log(parentContext);
+    // $.getJSON( SERVER_PATH + "/rds" )
+    // .setRequestHeader("Authorization", "Basic " + btoa(parentContext.state.username + ":" + parentContext.state.password))
+    //   .done(function( json ) {
+    //     console.log( "JSON rds instances: " + json.rdsInstances );
+    //     console.log( "JSON count: " + json.count );
+    //     if (json.rdsInstances != undefined) {
+    //       var rdsArr = json.rdsInstances;
+    //       var newRdsItems = [];
+    //       console.log("RDS ITEMS RECIEVED: " + this.state.rdsItems);
+    //       for (let i = 0; i < rdsArr.length; i++ ) {
+    //         console.log(rdsArr[i]);
+    //         newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
+    //       }
+    //       this.setState(prevState => ({
+    //         rdsItems: newRdsItems
+    //       }));
+    //     }
+    //   }.bind(this))
+    //   .fail(function( jqxhr, textStatus, error ) {
+    //     var err = textStatus + ", " + error;
+    //     console.log( "Request Failed: " + err );
+    // });
   }
 
   showCaptureCallout() {
@@ -369,35 +412,6 @@ class HomePage extends Component {
             Ensure that General Logging is enabled before starting a capture.
           </div>
           <div class="add-capture-item">
-            Capture Alias
-             <TextField
-                hintText="Type alias here"
-                onChange={this.handleAliasChange}
-              />
-          </div>
-          <div class="add-capture-item">
-            Database Username
-             <TextField
-                hintText="Type username here"
-                onChange={this.handleDBUsernameChange}
-              />
-          </div>
-          <div class="add-capture-item">
-            Database Password
-             <TextField
-                hintText="Type password here"
-                onChange={this.handleDBPasswordChange}
-                type="password"
-              />
-          </div>
-          <div class="add-capture-item">
-            Database Name
-             <TextField
-                hintText="Type name here"
-                onChange={this.handleDBNameChange}
-              />
-          </div>
-          <div class="add-capture-item">
             RDS Instance
             <DropDownMenu
               style={dropdownStyle.customWidth}
@@ -415,6 +429,35 @@ class HomePage extends Component {
               onChange={this.handleS3Change}>
               {this.state.s3Items != undefined ? this.state.s3Items : []}
             </DropDownMenu>
+          </div>
+          <div class="add-capture-item">
+            Capture Alias
+             <TextField
+                hintText="Type alias here"
+                onChange={this.handleAliasChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Name
+             <TextField
+                hintText="Type name here"
+                onChange={this.handleDBNameChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Username
+             <TextField
+                hintText="Type username here"
+                onChange={this.handleDBUsernameChange}
+              />
+          </div>
+          <div class="add-capture-item">
+            Database Password
+             <TextField
+                hintText="Type password here"
+                onChange={this.handleDBPasswordChange}
+                type="password"
+              />
           </div>
           <div class="add-capture-item">
             Start Time
