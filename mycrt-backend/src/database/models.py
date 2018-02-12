@@ -11,11 +11,10 @@ class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     username = Column(String(128), unique=True, nullable=False)
-    password = Column(String(80), nullable=False)
+    password = Column(String(512), nullable=False)
     email = Column(String(128), unique=True)
     access_key= Column(String(128), nullable=False)
     secret_key = Column(String(128), nullable=False)
-    active = Column(Boolean())
     notificationLife = Column(Integer())
 
     def __repr__(self):
@@ -33,8 +32,11 @@ class User(Base):
     def get_id(self):
         return self.id
 
+    def hash_password(self, password):
+        self.password = pwd_context.encrypt(password)
+
     def verify_password(self, password):
-        return pwd_context.verify_password(password, self.password)
+        return pwd_context.verify(password, self.password)
 
     def generate_auth_token(self, expiration=600):
         serializer = Serializer(SECRET_KEY, expires_in=expiration)
@@ -120,7 +122,7 @@ class Capture(Base):
                        'captureStatus': capture[11]}
             allDicts.append(newDict)
 
-        return allDicts        
+        return allDicts
 	#user = relationship('User', foreign_keys='Capture.id')
 
 class Replay(Base):

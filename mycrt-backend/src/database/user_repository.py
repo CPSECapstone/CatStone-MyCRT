@@ -1,5 +1,4 @@
 from src.database.models import User
-from passlib.apps import custom_app_context as pwd_context
 
 class UserRepository:
 
@@ -9,8 +8,9 @@ class UserRepository:
     def register_user(self, username, password, email, access_key, secret_key):
         if User.query.filter(User.username==username).first() == None and \
             User.query.filter(User.email==email).first() == None:
-            user = User(username=username, password=pwd_context.encrypt(password),
+            user = User(username=username,
                     email=email, access_key=access_key, secret_key=secret_key)
+            user.hash_password(password)
             self.db_session.add(user)
             self.db_session.commit()
             return True

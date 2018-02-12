@@ -1,4 +1,4 @@
-from flask import Flask, request, json, redirect
+from flask import Flask, request, json, redirect, g
 from .database.mycrt_database import db_session, init_db
 from .database.models import User
 from .database.user_repository import UserRepository
@@ -14,6 +14,8 @@ from .database.getRecords import *
 from .database.addRecords import *
 
 from flask_mail import Mail
+
+from passlib.apps import custom_app_context as pwd_context
 
 #PROJECT_ROOT = os.path.abspath(os.pardir)
 #REACT_DIR = PROJECT_ROOT + "\help-react\src"
@@ -104,23 +106,16 @@ def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
         user = user_repository.find_user_by_username(username_or_token)
-        return user and user.verify_password(password)
+        if not user or not user.verify_password(password):
+            return False
+    g.user = user
     return True
 
-@app.route('/authenticate', methods=['POST'])
+@app.route('/authenticate')
 @auth.login_required
 def login():
-    user = current_user
-    if user is not None:
-        login_user(user)
-        return 200
-    else:
-        return 400
-
-@app.route('/logout', methods=['POST'])
-def logout():
-    login_manager.logout_user(current_user)
-    return redirect('/', code=302)
+    token = g.user.generate_auth_token()
+    return jsonify({ "token" : token.decode('ascii') })
 
 @app.route('/user', methods=['POST'])
 def register_user():
