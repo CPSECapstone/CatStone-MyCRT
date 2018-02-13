@@ -42,18 +42,20 @@ auth = HTTPBasicAuth()
 def home():
     return jsonify({ 'message' : 'hello'}), 200
 
-
 @app.route('/test/api', methods=['GET'])
+@auth.login_required
 def get_test():
-	return jsonify({'test': 'test'})
+	return jsonify({'test': g.user.username})
 
 @app.route('/capture', methods=['GET'])
+@auth.login_required
 def get_capture():
     jsonData = request.json
     newCapture = getCaptureRDSInformation(jsonData[captureId])
     return jsonify(newCapture)
 
 @app.route('/capture', methods=['POST'])
+@auth.login_required
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
         print("JSON Message: " + json.dumps(request.json))
@@ -74,6 +76,7 @@ def post_capture():
             return jsonify({'status': 400})
 
 @app.route('/s3', methods=['GET'])
+@auth.login_required
 def get_s3_instances():
     response = getS3Instances()
 
@@ -84,22 +87,13 @@ def get_s3_instances():
 
 
 @app.route('/rds', methods=['GET'])
+@auth.login_required
 def get_rds_instances():
     response = getRDSInstances()
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
 
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
-
-def load_user_from_request(request):
-    auth = request.authorization
-    if auth:
-        username = auth.username
-        password = auth.password
-        user = user_repository.find_user(username=username)
-        if user is not None and user.verify_password(password):
-            return user
-    return None
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -141,12 +135,15 @@ def register_user():
     return jsonify({"status" : 201 if success else 400 })
 
 @app.route('/users/captures', methods=['GET'])
+@auth.login_required
 def get_users_captures():
+    current_user = g.user
     if request.headers['Content-Type'] == 'application/json':
         response = getAllCaptures(current_user.username)
         return jsonify({'status': 200, 'count': len(response), 'userCaptures': Capture.convertToDict(response)})
 
 @app.route('/metrics', methods=['GET'])
+@auth.login_required
 def get_user_metrics():
 	return jsonify(get_all_metrics())
 
