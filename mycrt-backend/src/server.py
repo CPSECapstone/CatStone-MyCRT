@@ -10,8 +10,7 @@ from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
-from .database.getRecords import *
-from .database.addRecords import *
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getAllCaptures
 
 from flask_mail import Mail
 
