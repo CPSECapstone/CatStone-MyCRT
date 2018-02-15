@@ -15,6 +15,7 @@ from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, 
 from flask_mail import Mail
 
 from passlib.apps import custom_app_context as pwd_context
+import time
 
 # app configuration
 app = Flask(__name__, static_url_path='')
@@ -38,12 +39,16 @@ auth = HTTPBasicAuth()
 def get_test():
 	return jsonify({'test': g.user.username})
 
+@login_required
 @app.route('/capture', methods=['GET'])
 @auth.login_required
 def get_capture():
-    jsonData = request.json
-    newCapture = getCaptureRDSInformation(jsonData[captureId])
-    return jsonify(newCapture)
+    # jsonData = request.json
+    checkAllRDSInstances()
+    allCaptures = getAllCaptures(current_user.username)
+    # newCapture = getCaptureRDSInformation(jsonData['captureId'])
+    db.db_session.remove()
+    return jsonify(allCaptures)
 
 @app.route('/capture', methods=['POST'])
 @auth.login_required
@@ -53,6 +58,7 @@ def post_capture():
         print("-----JSON OBJ -------")
         jsonData = request.json
         response = capture(jsonData['rds_endpoint'],
+                jsonData['region_name'],
         	    jsonData['db_user'],
         	    jsonData['db_password'],
         	    jsonData['db_name'],
@@ -60,7 +66,7 @@ def post_capture():
                 jsonData['end_time'],
                 jsonData['alias'],
                 jsonData['bucket_name'])
-
+        print("REsponse of the capture: ", response)
         if (isinstance(response, int) and response > -1):
             return jsonify({'status': 201, 'captureId': response})
         else:
@@ -74,16 +80,17 @@ def get_s3_instances():
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
 
+    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 
-@app.route('/rds', methods=['GET'])
+@app.route('/rds/<region_name>', methods=['GET'])
 @auth.login_required
-def get_rds_instances():
-    response = getRDSInstances()
+def get_rds_instances(region_name):
+    response = getRDSInstances(region_name)
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
-
+    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 @auth.verify_password
