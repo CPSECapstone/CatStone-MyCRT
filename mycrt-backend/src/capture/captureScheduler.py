@@ -19,8 +19,7 @@ def checkAllRDSInstances():
         endTime = capture[1]
         startTime = capture[2]
 
-        # strAsDateTime = datetime.datetime.strptime(capture[1], timeFormat)
         if endTime <= now:
             completeCapture(id, 2)
-        elif startTime <= now and endTime >= now:
+        elif startTime <= now and endTime > now:
             updateCapture(id, 1)

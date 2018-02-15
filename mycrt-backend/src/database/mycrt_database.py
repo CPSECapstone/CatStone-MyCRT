@@ -14,9 +14,9 @@ from .db_config import db_string
 class UserRepository:
 
     def __init__(self, db_string):
-        self.engine = create_engine(db_string, convert_unicode=True, poolclass=NullPool)
+        self.engine = create_engine(db_string, convert_unicode=True, poolclass=NullPool, pool_recycle=60)
         self.db_session = scoped_session(sessionmaker(autocommit=False,
-            autoflush=False, bind=self.engine))
+            autoflush=False, bind=self.engine, expire_on_commit=True))
 
         Base.query = self.db_session.query_property()
         self.user_datastore = SQLAlchemySessionUserDatastore(
