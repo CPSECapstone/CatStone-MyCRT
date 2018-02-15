@@ -4,7 +4,6 @@ import './HomePage.css';
 import Button from './Button.js';
 import CaptureContainer from './CaptureContainer.js';
 import ReplayContainer from './ReplayContainer.js';
-import AddCaptureForm from '../Forms/AddCaptureForm.js';
 import AddReplayForm from '../Forms/AddReplayForm.js';
 import Callout from './Callout.js';
 
