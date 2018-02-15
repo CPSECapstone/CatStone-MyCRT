@@ -34,7 +34,7 @@ CORS(app)
 api = Api(app)
 auth = HTTPBasicAuth()
 
-@app.route('/test/api', methods=['GET'])
+@app.route('/test', methods=['GET'])
 @auth.login_required
 def get_test():
 	return jsonify({'test': g.user.username})
@@ -101,7 +101,7 @@ def verify_password(username_or_token, password):
 @auth.login_required
 def login():
     token = g.user.generate_auth_token()
-    return jsonify({ "token" : token.decode('ascii') })
+    return jsonify({ "token" : token.decode('ascii')})
 
 @app.route('/user', methods=['POST'])
 def register_user():
