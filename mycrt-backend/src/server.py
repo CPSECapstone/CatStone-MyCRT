@@ -43,7 +43,7 @@ auth = HTTPBasicAuth()
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    db.db_session.close()
+    print("Closing Session")
     db.db_session.remove()
 
 @app.route('/')
@@ -63,7 +63,7 @@ def get_capture():
     checkAllRDSInstances()
     allCaptures = getAllCaptures(current_user.username)
     # newCapture = getCaptureRDSInformation(jsonData['captureId'])
-    db.db_session.close()
+    db.db_session.remove()
     return jsonify(allCaptures)
 
 @app.route('/capture', methods=['POST'])
