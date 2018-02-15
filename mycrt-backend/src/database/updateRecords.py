@@ -1,9 +1,9 @@
 import pymysql
 
-from .user_database import Base, user_repository
+from .user_database import Base, db
 from .models import *
 
-session = user_repository.db_session
+session = db.db_session
 
 def updateCapture(captureId, captureStatus):
     """Function to update a given capture's status

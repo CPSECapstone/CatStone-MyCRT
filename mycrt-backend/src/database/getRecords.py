@@ -39,8 +39,11 @@ def getAllCaptures(username):
 		Keyword arguments:
 		username -- the uesrname of the user you want to get all captures from
 	'''
-	user_captures = db_session.query(Capture).join(User).filter(User.username == username)
-	return db_session.execute(user_captures).fetchall()
+	result = []
+	user_captures = session.query(Capture).join(User).filter(User.username == username)
+	result = Capture.convertToDict(db_session.execute(user_captures).fetchall())
+
+	return result
 
 def getCaptureRDSInformation(captureAlias):
 	""" Function to get RDS Information from Capture
@@ -58,7 +61,10 @@ def getCaptureFromId(captureId):
 		captureId -- the id of the capture you want to access
 	"""
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
-	return db_session.execute(captureInformation).fetchall()
+	result = []
+	result = Capture.convertToDict(db_session.execute(captureInformation).fetchall())
+
+	return result
 
 def getCaptureFromAlias(captureAlias):
 	""" Function to get a capture after receiving a captureId

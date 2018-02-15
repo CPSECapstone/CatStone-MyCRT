@@ -37,7 +37,7 @@ class CaptureContainer extends Component {
   render() {
     var card = undefined;
     if (this.props.cards != undefined && this.props.cards.length > 0) {
-      var card = (this.props.cards)[0];
+      card = (this.props.cards)[0];
     }
 
     return (
@@ -46,13 +46,13 @@ class CaptureContainer extends Component {
           <div class = "capture-subcontainer">
           {this.props.cards.slice(0).reverse().map((card) => 
               <CaptureReplayItem
-                key={card.alias}
-                alias={card.alias}
-                s3={card.bucket_name}
-                rds={card.rds_endpoint}
-                start={card.start_time}
-                end={card.end_time}
-                status={this.getCaptureStatus(card.start_time, card.end_time)}
+                key={card.captureAlias}
+                alias={card.captureAlias}
+                s3={card.s3Bucket}
+                rds={card.rdsInstance}
+                start={card.startTime}
+                end={card.endTime}
+                status={card.captureStatus}
               />
           )}
           </div>
