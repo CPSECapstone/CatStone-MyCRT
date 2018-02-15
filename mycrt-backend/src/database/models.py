@@ -1,8 +1,59 @@
-from src.database.user import User
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
+from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                            as Serializer, BadSignature, SignatureExpired)
+from config import SECRET_KEY
 
 from .mycrt_database import Base
+
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    username = Column(String(128), unique=True, nullable=False)
+    password = Column(String(512), nullable=False)
+    email = Column(String(128), unique=True)
+    access_key= Column(String(128), nullable=False)
+    secret_key = Column(String(128), nullable=False)
+    notificationLife = Column(Integer())
+
+    def __repr__(self):
+        return '<User %r %r %r %r %r %r' % (self.username, self.password , self.email, self.access_key, self.secret_key, self.notificationLife)
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return self.active
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+    def hash_password(self, password):
+        self.password = pwd_context.hash(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password)
+
+    def generate_auth_token(self, expiration=600):
+        serializer = Serializer(SECRET_KEY, expires_in=expiration)
+        return serializer.dumps({ 'id' : self.id })
+
+    @staticmethod
+    def verify_auth_token(token):
+        serializer = Serializer(SECRET_KEY)
+        try:
+            data = serializer.loads(token)
+        except SignatureExpired:
+            return None     # valid token, expired
+        except BadSignature:
+            return None     # invalid token
+        user = User.query.get(data['id'])
+        return user
+
 
 class Notification(Base):
     __tablename__ = 'notifications'
@@ -71,7 +122,7 @@ class Capture(Base):
                        'captureStatus': capture[11]}
             allDicts.append(newDict)
 
-        return allDicts        
+        return allDicts
 	#user = relationship('User', foreign_keys='Capture.id')
 
 class Replay(Base):
