@@ -9,6 +9,7 @@ from pymysql import OperationalError, MySQLError
 from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
+from src.metrics.metrics import get_metrics
 from flask_login import current_user
 
 db_query = """Select event_time, argument from mysql.general_log where 
