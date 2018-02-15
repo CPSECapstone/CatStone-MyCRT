@@ -17,10 +17,6 @@ from flask_mail import Mail
 
 from passlib.apps import custom_app_context as pwd_context
 
-#PROJECT_ROOT = os.path.abspath(os.pardir)
-#REACT_DIR = PROJECT_ROOT + "\help-react\src"
-
-
 # app configuration
 app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
@@ -37,10 +33,6 @@ CORS(app)
 # flask-restful
 api = Api(app)
 auth = HTTPBasicAuth()
-
-@app.route('/')
-def home():
-    return jsonify({ 'message' : 'hello'}), 200
 
 @app.route('/test/api', methods=['GET'])
 @auth.login_required
