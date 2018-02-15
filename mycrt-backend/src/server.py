@@ -1,11 +1,11 @@
-from flask import Flask, request, json, redirect
-from flask_security import Security, login_required
-from flask_security.utils import verify_password
-from .database.mycrt_database import db
+from flask import Flask, request, json, redirect, g
+from .database.mycrt_database import db_session, init_db
+from .database.models import User
+from .database.user_repository import UserRepository
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
-
+from flask_httpauth import HTTPBasicAuth
 from .metrics.metrics import get_all_metrics
 from .capture.capture import capture
 
@@ -15,7 +15,8 @@ from .database.getRecords import *
 from .database.addRecords import *
 
 from flask_mail import Mail
-from flask_login import LoginManager, current_user, login_user
+
+from passlib.apps import custom_app_context as pwd_context
 
 import time
 
@@ -27,13 +28,8 @@ import time
 app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 
-# flask-security
-user_datastore = db.user_datastore
-security = Security(app, user_datastore)
-
-# flask-login
-login_manager = LoginManager()
-login_manager.init_app(app)
+init_db()
+user_repository = UserRepository(db_session)
 
 # flask-mail
 mail = Mail(app)
@@ -43,6 +39,7 @@ CORS(app)
 
 # flask-restful
 api = Api(app)
+auth = HTTPBasicAuth()
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -51,29 +48,26 @@ def shutdown_session(exception=None):
 
 @app.route('/')
 def home():
-    # temp example on how to access current user
-    if current_user.is_authenticated:
-        return jsonify({ 'authenticated' : True }), 200
-    else:
-        return jsonify({ 'authenticated' : False }), 200
-
+    return jsonify({ 'message' : 'hello'}), 200
 
 @app.route('/test/api', methods=['GET'])
+@auth.login_required
 def get_test():
-	return jsonify({'test': 'test'})
+	return jsonify({'test': g.user.username})
 
 @login_required
 @app.route('/capture', methods=['GET'])
+@auth.login_required
 def get_capture():
     # jsonData = request.json
-    checkAllRDSInstances()    
+    checkAllRDSInstances()
     allCaptures = getAllCaptures(current_user.username)
     # newCapture = getCaptureRDSInformation(jsonData['captureId'])
     db.db_session.close()
     return jsonify(allCaptures)
 
-@login_required
 @app.route('/capture', methods=['POST'])
+@auth.login_required
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
         print("JSON Message: " + json.dumps(request.json))
@@ -95,6 +89,7 @@ def post_capture():
             return jsonify({'status': 400})
 
 @app.route('/s3', methods=['GET'])
+@auth.login_required
 def get_s3_instances():
     response = getS3Instances()
 
@@ -106,6 +101,7 @@ def get_s3_instances():
 
 
 @app.route('/rds/<region_name>', methods=['GET'])
+@auth.login_required
 def get_rds_instances(region_name):
     response = getRDSInstances(region_name)
     if (isinstance(response, list)):
@@ -113,31 +109,21 @@ def get_rds_instances(region_name):
     db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
-@login_manager.request_loader
-def load_user_from_request(request):
-    auth = request.authorization
-    if auth:
-        username = auth.username
-        password = auth.password
-        user = user_datastore.find_user(username=username)
-        if user is not None and verify_password(password, user.password):
-            return user
-    return None
+@auth.verify_password
+def verify_password(username_or_token, password):
+    user = User.verify_auth_token(username_or_token)
+    if not user:
+        user = user_repository.find_user_by_username(username_or_token)
+        if not user or not user.verify_password(password):
+            return False
+    g.user = user
+    return True
 
-@app.route('/login', methods=['POST'])
+@app.route('/authenticate')
+@auth.login_required
 def login():
-    user = current_user
-    if user is not None:
-        login_user(user)
-        return 200
-    else:
-        return 400
-
-@login_required
-@app.route('/logout', methods=['POST'])
-def logout():
-    login_manager.logout_user(current_user)
-    return redirect('/', code=302)
+    token = g.user.generate_auth_token()
+    return jsonify({ "token" : token.decode('ascii') })
 
 @app.route('/user', methods=['POST'])
 def register_user():
@@ -159,37 +145,36 @@ def register_user():
     email = jsonData['email']
     access_key = jsonData['access_key']
     secret_key = jsonData['secret_key']
-
-    success = db.register_user(username, password, email, access_key, secret_key)
+    success = user_repository.register_user(username, password, email, secret_key, access_key)
     return jsonify({"status" : 201 if success else 400 })
 
-@login_required
 @app.route('/users/captures', methods=['GET'])
+@auth.login_required
 def get_users_captures():
+    current_user = g.user
     if request.headers['Content-Type'] == 'application/json':
         response = getAllCaptures(current_user.username)
         return jsonify({'status': 200, 'count': len(response), 'userCaptures': Capture.convertToDict(response)})
 
 @app.route('/metrics', methods=['GET'])
+@auth.login_required
 def get_user_metrics():
-	return jsonify(get_metrics())
+	return jsonify(get_all_metrics())
 
 @app.before_first_request
 def add_test_users():
     '''This method adds a user for testing purposes when the server starts up.
     This happens the first time the server gets a request.
     '''
-    db.register_user('test-user', 'password123', 'test@test.com',
+    user_repository.register_user('test-user', 'password123', 'test@test.com',
                         'test-access-key', 'test-secret-key')
 
-@login_manager.user_loader
-def load_user(user_id):
-    return user_datastore.find_user(id=user_id)
-
 def find_user_by_email(email):
-    return user_datastore.find_user(email=email)
+    return user_repository.find_user_by_email(email=email)
 
 def find_user_by_username(username):
-    return user_datastore.find_user(username=username)
+    return user_repository.find_user_by_username(username=username)
 
-        
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()

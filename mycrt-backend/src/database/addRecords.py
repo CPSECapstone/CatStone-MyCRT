@@ -1,10 +1,10 @@
 import pymysql
 
-from .mycrt_database import db
+from .mycrt_database import db_session
+from .user_repository import UserRepository
 from .models import Capture, Metric
 from .getRecords import getCaptureFromAlias
 
-session = db.db_session
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1,
                                 "test-capture-2",
@@ -21,10 +21,10 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
 
 	try:
-		session.add(capture)
-		session.commit()
+		db_session.add(capture)
+		db_session.commit()
 	except:
-		session.rollback()
+		db_session.rollback()
 	return getCaptureFromAlias(captureAlias)
 
 
@@ -50,10 +50,10 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
 		metric = Metric(s3Bucket, metricFileName, replayAlias=replayAlias)
 
 	try:
-		session.add(metric)
-		session.commit()
+		db_session.add(metric)
+		db_session.commit()
 	except:
-		session.rollback()
+		db_session.rollback()
 
 ''' Function to insert a user into the database
    Example: insertUser("AndrewTest",
@@ -63,4 +63,5 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testSecret")
 '''
 def insertUser(userName, userPassword, email, accessKey, secretKey):
-	db.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
+        user_repository = UserRepository(db_session)
+        user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
