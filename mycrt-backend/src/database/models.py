@@ -82,13 +82,14 @@ class Capture(Base):
     endTime = Column(DateTime(timezone=True))
     s3Bucket = Column(String(64))
     logFileName = Column(String(64))
-    rdsInstance = Column(String(64))
+    rdsInstance = Column(String(128))
     rdsUsername = Column(String(64))
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
+    regionName = Column(String(64))
     captureStatus = Column(Integer(), default=0)
 
-    def __init__(self, userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, captureStatus=0):
+    def __init__(self, userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, captureStatus=0):
         self.userId = userId
         self.captureAlias = captureAlias
         self.startTime = startTime
@@ -99,10 +100,11 @@ class Capture(Base):
         self.rdsUsername = rdsUsername
         self.rdsPassword = rdsPassword
         self.rdsDatabase = rdsDatabase
+        self.regionName = regionName
         self.captureStatus = captureStatus
 
     def __repr__(self):
-        return '<Capture %r %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureAlias, self.startTime, self.endTime, self.s3Bucket, self.logFileName, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.captureStatus)
+        return '<Capture %r %r %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureAlias, self.startTime, self.endTime, self.s3Bucket, self.logFileName, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName, self.captureStatus)
 
     def convertToDict(captures):
         allDicts = []
@@ -119,7 +121,8 @@ class Capture(Base):
                        'rdsUsername': capture[8],
                        'rdsPassword': capture[9],
                        'rdsDatabase': capture[10],
-                       'captureStatus': capture[11]}
+                       'regionName': capture[11],
+                       'captureStatus': capture[12]}
             allDicts.append(newDict)
 
         return allDicts
