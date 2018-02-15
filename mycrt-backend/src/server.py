@@ -39,7 +39,13 @@ auth = HTTPBasicAuth()
 def get_test():
 	return jsonify({'test': g.user.username})
 
-@login_required
+@app.route('/capture/<id>', methods=['GET'])
+@auth.login_required
+def get_capture():
+    jsonData = request.json
+    newCapture = getCaptureRDSInformation(jsonData[captureId])
+    return jsonify(newCapture)
+
 @app.route('/capture', methods=['GET'])
 @auth.login_required
 def get_capture():
