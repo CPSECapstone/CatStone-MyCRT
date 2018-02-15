@@ -33,7 +33,7 @@ def getUserEmail(username):
 	userEmail = db_session.query(User.email).filter(User.username == username)
 	return db_session.execute(userEmail).fetchall()
 
-def getAllCaptures(username):
+def getUsersCaptures(username):
 	''' Function to get All Captures
 
 		Keyword arguments:

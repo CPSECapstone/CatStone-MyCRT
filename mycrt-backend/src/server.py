@@ -37,28 +37,51 @@ auth = HTTPBasicAuth()
 @app.route('/test', methods=['GET'])
 @auth.login_required
 def get_test():
-	return jsonify({'test': g.user.username})
+	return jsonify({'test': g.user.username}), 200
 
-@app.route('/capture/<id>', methods=['GET'])
+@app.route('/user', methods=['POST'])
+def register_user():
+    jsonData = request.get_json()
+
+    if ('username' not in jsonData or
+        'password' not in jsonData or
+        'email' not in jsonData or
+        'secret_key' not in jsonData or
+        'access_key' not in jsonData):
+            return jsonify({"error": "Missing field in request."}), 400
+    if (getUserFromUsername(jsonData['username'])):
+        return jsonify({"error": "User already exists."}), 400
+    if (getUserFromEmail(jsonData['email'])):
+        return jsonify({"error": "An account with this email already exists."}), 400
+
+    username = jsonData['username']
+    password = jsonData['password']
+    email = jsonData['email']
+    access_key = jsonData['access_key']
+    secret_key = jsonData['secret_key']
+    success = user_repository.register_user(username, password, email, secret_key, access_key)
+    return 201 if success else 400
+
+@app.route('users/captures/<id>', methods=['GET'])
 @auth.login_required
 def get_capture():
-    jsonData = request.json
-    newCapture = getCaptureRDSInformation(jsonData[captureId])
-    return jsonify(newCapture)
+    userCapture = getCaptureRDSInformation(id)
+    return jsonify({'capture': userCapture})
 
-@app.route('/capture', methods=['GET'])
+@app.route('/users/captures', methods=['GET'])
 @auth.login_required
-def get_capture():
+def get_users_captures():
+    current_user = g.user
+
     checkAllRDSInstances()
-    allCaptures = getAllCaptures(current_user.username)
-    return jsonify(allCaptures)
+    allCaptures = getUsersCaptures(current_user.username)
 
-@app.route('/capture', methods=['POST'])
+    return jsonify('count': len(response), 'userCaptures': allCaptures)})
+
+@app.route('users/captures', methods=['POST'])
 @auth.login_required
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
-        print("JSON Message: " + json.dumps(request.json))
-        print("-----JSON OBJ -------")
         jsonData = request.json
         response = capture(jsonData['rds_endpoint'],
                 jsonData['region_name'],
@@ -69,32 +92,37 @@ def post_capture():
                 jsonData['end_time'],
                 jsonData['alias'],
                 jsonData['bucket_name'])
-        print("REsponse of the capture: ", response)
         if (isinstance(response, int) and response > -1):
-            return jsonify({'status': 201, 'captureId': response})
+            return jsonify({'captureId': response}), 201
         else:
-            return jsonify({'status': 400})
+            return jsonify({'error': response}), 400
 
-@app.route('/s3', methods=['GET'])
+@app.route('users/s3Buckets', methods=['GET'])
 @auth.login_required
 def get_s3_instances():
     response = getS3Instances()
 
     if (isinstance(response, list)):
-        return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
+        return jsonify('count': len(response), 's3Instances': response}), 200
 
-    return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
+    return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
 
 
-@app.route('/rds/<region_name>', methods=['GET'])
+@app.route('users/rdsInstances/<region_name>', methods=['GET'])
 @auth.login_required
 def get_rds_instances(region_name):
     response = getRDSInstances(region_name)
 
     if (isinstance(response, list)):
-        return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
+        return jsonify({'count': len(response), 'rdsInstances': response}), 200
 
-    return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
+    return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode'],
+
+
+@app.route('users/metrics', methods=['GET'])
+@auth.login_required
+def get_user_metrics():
+	return jsonify(get_all_metrics())
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -111,42 +139,6 @@ def verify_password(username_or_token, password):
 def login():
     token = g.user.generate_auth_token()
     return jsonify({ "token" : token.decode('ascii')})
-
-@app.route('/user', methods=['POST'])
-def register_user():
-    jsonData = request.get_json()
-
-    if ('username' not in jsonData or
-        'password' not in jsonData or
-        'email' not in jsonData or
-        'secret_key' not in jsonData or
-        'access_key' not in jsonData):
-            return jsonify({"status": 400, "error": "Missing field in request."})
-    if (getUserFromUsername(jsonData['username'])):
-        return jsonify({"status": 400, "error": "User already exists."})
-    if (getUserFromEmail(jsonData['email'])):
-        return jsonify({"status": 400, "error": "An account with this email already exists."})
-
-    username = jsonData['username']
-    password = jsonData['password']
-    email = jsonData['email']
-    access_key = jsonData['access_key']
-    secret_key = jsonData['secret_key']
-    success = user_repository.register_user(username, password, email, secret_key, access_key)
-    return jsonify({"status" : 201 if success else 400 })
-
-@app.route('/users/captures', methods=['GET'])
-@auth.login_required
-def get_users_captures():
-    current_user = g.user
-    if request.headers['Content-Type'] == 'application/json':
-        response = getAllCaptures(current_user.username)
-        return jsonify({'status': 200, 'count': len(response), 'userCaptures': Capture.convertToDict(response)})
-
-@app.route('/metrics', methods=['GET'])
-@auth.login_required
-def get_user_metrics():
-	return jsonify(get_all_metrics())
 
 @app.before_first_request
 def add_test_users():
