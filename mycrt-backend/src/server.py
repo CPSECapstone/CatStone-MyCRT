@@ -43,11 +43,8 @@ def get_test():
 @app.route('/capture', methods=['GET'])
 @auth.login_required
 def get_capture():
-    # jsonData = request.json
     checkAllRDSInstances()
     allCaptures = getAllCaptures(current_user.username)
-    # newCapture = getCaptureRDSInformation(jsonData['captureId'])
-    db.db_session.remove()
     return jsonify(allCaptures)
 
 @app.route('/capture', methods=['POST'])
@@ -80,7 +77,6 @@ def get_s3_instances():
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
 
-    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 
@@ -88,9 +84,10 @@ def get_s3_instances():
 @auth.login_required
 def get_rds_instances(region_name):
     response = getRDSInstances(region_name)
+
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
-    db.db_session.close()
+
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 @auth.verify_password
