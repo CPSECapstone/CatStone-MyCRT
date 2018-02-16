@@ -5,7 +5,7 @@ from operator import itemgetter
 from botocore.exceptions import ClientError
 
 def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type):
-    local_metric_file = alias + ".metrics"
+    metric_file = alias + ".metrics"
 
     client = boto3.client('cloudwatch')
     s3 = boto3.client('s3')
@@ -29,8 +29,7 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
     sorted_metrics = sorted(metrics['Datapoints'], key=itemgetter('Timestamp'))
 
 
-    with open(local_metric_file, "a") as f:
-        f.write(metric_type)
+    with open(metric_file, "a") as f:
 
         for datapoint in sorted_metrics:
             datapoint_data = {}
@@ -38,13 +37,13 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
             datapoint_data['Timestamp'] = datapoint['Timestamp']
             datapoint_data[metric_type] = datapoint['Average']
 
-            f.write('Timestamp:' + str(datapoint['Timestamp']) + ',')
-            f.write(metric_type + ':' + str(datapoint['Average']) + "\n")
+            f.write('Timestamp=' + str(datapoint['Timestamp']) + ',')
+            f.write(metric_type + '=' + str(datapoint['Average']) + '\n')
 
             metric_data.append(datapoint_data)
 
     try:
-        response = s3.upload_file(local_metric_file, bucket_name, local_metric_file)
+        response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
 
@@ -64,16 +63,9 @@ def get_metrics(metric_type, metric_alias, bucket_name):
     metric_data = []
 
     with open(metric_alias, "r") as f:
-        # skips text until metric type is found
         for line in f:
             if metric_type in line:
-                break
-
-        # reads text until all metrics are found
-        for line in f:
-            if metric_type not in line:
-                break
-            datapoint = dict(item.split(":") for item in line.split(","))
-            metric_data.append(datapoint)
+                datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
+                metric_data.append(datapoint)
 
     return metric_data
