@@ -8,7 +8,8 @@ from flask import json
 class TestServer(unittest.TestCase):
 
     def setUp(self):
-        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+        self.db_fd,  self.temp_file = tempfile.mkstemp()
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + self.temp_file
         app.testing = True
         self.app = app.test_client()
         with app.app_context():
@@ -16,7 +17,7 @@ class TestServer(unittest.TestCase):
 
     def tearDown(self):
         os.close(self.db_fd)
-        os.unlink(app.config['DATABASE'])
+        os.unlink(self.temp_file)
 
     def test_login_without_credentials(self):
         result = self.app.get('/authenticate')
