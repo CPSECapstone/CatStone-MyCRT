@@ -6,7 +6,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 from flask_httpauth import HTTPBasicAuth
-from .metrics.metrics import get_all_metrics
+from .metrics.metrics import get_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
@@ -41,11 +41,6 @@ CORS(app)
 api = Api(app)
 auth = HTTPBasicAuth()
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    print("Closing Session")
-    db.db_session.remove()
-
 @app.route('/')
 def home():
     return jsonify({ 'message' : 'hello'}), 200
@@ -55,15 +50,13 @@ def home():
 def get_test():
 	return jsonify({'test': g.user.username})
 
-@login_required
 @app.route('/capture', methods=['GET'])
 @auth.login_required
 def get_capture():
     # jsonData = request.json
     checkAllRDSInstances()
-    allCaptures = getAllCaptures(current_user.username)
+    allCaptures = getAllCaptures(g.user.username)
     # newCapture = getCaptureRDSInformation(jsonData['captureId'])
-    db.db_session.remove()
     return jsonify(allCaptures)
 
 @app.route('/capture', methods=['POST'])
@@ -119,7 +112,7 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
-@app.route('/authenticate')
+@app.route('/authenticate', methods=['GET'])
 @auth.login_required
 def login():
     token = g.user.generate_auth_token()
@@ -159,7 +152,7 @@ def get_users_captures():
 @app.route('/metrics', methods=['GET'])
 @auth.login_required
 def get_user_metrics():
-	return jsonify(get_all_metrics())
+	return jsonify(get_metrics())
 
 @app.before_first_request
 def add_test_users():
