@@ -14,12 +14,7 @@ def checkAllRDSInstances():
     #Go through all the captures we received
     for capture in currentCaptures:
      
-     #Obtain the datetime for the capture
-        id = capture[0]
-        endTime = capture[1]
-        startTime = capture[2]
-
-        if endTime <= now:
-            completeCapture(id, 2)
-        elif startTime <= now and endTime > now:
-            updateCapture(id, 1)
+        if capture['endTime'] <= now:
+            completeCapture(capture)
+        elif capture['startTime'] <= now and capture['endTime'] > now:
+            updateCapture(capture['captureId'], 1)
