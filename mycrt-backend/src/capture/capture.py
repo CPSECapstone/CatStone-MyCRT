@@ -9,7 +9,7 @@ from pymysql import OperationalError, MySQLError
 from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
-from flask_login import current_user
+from flask import g
 
 db_query = """Select event_time, argument from mysql.general_log where 
 user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\' 
@@ -48,15 +48,15 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         if connection.open:
             connection.close()
 
-    newCapture = insertCapture(current_user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
+    newCapture = insertCapture(g.user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name)
     if (newCapture):
         return newCapture[0][0]
     return -1
 
 
-def completeCapture(capture_id, capture_status):
-    currentCapture = getCaptureFromId(capture_id)[0]
+def completeCapture(capture):
+    currentCapture = capture
 
     fileName = currentCapture['captureAlias'] + '.log'
     errList = []
@@ -111,7 +111,7 @@ def completeCapture(capture_id, capture_status):
         os.remove(fileName)
 
     if len(errList) > 0:
-        updateCapture(capture_id, 3)
+        updateCapture(capture['captureId'], 3)
         print(errList)
     else:
-        updateCapture(capture_id, 2)
+        updateCapture(capture['captureId'], 2)

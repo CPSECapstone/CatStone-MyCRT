@@ -2,7 +2,7 @@ import pymysql
 
 from .mycrt_database import db_session
 from .models import Capture, User
-
+from flask import g
 
 def getUserFromEmail(email):
 	""" Function to check if an email already exists inside the database
@@ -97,5 +97,5 @@ def getAllCapturesThatHaveNotCompleted():
 	"""Function to get all current captures that have a status of 0
 	"""
 
-	captureInformation = db_session.query(Capture.captureId, Capture.endTime, Capture.captureStatus).filter(Capture.captureStatus == 0)
-	return db_session.execute(captureInformation).fetchall()
+	captureInformation =Capture.query.filter(Capture.captureStatus == 0).filter(Capture.userId == g.user.id)
+	return Capture.convertToDict(db_session.execute(captureInformation).fetchall())
