@@ -46,18 +46,18 @@ class LogIn extends Component {
 
   logInUser() {
     $.ajax({
-      url: SERVER_PATH + "/login",
+      url: SERVER_PATH + "/authenticate",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(this.state.usernameValue + ":" + this.state.passwordValue)},
-      type: 'POST',
+      type: 'GET',
       success: function(data) {
         console.log("Successful Login");
-        console.log(data);
+        console.log(data.token);
         this.setState(prevState => ({
           showLogInError: false
         }));
-        this.props.onLogIn(this.state.usernameValue, this.state.passwordValue);
+        this.props.onLogIn(data.token);
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());

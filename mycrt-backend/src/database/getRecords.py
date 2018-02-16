@@ -40,7 +40,7 @@ def getAllCaptures(username):
 		username -- the uesrname of the user you want to get all captures from
 	'''
 	result = []
-	user_captures = session.query(Capture).join(User).filter(User.username == username)
+	user_captures = db_session.query(Capture).join(User).filter(User.username == username)
 	result = Capture.convertToDict(db_session.execute(user_captures).fetchall())
 
 	return result

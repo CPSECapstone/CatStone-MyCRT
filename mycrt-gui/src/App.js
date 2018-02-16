@@ -38,8 +38,7 @@ class App extends Component {
     this.state = {
       selected: 0,
       loggedIn: false,
-      username: undefined,
-      password: undefined
+      token: undefined,
     };
     this.switchTab = this.switchTab.bind(this);
     this.onLogIn = this.onLogIn.bind(this);
@@ -56,11 +55,10 @@ class App extends Component {
     //window.location.hash = navLinks[idx].href;
   }
 
-  onLogIn(username, password) {
+  onLogIn(token) {
     this.setState(prevState => ({
       loggedIn: true,
-      username: username,
-      password: password
+      token: token
     }));
 
     document.body.style.background = "#f7f7f7";
@@ -68,7 +66,8 @@ class App extends Component {
 
   onLogOut() {
     this.setState(prevState => ({
-      loggedIn: false
+      loggedIn: false,
+      token: undefined
     }));
 
     document.body.style.background = "#333b44";
