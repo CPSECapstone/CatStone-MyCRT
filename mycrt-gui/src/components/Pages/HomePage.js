@@ -85,7 +85,7 @@ class HomePage extends Component {
     var parentContextState = this.props.parentContext.state;
 
     $.ajax({
-      url: SERVER_PATH + "users/captures",
+      url: SERVER_PATH + "/users/captures",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -105,13 +105,13 @@ class HomePage extends Component {
     var component = this;
 
     $.ajax({
-      url: SERVER_PATH + "users/captures",
+      url: SERVER_PATH + "/users/captures",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(json) {
-        component.setState(prevState => ({captureCards: json}));
+        component.setState(prevState => ({captureCards: json["userCaptures"]}));
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -127,7 +127,7 @@ class HomePage extends Component {
     }));
 
     $.ajax({
-      url: SERVER_PATH + "users/s3Buckets",
+      url: SERVER_PATH + "/users/s3Buckets",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -161,7 +161,7 @@ class HomePage extends Component {
     }));
 
     $.ajax({
-      url: SERVER_PATH + "users/rdsInstances/" + value,
+      url: SERVER_PATH + "/users/rdsInstances/" + value,
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},

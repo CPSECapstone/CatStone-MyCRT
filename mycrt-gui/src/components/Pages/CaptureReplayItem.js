@@ -15,6 +15,41 @@ class CaptureReplayItem extends Component {
     this.state = {
       captureReplayStatus: ERROR
     };
+
+    this.getTimeLeft = this.getTimeLeft.bind(this);
+  }
+
+  /* Code used from a sample received from the following github link.
+      https://gist.github.com/Erichain/6d2c2bf16fe01edfcffa
+  */
+  convertMS(milliseconds) {
+    var day, hour, minute, seconds;
+    seconds = Math.floor(milliseconds / 1000);
+    minute = Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    hour = Math.floor(minute / 60);
+    minute = minute % 60;
+    day = Math.floor(hour / 24);
+    hour = hour % 24;
+    return {
+        day: day,
+        hour: hour,
+        minute: minute,
+        seconds: seconds
+    };
+}
+
+  getTimeLeft() {
+    var currentDate = new Date();
+    var currentEndTime = this.props.end;
+  
+    var timeLeft = Date.parse(currentEndTime) - Date.parse(currentDate);
+    var timeToDisplay = this.convertMS(timeLeft);
+
+    return timeLeft > 0 ? timeToDisplay["day"] + " D " + 
+     timeToDisplay["hour"] + ":" + 
+     timeToDisplay["minute"] + ":" + 
+     timeToDisplay["seconds"] : "0D 00:00:00";
   }
 
   render() {
@@ -35,8 +70,6 @@ class CaptureReplayItem extends Component {
     }
     var captureStatusBarClass = captureStatusTextClass + "-bar";
 
-    console.log(this.props.end);
-    console.log(new Date());
     return (
       <div className="CaptureReplayItem">
         <div class={"status-bar " + captureStatusBarClass} />
@@ -47,7 +80,8 @@ class CaptureReplayItem extends Component {
           <h4 class="capture-sub-item" >{this.props.alias}</h4>
           <h5 class="capture-sub-item" >RDS: {this.props.rds}</h5>
           <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
-          <h5>Time Remaining: {this.props.end - (new Date())}</h5>
+          <h5>Time Remaining:</h5>
+          <h5>{this.getTimeLeft()}</h5>
           <h5>Status: {this.props.status}</h5>
         </div>
       </div>

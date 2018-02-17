@@ -10,7 +10,8 @@ from .metrics.metrics import get_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getAllCaptures
+from .capture.captureScheduler import checkAllRDSInstances
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures
 
 from flask_mail import Mail
 
@@ -62,7 +63,7 @@ def register_user():
     success = user_repository.register_user(username, password, email, access_key, secret_key)
     return 201 if success else 400
 
-@app.route('users/captures/<id>', methods=['GET'])
+@app.route('/users/captures/<id>', methods=['GET'])
 @auth.login_required
 def get_capture():
     userCapture = getCaptureRDSInformation(id)
@@ -76,9 +77,9 @@ def get_users_captures():
     checkAllRDSInstances()
     allCaptures = getUsersCaptures(current_user.username)
 
-    return jsonify('count': len(response), 'userCaptures': allCaptures)})
+    return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
 
-@app.route('users/captures', methods=['POST'])
+@app.route('/users/captures', methods=['POST'])
 @auth.login_required
 def post_capture():
     if request.headers['Content-Type'] == 'application/json':
@@ -97,18 +98,18 @@ def post_capture():
         else:
             return jsonify({'error': response}), 400
 
-@app.route('users/s3Buckets', methods=['GET'])
+@app.route('/users/s3Buckets', methods=['GET'])
 @auth.login_required
 def get_s3_instances():
     response = getS3Instances()
 
     if (isinstance(response, list)):
-        return jsonify('count': len(response), 's3Instances': response}), 200
+        return jsonify({'count': len(response), 's3Instances': response}), 200
 
     return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
 
 
-@app.route('users/rdsInstances/<region_name>', methods=['GET'])
+@app.route('/users/rdsInstances/<region_name>', methods=['GET'])
 @auth.login_required
 def get_rds_instances(region_name):
     response = getRDSInstances(region_name)
@@ -119,7 +120,7 @@ def get_rds_instances(region_name):
     return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode'],
 
 
-@app.route('users/metrics', methods=['GET'])
+@app.route('/users/metrics', methods=['GET'])
 @auth.login_required
 def get_user_metrics():
 	return jsonify(get_all_metrics())
