@@ -88,7 +88,7 @@ class HomePage extends Component {
       url: SERVER_PATH + "/capture",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'POST',
       data: JSON.stringify(formDataValues),
       success: function(data) {
@@ -108,7 +108,7 @@ class HomePage extends Component {
       url: SERVER_PATH + "/capture",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({captureCards: json}));
@@ -130,7 +130,7 @@ class HomePage extends Component {
       url: SERVER_PATH + "/s3",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(data) {
         if (data.s3Instances != undefined) {
@@ -164,7 +164,7 @@ class HomePage extends Component {
       url: SERVER_PATH + "/rds/" + value,
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(data) {
         if (data.rdsInstances != undefined) {

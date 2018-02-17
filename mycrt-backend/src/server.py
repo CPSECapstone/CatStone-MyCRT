@@ -6,7 +6,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 from flask_httpauth import HTTPBasicAuth
-from .metrics.metrics import get_all_metrics
+from .metrics.metrics import get_metrics
 from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
@@ -131,10 +131,11 @@ def verify_password(username_or_token, password):
         user = user_repository.find_user_by_username(username_or_token)
         if not user or not user.verify_password(password):
             return False
+
     g.user = user
     return True
 
-@app.route('/authenticate')
+@app.route('/authenticate', methods=['GET'])
 @auth.login_required
 def login():
     token = g.user.generate_auth_token()
