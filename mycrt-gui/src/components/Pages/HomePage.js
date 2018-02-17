@@ -85,7 +85,7 @@ class HomePage extends Component {
     var parentContextState = this.props.parentContext.state;
 
     $.ajax({
-      url: SERVER_PATH + "/capture",
+      url: SERVER_PATH + "users/captures",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -105,7 +105,7 @@ class HomePage extends Component {
     var component = this;
 
     $.ajax({
-      url: SERVER_PATH + "/capture",
+      url: SERVER_PATH + "users/captures",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -127,7 +127,7 @@ class HomePage extends Component {
     }));
 
     $.ajax({
-      url: SERVER_PATH + "/s3",
+      url: SERVER_PATH + "users/s3Buckets",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -161,7 +161,7 @@ class HomePage extends Component {
     }));
 
     $.ajax({
-      url: SERVER_PATH + "/rds/" + value,
+      url: SERVER_PATH + "users/rdsInstances/" + value,
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -337,7 +337,7 @@ class HomePage extends Component {
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
       && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
       && this.state.dbUsernameValue != undefined && this.state.dbNameValue != undefined
-      && this.state.dbPasswordValue != undefined && this.state.aliasValue != undefined 
+      && this.state.dbPasswordValue != undefined && this.state.aliasValue != undefined
       && !this.state.isErrorVisible;
   }
 
@@ -378,11 +378,11 @@ class HomePage extends Component {
   }
 
   renderCaptureForm() {
-    const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2", 
+    const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
                         "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
-                        "ca-central-1", 
-                        "cn-north-1", 
-                        "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", 
+                        "ca-central-1",
+                        "cn-north-1",
+                        "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
                         "sa-east-1"];
     var rdsRegionItems = [];
 
