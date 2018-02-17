@@ -59,7 +59,7 @@ def register_user():
     email = jsonData['email']
     access_key = jsonData['access_key']
     secret_key = jsonData['secret_key']
-    success = user_repository.register_user(username, password, email, secret_key, access_key)
+    success = user_repository.register_user(username, password, email, access_key, secret_key)
     return 201 if success else 400
 
 @app.route('users/captures/<id>', methods=['GET'])
