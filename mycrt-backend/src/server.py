@@ -39,7 +39,7 @@ auth = HTTPBasicAuth()
 def get_test():
 	return jsonify({'test': g.user.username}), 200
 
-@app.route('/user', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def register_user():
     jsonData = request.get_json()
 
