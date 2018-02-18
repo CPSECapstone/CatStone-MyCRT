@@ -89,7 +89,6 @@ def get_s3_instances():
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 's3Instances': response})
 
-    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 
@@ -99,7 +98,6 @@ def get_rds_instances(region_name):
     response = getRDSInstances(region_name)
     if (isinstance(response, list)):
         return jsonify({'status': 200, 'count': len(response), 'rdsInstances': response})
-    db.db_session.close()
     return jsonify({'status': response['ResponseMetaData']['HTTPStatusCode'], 'error': response['Error']['Code']})
 
 @auth.verify_password
@@ -109,6 +107,7 @@ def verify_password(username_or_token, password):
         user = user_repository.find_user_by_username(username_or_token)
         if not user or not user.verify_password(password):
             return False
+
     g.user = user
     return True
 
@@ -138,7 +137,7 @@ def register_user():
     email = jsonData['email']
     access_key = jsonData['access_key']
     secret_key = jsonData['secret_key']
-    success = user_repository.register_user(username, password, email, secret_key, access_key)
+    success = user_repository.register_user(username, password, email, access_key, secret_key)
     return jsonify({"status" : 201 if success else 400 })
 
 @app.route('/users/captures', methods=['GET'])
