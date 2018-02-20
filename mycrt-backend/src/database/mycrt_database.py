@@ -3,14 +3,17 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from .db_config import db_string
 
+class MyCrtDb:
+    Base = declarative_base()
 
-engine = create_engine(db_string, convert_unicode=True)
-db_session = scoped_session(sessionmaker(autocommit=False,
+    def __init__(self, db_string=db_string):
+        engine = create_engine(db_string, convert_unicode=True)
+        self.db_session = scoped_session(sessionmaker(autocommit=False,
             autoflush=False, bind=engine))
 
-Base = declarative_base()
-Base.query = db_session.query_property()
+        MyCrtDb. Base.query = self.db_session.query_property()
+        from src.database.models import User, Notification, Capture, Replay, Metric
+        self.Base.metadata.create_all(bind=engine)
 
-def init_db():
-    import src.database.models
-    Base.metadata.create_all(bind=engine)
+    def get_session(self):
+        return self.db_session

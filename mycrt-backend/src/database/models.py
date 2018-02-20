@@ -1,13 +1,13 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                             as Serializer, BadSignature, SignatureExpired)
 from config import SECRET_KEY
 
-from .mycrt_database import Base
+from .mycrt_database import MyCrtDb
 
-class User(Base):
+class User(MyCrtDb.Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     username = Column(String(128), unique=True, nullable=False)
@@ -55,7 +55,7 @@ class User(Base):
         return user
 
 
-class Notification(Base):
+class Notification(MyCrtDb.Base):
     __tablename__ = 'notifications'
 
     notificationId = Column(Integer(), primary_key=True, autoincrement=True)
@@ -73,7 +73,7 @@ class Notification(Base):
 
 	#user = relationship('User', foreign_keys='Notification.id')
 
-class Capture(Base):
+class Capture(MyCrtDb.Base):
     __tablename__ = 'capture'
     captureId = Column(Integer(), primary_key=True, autoincrement=True)
     userId = Column(Integer(), ForeignKey(User.id))
@@ -128,7 +128,7 @@ class Capture(Base):
         return allDicts
 	#user = relationship('User', foreign_keys='Capture.id')
 
-class Replay(Base):
+class Replay(MyCrtDb.Base):
     __tablename__ = 'replay'
     replayId = Column(Integer(), primary_key=True, autoincrement=True)
     userId = Column(Integer(), ForeignKey(User.id))
@@ -154,7 +154,7 @@ class Replay(Base):
 	#user = relationship('User', foreign_keys='Replay.id')
     capture = relationship('Capture', foreign_keys='Replay.captureId')
 
-class Metric(Base):
+class Metric(MyCrtDb.Base):
     __tablename__ = 'metric'
     metricId = Column(Integer(), primary_key=True, autoincrement=True)
     captureAlias = Column(String(64), ForeignKey(Capture.captureAlias), nullable=True)
