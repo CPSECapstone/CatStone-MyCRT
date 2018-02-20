@@ -1,5 +1,5 @@
-from src.database.updateRecords import *
-from src.database.getRecords import *
+from src.database.updateRecords import updateCapture
+from src.database.getRecords import getAllCapturesThatHaveNotCompleted
 from src.capture.capture import completeCapture
 
 import datetime
