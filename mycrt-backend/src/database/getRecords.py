@@ -1,10 +1,7 @@
-import pymysql
-
-from .mycrt_database import db_session
 from .models import Capture, User
 
 
-def getUserFromEmail(email):
+def getUserFromEmail(email, db_session):
 	""" Function to check if an email already exists inside the database
 
 		Keyword arguments:
@@ -13,7 +10,7 @@ def getUserFromEmail(email):
 	getUserQuery = db_session.query(User).filter(User.email == email)
 	return db_session.execute(getUserQuery).fetchall()
 
-def getUserFromUsername(username):
+def getUserFromUsername(username, db_session):
 	"""
 		Function to get a User given the username
 
@@ -23,7 +20,7 @@ def getUserFromUsername(username):
 	userQuery = db_session.query(User).filter(User.username == username)
 	return db_session.execute(userQuery).fetchall()
 
-def getUserEmail(username):
+def getUserEmail(username, db_session):
 	"""
 		Function to get a user email
 
@@ -33,7 +30,7 @@ def getUserEmail(username):
 	userEmail = db_session.query(User.email).filter(User.username == username)
 	return db_session.execute(userEmail).fetchall()
 
-def getAllCaptures(username):
+def getAllCaptures(username, db_session):
 	''' Function to get All Captures
 
 		Keyword arguments:
@@ -42,7 +39,7 @@ def getAllCaptures(username):
 	user_captures = db_session.query(Capture).join(User).filter(User.username == username)
 	return db_session.execute(user_captures).fetchall()
 
-def getCaptureRDSInformation(captureAlias):
+def getCaptureRDSInformation(captureAlias, db_session):
 	""" Function to get RDS Information from Capture
 
 		Keyword arguments:
@@ -51,7 +48,7 @@ def getCaptureRDSInformation(captureAlias):
 	rdsInformation = db_session.query(Capture.rdsInstance, Capture.rdsUsername, Capture.rdsPassword, Capture.rdsDatabase).filter(Capture.captureAlias == captureAlias)
 	return db_session.execute(rdsInformation).fetchall()
 
-def getCaptureFromId(captureId):
+def getCaptureFromId(captureId, db_session):
 	""" Function to get a capture after receiving a captureId
 
 		Keyword arguments:
@@ -60,7 +57,7 @@ def getCaptureFromId(captureId):
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
 	return db_session.execute(captureInformation).fetchall()
 
-def getCaptureFromAlias(captureAlias):
+def getCaptureFromAlias(captureAlias, db_session):
 	""" Function to get a capture after receiving a captureId
 
 		Keyword arguments:
@@ -69,7 +66,7 @@ def getCaptureFromAlias(captureAlias):
 	captureInformation = Capture.query.filter(Capture.captureAlias == captureAlias)
 	return db_session.execute(captureInformation).fetchall()
 
-def getCaptureStatus(captureId):
+def getCaptureStatus(captureId, db_session):
 	"""Function to get a capture's status after receiving a captureId
 
 		Keyword arguments:
@@ -78,7 +75,7 @@ def getCaptureStatus(captureId):
 	captureInformation = db_session.query(Capture.captureId, Capture.captureStatus).filter(Capture.captureId == captureId)
 	return db_session.execute(captureInformation).fetchall()
 
-def getUsersSuccessfulCaptures(userId):
+def getUsersSuccessfulCaptures(userId, db_session):
 	"""Function to get a user's succesful captures after receiving a userId
 
 		Keyword arguments:
@@ -87,7 +84,7 @@ def getUsersSuccessfulCaptures(userId):
 	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.captureStatus == 1)
 	return db_session.execute(captureInformation).fetchall()
 
-def getAllCapturesThatHaveNotCompleted():
+def getAllCapturesThatHaveNotCompleted(db_session):
 	"""Function to get all current captures that have a status of 0
 	"""
 

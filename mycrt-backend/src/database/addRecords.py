@@ -1,6 +1,3 @@
-import pymysql
-
-from .mycrt_database import db_session
 from .user_repository import UserRepository
 from .models import Capture, Metric
 from .getRecords import getCaptureFromAlias
@@ -17,7 +14,7 @@ from .getRecords import getCaptureFromAlias
                                 "testPW",
                                 "testDB")
 '''
-def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
+def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, db_session):
 	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
 
 	try:
@@ -43,7 +40,8 @@ def insertReplayMetric(replay, bucket, metricFile):
 
 #Function used to insert MetricFiles
 #Note: This should NOT be used anywhere else in the system.
-def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileName=None):
+def insertMetric(db_session,captureAlias=None, replayAlias=None, s3Bucket=None,
+        metricFileName=None):
 	if captureAlias is not None:
 		metric = Metric(s3Bucket, metricFileName, captureAlias=captureAlias)
 	else:
@@ -62,6 +60,6 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testAccess",
                        "testSecret")
 '''
-def insertUser(userName, userPassword, email, accessKey, secretKey):
+def insertUser(userName, userPassword, email, accessKey, secretKey, db_session):
         user_repository = UserRepository(db_session)
         user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
