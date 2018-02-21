@@ -96,7 +96,7 @@ def post_capture():
         if (isinstance(response, int) and response > -1):
             return jsonify({'captureId': response}), 201
         else:
-            return jsonify({'error': response}), 400
+            return jsonify({'error': "Capture failed"}), 400
 
 @app.route('/users/s3Buckets', methods=['GET'])
 @auth.login_required

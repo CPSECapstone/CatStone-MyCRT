@@ -20,6 +20,12 @@ import Toggle from 'material-ui/Toggle';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
+const SERVER_PATH = "http://localhost:5000";
+var NOT_STARTED = 0;
+var IN_PROGRESS = 1;
+var COMPLETED = 2;
+var ERROR = 3;
+
 const styles = {
   propContainer: {
     width: 200,
@@ -72,15 +78,67 @@ class ViewResults extends Component {
       rowNumberSelected: undefined,
       isOpenDetailsClicked: false,
       captureDetails: undefined,
-      isChartLoaded: false
+      isChartLoaded: false,
+      captures: [],
+      captureMetrics: []
     };
 
     // This binding is necessary to make `this` work in the callback
+    this.getMetricData = this.getMetricData.bind(this);
+    this.getCaptureData = this.getCaptureData.bind(this);
     this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
+  }
+
+  componentDidMount() {
+    var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
+
+    this.setState({intervalGetAllCaptures: intervalGetAllCaptures});
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.intervalGetAllCaptures);
+  }
+
+  getCaptureData() {
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "/users/captures",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+      type: 'GET',
+      success: function(json) {
+        component.setState(prevState => ({captures: json["userCaptures"]}));
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  }
+
+  getMetricData(captureId) {
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "users/" + captureId + "/metrics",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+      type: 'GET',
+      success: function(json) {
+        component.setState(prevState => ({captureCards: json["FreeableMemory"]}));
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   }
 
   onLogClose() {
@@ -92,7 +150,7 @@ class ViewResults extends Component {
   onOpenDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
       isLogOpen: true,
-      captureDetails: tableData[rowIndex]
+      captureDetails: this.state.captures[rowIndex]
     }));
   }
 
@@ -129,7 +187,7 @@ class ViewResults extends Component {
             <TableRow>
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Status">Status</TableHeaderColumn>
-              <TableHeaderColumn tooltip="The Database IP">Database IP</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The RDS Instance Name">RDS Instance</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="The End Time">End Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
@@ -141,20 +199,22 @@ class ViewResults extends Component {
             showRowHover={true}
             stripedRows={false}
           >
-            {tableData.map( (row, index) => {
+            {this.state.captures.map( (row, index) => {
               let boundItemClick = this.onOpenDetailsClick.bind(this, index);
-              return(
-              <TableRow key={index} >
-                <TableRowColumn>{row.alias}</TableRowColumn>
-                <TableRowColumn>
-                  {row.complete ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
-                </TableRowColumn>
-                <TableRowColumn>{row.ip}</TableRowColumn>
-                <TableRowColumn>{row.start}</TableRowColumn>
-                <TableRowColumn>{row.end}</TableRowColumn>
-                <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
-              </TableRow>
-              );
+              if (row.captureStatus === COMPLETED || row.captureStatus === ERROR) {
+                return(
+                <TableRow key={index} >
+                  <TableRowColumn>{row.captureAlias}</TableRowColumn>
+                  <TableRowColumn>
+                    {(row.captureStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
+                  </TableRowColumn>
+                  <TableRowColumn>{row.rdsInstance}</TableRowColumn>
+                  <TableRowColumn>{row.startTime}</TableRowColumn>
+                  <TableRowColumn>{row.endTime}</TableRowColumn>
+                  <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
+                </TableRow>
+                );
+              }
               })}
           </TableBody>
         </Table>
@@ -191,7 +251,7 @@ class ViewResults extends Component {
       <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
          <div class="refresh-result-button">
             <Button 
-              onClick={this.sendData}
+              onClick={this.getMetricData("testy")}
               content="Refresh Results"
               isSubmit={false}
             />

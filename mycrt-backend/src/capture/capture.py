@@ -52,6 +52,7 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name)
     if (newCapture):
         return newCapture[0][0]
+    print(newCapture, " was the new capture")
     return -1
 
 
