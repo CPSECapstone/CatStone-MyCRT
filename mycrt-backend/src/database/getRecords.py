@@ -30,6 +30,19 @@ def getUserEmail(username, db_session):
 	userEmail = db_session.query(User.email).filter(User.username == username)
 	return db_session.execute(userEmail).fetchall()
 
+def getUsersCaptures(username, db_session):
+    ''' Function to get All Captures
+
+            Keyword arguments:
+            username -- the username of the user you want to get all captures from
+            db_session -- the database session to query from
+    '''
+    result = []
+    user_captures = db_session.query(Capture).join(User).filter(User.username == username)
+    result = Capture.convertToDict(db_session.execute(user_captures).fetchall())
+
+    return result
+
 def getAllCaptures(username, db_session):
 	''' Function to get All Captures
 

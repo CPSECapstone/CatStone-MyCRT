@@ -5,7 +5,6 @@ import unittest
 import tempfile
 from flask import json
 from base64 import b64encode
-from requests.auth import HTTPBasicAuth
 
 class TestServer(unittest.TestCase):
 
@@ -31,7 +30,7 @@ class TestServer(unittest.TestCase):
     def register_user_request(self, username, password, email, access_key, secret_key):
         ''' Helper method for making a register request
         '''
-        return self.app.post('/user',
+        return self.app.post('/users',
                 data = json.dumps({
                     'username' : username,
                     'password' : password,
@@ -49,8 +48,7 @@ class TestServer(unittest.TestCase):
         secret_key = 'test_key'
 
         result = self.register_user_request(username, password, email, access_key, secret_key)
-        json_data = json.loads(result.data)
-        assert json_data['status'] == 201
+        assert result.status_code  == 201
 
     def test_login_with_credentials(self):
         username = 'test'
@@ -63,7 +61,10 @@ class TestServer(unittest.TestCase):
                 headers = {
                     'Authorization': 'Basic %s' % b64encode(bytes(username + ":" +  password, 'utf-8')).decode("ascii")})
         print(result.data)
-        assert b'Unauthorized' in result.data
+        jsonData = json.loads(result.data)
+        token = jsonData['token']
+        assert b'Unauthorized' not in result.data
+        assert token != None and token != ''
 
 
 
