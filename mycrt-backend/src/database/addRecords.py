@@ -1,9 +1,10 @@
 import pymysql
 
-from .user_database import Base, user_repository
-from .models import *
+from .mycrt_database import db_session
+from .user_repository import UserRepository
+from .models import Capture, Metric
+from .getRecords import getCaptureFromAlias
 
-session = user_repository.db_session
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1,
                                 "test-capture-2",
@@ -16,14 +17,15 @@ session = user_repository.db_session
                                 "testPW",
                                 "testDB")
 '''
-def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
-	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase)
+def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName):
+	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
 
 	try:
-		session.add(capture)
-		session.commit()
+		db_session.add(capture)
+		db_session.commit()
 	except:
-		session.rollback()
+		db_session.rollback()
+	return getCaptureFromAlias(captureAlias)
 
 
 '''Simple function to insert a capture metric
@@ -48,10 +50,10 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
 		metric = Metric(s3Bucket, metricFileName, replayAlias=replayAlias)
 
 	try:
-		session.add(metric)
-		session.commit()
+		db_session.add(metric)
+		db_session.commit()
 	except:
-		session.rollback()
+		db_session.rollback()
 
 ''' Function to insert a user into the database
    Example: insertUser("AndrewTest",
@@ -61,4 +63,5 @@ def insertMetric(captureAlias=None, replayAlias=None, s3Bucket=None, metricFileN
                        "testSecret")
 '''
 def insertUser(userName, userPassword, email, accessKey, secretKey):
-		user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
+        user_repository = UserRepository(db_session)
+        user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)

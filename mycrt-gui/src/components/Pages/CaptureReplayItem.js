@@ -7,32 +7,36 @@ var IN_PROGRESS = 1;
 var COMPLETED = 2;
 var ERROR = 3;
 
+var endTime = new Date();
+
 class CaptureReplayItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      captureReplayStatus: NOT_STARTED
+      captureReplayStatus: ERROR
     };
   }
 
   render() {
     var captureStatusText = "";
     var captureStatusTextClass = "";
-    if (this.state.captureReplayStatus == NOT_STARTED) {
+    if (this.props.status == NOT_STARTED) {
       captureStatusTextClass = "capture-not-started";
       captureStatusText = "Not Started";
-    } else if (this.state.captureReplayStatus == IN_PROGRESS) {
+    } else if (this.props.status == IN_PROGRESS) {
       captureStatusTextClass = "capture-in-progress";
       captureStatusText = "In Progress";
-    } else if (this.state.captureReplayStatus == COMPLETED) {
+    } else if (this.props.status == COMPLETED) {
       captureStatusTextClass = "capture-complete";
       captureStatusText = "Complete";
-    } else if (this.state.captureReplayStatus == ERROR) {
+    } else if (this.props.status == ERROR) {
       captureStatusTextClass = "capture-error";
       captureStatusText = "Error Found";
     }
     var captureStatusBarClass = captureStatusTextClass + "-bar";
 
+    console.log(this.props.end);
+    console.log(new Date());
     return (
       <div className="CaptureReplayItem">
         <div class={"status-bar " + captureStatusBarClass} />
@@ -44,6 +48,7 @@ class CaptureReplayItem extends Component {
           <h5 class="capture-sub-item" >RDS: {this.props.rds}</h5>
           <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
           <h5>Time Remaining: {this.props.end - (new Date())}</h5>
+          <h5>Status: {this.props.status}</h5>
         </div>
       </div>
     );

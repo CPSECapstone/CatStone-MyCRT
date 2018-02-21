@@ -1,41 +1,71 @@
 import boto3
 import datetime
+from operator import itemgetter
+
 from botocore.exceptions import ClientError
 
-def get_metrics(local_log_file, start_time, end_time, bucket_name, db_identifier):
-    # can remove once attached to capture function because will be passed as parsed datetimes
-    # parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
-    # parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
-    local_metric_file = local_log_file + "_metrics"
-    metrics_list = []
+def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type):
+    metric_file = alias + ".metrics"
 
     client = boto3.client('cloudwatch')
     s3 = boto3.client('s3')
 
     metrics = client.get_metric_statistics(
         Namespace='AWS/RDS',
-        MetricName='CPUUtilization',
+        MetricName=metric_type,
         Dimensions=[
             {
                 'Name': 'DBInstanceIdentifier',
                 'Value': db_identifier
             },
         ],
-        StartTime=datetime.datetime.utcnow() - datetime.timedelta(days=1),
-        EndTime=datetime.datetime.utcnow(),
-        Period=60,
-        Statistics=['Average'],
-        Unit='Percent'
+        StartTime=start_time,
+        EndTime=end_time,
+        Period=360,
+        Statistics=['Average']
     )
 
-    with open(local_metric_file, 'w') as f:
-            for datapoint in metrics['Datapoints']:
-                f.write(str(datapoint) + '\n')
-                metrics_list.append(datapoint)
+    metric_data = []
+    sorted_metrics = sorted(metrics['Datapoints'], key=itemgetter('Timestamp'))
+
+
+    with open(metric_file, "a") as f:
+
+        for datapoint in sorted_metrics:
+            datapoint_data = {}
+
+            datapoint_data['Timestamp'] = datapoint['Timestamp']
+            datapoint_data[metric_type] = datapoint['Average']
+
+            f.write('Timestamp=' + str(datapoint['Timestamp']) + ',')
+            f.write(metric_type + '=' + str(datapoint['Average']) + '\n')
+
+            metric_data.append(datapoint_data)
 
     try:
-        response = s3.upload_file(local_metric_file, bucket_name, local_metric_file)
+        response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
 
-    return metrics_list
+    return metric_data
+
+def get_metrics(metric_type, metric_alias, bucket_name):
+    s3 = boto3.resource('s3')
+
+    try:
+        s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
+    except ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            print("The object does not exist.")
+        else:
+            raise
+
+    metric_data = []
+
+    with open(metric_alias, "r") as f:
+        for line in f:
+            if metric_type in line:
+                datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
+                metric_data.append(datapoint)
+
+    return metric_data

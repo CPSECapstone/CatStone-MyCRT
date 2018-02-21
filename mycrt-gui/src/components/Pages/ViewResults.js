@@ -69,7 +69,8 @@ class ViewResults extends Component {
       isLogOpen: false,
       rowNumberSelected: undefined,
       isOpenDetailsClicked: false,
-      captureDetails: undefined
+      captureDetails: undefined,
+      isChartLoaded: false
     };
 
     // This binding is necessary to make `this` work in the callback
