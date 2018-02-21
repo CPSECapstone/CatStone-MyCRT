@@ -1,6 +1,7 @@
 import boto3
 from operator import itemgetter
 from flask import g
+from datetime import date
 
 from botocore.exceptions import ClientError
 
@@ -10,6 +11,8 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
      aws_secret_access_key=g.user.secret_key)
     client = boto3.client('cloudwatch', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
+
+    identifier = db_identifier.split('.')[0]
 
     metrics = client.get_metric_statistics(
         Namespace='AWS/RDS',
