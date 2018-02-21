@@ -131,10 +131,10 @@ def get_capture_metrics(captureId):
 
     if (len(user_captures) == 0):
         return str(404)
-    elif (user_capture.userId != g.user.get_id()):
+    elif (user_capture['user_id'] != g.user.get_id()):
         return str(403)
     for metric in availableMetrics:
-        metrics[metric] = get_metrics(metric, user_capture.captureAlias + '.metrics', user_capture.s3Bucket);
+        metrics[metric] = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket']);
 
     return jsonify(metrics), 200
 
