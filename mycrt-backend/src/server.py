@@ -129,7 +129,7 @@ def get_capture_metrics(captureId):
     user_captures = getCaptureFromId(captureId)
     user_capture = user_captures[0]
 
-    if (user_captures.length == 0):
+    if (len(user_captures) == 0):
         return str(404)
     elif (user_capture.userId != g.user.get_id()):
         return str(403)
