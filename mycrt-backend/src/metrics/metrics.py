@@ -1,5 +1,4 @@
 import boto3
-import datetime
 from operator import itemgetter
 
 from botocore.exceptions import ClientError
