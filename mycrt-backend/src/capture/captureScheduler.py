@@ -13,7 +13,6 @@ def checkAllRDSInstances():
 
     #Go through all the captures we received
     for capture in currentCaptures:
-        print(capture['endTime'], " and ", capture['startTime'], "Now is ", now)     
         if capture['endTime'] <= now:
             completeCapture(capture)
         elif capture['startTime'] <= now and capture['endTime'] > now:
