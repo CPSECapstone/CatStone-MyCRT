@@ -4,7 +4,8 @@ import sys
 import pymysql
 import boto3
 from botocore.exceptions import NoRegionError, ClientError
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil import parser
 from pymysql import OperationalError, MySQLError
 from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
@@ -115,7 +116,7 @@ def completeCapture(capture):
     else:
         updateCapture(capture['captureId'], 2)
 
-    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'CPUUtilization')
-    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'FreeableMemory')
-    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'ReadIOPS')
-    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'WriteIOPS')
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", "us-east-2")
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "FreeableMemory", currentCapture['regionName'])
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "ReadIOPS", currentCapture['regionName'])
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "WriteIOPS", currentCapture['regionName'])
