@@ -59,9 +59,6 @@ def completeCapture(capture):
     fileName = currentCapture['captureAlias'] + '.log'
     errList = []
 
-    parsed_start = datetime.strptime(currentCapture['startTime'], '%Y-%m-%d %H:%M:%S')
-    parsed_end = datetime.strptime(currentCapture['endTime'], '%Y-%m-%d %H:%M:%S')
-
     print(fileName)
     with open(fileName, 'w') as f:
         try:
@@ -117,7 +114,7 @@ def completeCapture(capture):
     else:
         updateCapture(capture['captureId'], 2)
 
-    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'CPUUtilization')
-    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'FreeableMemory')
-    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'ReadIOPS')
-    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'WriteIOPS')
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'CPUUtilization')
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'FreeableMemory')
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'ReadIOPS')
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'WriteIOPS')
