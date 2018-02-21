@@ -61,7 +61,9 @@ def completeCapture(capture):
     fileName = currentCapture['captureAlias'] + '.log'
     errList = []
 
-    print(fileName)
+    if os.path.exists(fileName):
+        os.remove(fileName)
+        
     with open(fileName, 'w') as f:
         try:
             sql = db_query
