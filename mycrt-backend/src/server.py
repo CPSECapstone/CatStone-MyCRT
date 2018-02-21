@@ -121,7 +121,7 @@ def get_rds_instances(region_name):
 
 
 @app.route('/users/<captureId>/metrics', methods=["GET"])
-@auth.login
+@auth.login_required
 def get_capture_metrics(captureId):
     metrics = {}
     availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
