@@ -130,9 +130,9 @@ def get_capture_metrics(captureId):
     user_capture = user_captures[0]
 
     if (user_captures.length == 0):
-        return 404
+        return str(404)
     elif (user_capture.userId != g.user.get_id()):
-        return 403
+        return str(403)
     for metric in availableMetrics:
         metrics[metric] = get_metrics(metric, user_capture.captureAlias + '.metrics', user_capture.s3Bucket);
 
