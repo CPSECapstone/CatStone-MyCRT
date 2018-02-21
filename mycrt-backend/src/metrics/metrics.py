@@ -1,7 +1,7 @@
 import boto3
 from operator import itemgetter
 from flask import g
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from botocore.exceptions import ClientError
 
@@ -20,18 +20,19 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         Dimensions=[
             {
                 'Name': 'DBInstanceIdentifier',
-                'Value': db_identifier
+                'Value': identifier
             },
         ],
-        StartTime=start_time,
-        EndTime=end_time,
+        # StartTime=start_time,
+        # EndTime=end_time,
+        StartTime=datetime.now() - timedelta(days=2),
+        EndTime=datetime.now(),
         Period=360,
         Statistics=['Average']
     )
     
     metric_data = []
     sorted_metrics = sorted(metrics['Datapoints'], key=itemgetter('Timestamp'))
-    print (sorted_metrics)
 
     with open(metric_file, "a") as f:
 
