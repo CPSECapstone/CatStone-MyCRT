@@ -97,5 +97,5 @@ def getAllCapturesThatHaveNotCompleted():
 	"""Function to get all current captures that have a status of 0
 	"""
 
-	captureInformation =Capture.query.filter(Capture.captureStatus == 0).filter(Capture.userId == g.user.id)
+	captureInformation =Capture.query.filter(Capture.captureStatus <= 1).filter(Capture.userId == g.user.id)
 	return Capture.convertToDict(db_session.execute(captureInformation).fetchall())
