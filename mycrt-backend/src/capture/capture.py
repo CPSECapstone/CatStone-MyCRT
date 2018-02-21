@@ -9,7 +9,7 @@ from pymysql import OperationalError, MySQLError
 from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
-from src.metrics import save_metrics
+from src.metrics.metrics import save_metrics
 from flask import g
 
 db_query = """Select event_time, argument from mysql.general_log where 
@@ -60,8 +60,8 @@ def completeCapture(capture):
     fileName = currentCapture['captureAlias'] + '.log'
     errList = []
 
-    parsed_start = datetime.strptime(currentCapture['startTime'][:-1], "%Y-%m-%dT%H:%M:%S.%f")
-    parsed_end = datetime.strptime(currentCapture['endTime'][:-1], "%Y-%m-%dT%H:%M:%S.%f")
+    parsed_start = datetime.strptime(currentCapture['startTime'], '%Y-%m-%d %H:%M:%S')
+    parsed_end = datetime.strptime(currentCapture['endTime'], '%Y-%m-%d %H:%M:%S')
 
     print(fileName)
     with open(fileName, 'w') as f:
