@@ -9,11 +9,11 @@ def checkAllRDSInstances():
     currentCaptures = getAllCapturesThatHaveNotCompleted()
 
     #The current time 
-    now = datetime.datetime.now()
+    now = datetime.datetime.now() + datetime.timedelta(hours=8)
 
     #Go through all the captures we received
     for capture in currentCaptures:
-     
+        print(capture['endTime'], " and ", capture['startTime'], "Now is ", now)     
         if capture['endTime'] <= now:
             completeCapture(capture)
         elif capture['startTime'] <= now and capture['endTime'] > now:
