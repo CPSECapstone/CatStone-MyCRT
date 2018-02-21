@@ -77,7 +77,7 @@ def get_users_captures():
     checkAllRDSInstances()
     allCaptures = getUsersCaptures(current_user.username)
 
-    return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
+    return jsonify({"count": len(allCaptures), "userCaptures": allCaptures}), 200
 
 @app.route('/users/captures', methods=['POST'])
 @auth.login_required

@@ -117,7 +117,7 @@ def completeCapture(capture):
         print(errList)
     else:
         updateCapture(capture['captureId'], 2)
-        
+
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'CPUUtilization')
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'FreeableMemory')
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'ReadIOPS')
