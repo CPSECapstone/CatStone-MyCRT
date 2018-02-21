@@ -29,10 +29,6 @@ and argument NOT LIKE \'SET SESSION %% READ\'
 and LENGTH(argument) > 0
 ORDER by event_time desc"""
 
-s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
-aws_secret_access_key=g.user.secret_key)
-
-
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
     parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
     parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
@@ -57,6 +53,8 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
 
 
 def completeCapture(capture):
+    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
     currentCapture = capture
 
     fileName = currentCapture['captureAlias'] + '.log'
