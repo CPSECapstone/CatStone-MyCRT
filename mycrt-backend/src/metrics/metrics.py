@@ -25,10 +25,10 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         Period=360,
         Statistics=['Average']
     )
-
+    
     metric_data = []
     sorted_metrics = sorted(metrics['Datapoints'], key=itemgetter('Timestamp'))
-
+    print (sorted_metrics)
 
     with open(metric_file, "a") as f:
 
@@ -51,7 +51,7 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
     return metric_data
 
 def get_metrics(metric_type, metric_alias, bucket_name):
-    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
+    s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
 
     try:
