@@ -1,5 +1,6 @@
 import boto3
 from operator import itemgetter
+from flask import g
 
 from botocore.exceptions import ClientError
 
