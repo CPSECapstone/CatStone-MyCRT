@@ -5,9 +5,10 @@ from botocore.exceptions import ClientError
 
 def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type):
     metric_file = alias + ".metrics"
-
-    client = boto3.client('cloudwatch')
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
+    client = boto3.client('cloudwatch', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
 
     metrics = client.get_metric_statistics(
         Namespace='AWS/RDS',
@@ -49,7 +50,8 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
     return metric_data
 
 def get_metrics(metric_type, metric_alias, bucket_name):
-    s3 = boto3.resource('s3')
+    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
 
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
