@@ -120,10 +120,23 @@ def get_rds_instances(region_name):
     return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode'],
 
 
-@app.route('/users/metrics', methods=['GET'])
-@auth.login_required
-def get_user_metrics():
-	return jsonify(get_all_metrics())
+@app.route('/users/<captureId>/metrics', methods=["GET"])
+@auth.login
+def get_capture_metrics(captureId):
+    metrics = {}
+    availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
+
+    user_captures = getCaptureFromId(captureId)
+    user_capture = user_captures[0]
+
+    if (user_captures.length == 0):
+        return str(404)
+    elif (user_capture.userId != g.user.get_id()):
+        return str(403)
+    for metric in availableMetrics:
+        metrics[metric] = get_metrics(metric, user_capture.captureAlias + '.metrics', user_capture.s3Bucket);
+
+    return jsonify(metrics), 200
 
 @auth.verify_password
 def verify_password(username_or_token, password):

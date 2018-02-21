@@ -9,6 +9,7 @@ from pymysql import OperationalError, MySQLError
 from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
+from src.metrics import save_metrics
 from flask import g
 
 db_query = """Select event_time, argument from mysql.general_log where 
@@ -33,9 +34,6 @@ s3 = boto3.client('s3')
 
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
-    parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
-    parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
-
     try:
         sql = db_query
 
@@ -61,6 +59,9 @@ def completeCapture(capture):
 
     fileName = currentCapture['captureAlias'] + '.log'
     errList = []
+
+    parsed_start = datetime.strptime(currentCapture['startTime'][:-1], "%Y-%m-%dT%H:%M:%S.%f")
+    parsed_end = datetime.strptime(currentCapture['endTime'][:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
     print(fileName)
     with open(fileName, 'w') as f:
@@ -116,3 +117,8 @@ def completeCapture(capture):
         print(errList)
     else:
         updateCapture(capture['captureId'], 2)
+
+    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'CPUUtilization')
+    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'FreeableMemory')
+    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'ReadIOPS')
+    save_metrics(currentCapture['captureAlias'], parsed_start, parsed_end, currentCapture['s3Bucket'], currentCapture['rdsDatabase'], 'WriteIOPS')
