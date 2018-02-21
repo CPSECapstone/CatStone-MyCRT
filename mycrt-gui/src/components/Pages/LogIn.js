@@ -70,7 +70,7 @@ class LogIn extends Component {
 
   onRegisterSubmit() {
     $.ajax({
-      url: SERVER_PATH + "/user",
+      url: SERVER_PATH + "/users",
       dataType: 'json',
       headers: {'Content-Type': 'application/json'},
       type: 'POST',
