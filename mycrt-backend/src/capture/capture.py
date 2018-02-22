@@ -11,26 +11,23 @@ from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
 from flask import g
 
-db_query = """Select event_time, argument from mysql.general_log where 
-user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\' 
-and user_host NOT LIKE \'[%%\' 
-and argument NOT LIKE \'%%_schema.%%\' 
-and argument NOT LIKE \'%%use %%\' 
-and argument NOT LIKE \'%%testcatstonedb%%\' 
-and argument NOT LIKE \'%%mysql%%\' 
-and argument NOT LIKE \'SELECT %%()%%\' 
-and argument NOT LIKE \'%%general_log%%\' 
-and argument NOT LIKE \'SET AUTOCOMMIT%%\' 
-and argument NOT LIKE \'Access denied%%\' 
-and argument NOT LIKE \'set %% utf8%%\' 
-and argument NOT LIKE \'set sql_safe_updates%%\' 
-and argument NOT LIKE \'SHOW %%\' 
-and argument NOT LIKE \'SET SESSION %% READ\' 
-and LENGTH(argument) > 0 
+db_query = """Select event_time, argument from mysql.general_log where
+user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\'
+and user_host NOT LIKE \'[%%\'
+and argument NOT LIKE \'%%_schema.%%\'
+and argument NOT LIKE \'%%use %%\'
+and argument NOT LIKE \'%%testcatstonedb%%\'
+and argument NOT LIKE \'%%mysql%%\'
+and argument NOT LIKE \'SELECT %%()%%\'
+and argument NOT LIKE \'%%general_log%%\'
+and argument NOT LIKE \'SET AUTOCOMMIT%%\'
+and argument NOT LIKE \'Access denied%%\'
+and argument NOT LIKE \'set %% utf8%%\'
+and argument NOT LIKE \'set sql_safe_updates%%\'
+and argument NOT LIKE \'SHOW %%\'
+and argument NOT LIKE \'SET SESSION %% READ\'
+and LENGTH(argument) > 0
 ORDER by event_time desc"""
-
-s3 = boto3.client('s3')
-
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
     parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
@@ -56,6 +53,8 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
 
 
 def completeCapture(capture):
+    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
     currentCapture = capture
 
     fileName = currentCapture['captureAlias'] + '.log'
@@ -63,15 +62,15 @@ def completeCapture(capture):
 
     if os.path.exists(fileName):
         os.remove(fileName)
-        
+
     with open(fileName, 'w') as f:
         try:
             sql = db_query
 
-            connection = pymysql.connect(currentCapture['rdsInstance'], 
-                                         user=currentCapture['rdsUsername'], 
-                                         passwd=currentCapture['rdsPassword'], 
-                                         db=currentCapture['rdsDatabase'], 
+            connection = pymysql.connect(currentCapture['rdsInstance'],
+                                         user=currentCapture['rdsUsername'],
+                                         passwd=currentCapture['rdsPassword'],
+                                         db=currentCapture['rdsDatabase'],
                                          connect_timeout=5)
             queries = []
 
@@ -80,13 +79,13 @@ def completeCapture(capture):
         finally:
             if connection.open:
                 connection.close()
-        
+
         try:
             if len(errList) == 0:
-                connection = pymysql.connect(currentCapture['rdsInstance'], 
-                                         user=currentCapture['rdsUsername'], 
-                                         passwd=currentCapture['rdsPassword'], 
-                                         db=currentCapture['rdsDatabase'], 
+                connection = pymysql.connect(currentCapture['rdsInstance'],
+                                         user=currentCapture['rdsUsername'],
+                                         passwd=currentCapture['rdsPassword'],
+                                         db=currentCapture['rdsDatabase'],
                                          connect_timeout=5)
 
                 with connection.cursor(pymysql.cursors.DictCursor) as cursor:
