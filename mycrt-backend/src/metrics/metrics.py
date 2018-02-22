@@ -49,8 +49,6 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
-    finally:
-        os.remove(metric_file)
 
     return metric_data
 
