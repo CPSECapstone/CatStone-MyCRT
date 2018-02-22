@@ -25,6 +25,7 @@ var NOT_STARTED = 0;
 var IN_PROGRESS = 1;
 var COMPLETED = 2;
 var ERROR = 3;
+var LOADING = 4;
 
 const styles = {
   propContainer: {
@@ -51,7 +52,8 @@ class ViewResults extends Component {
       freeableMemory: [],
       cpuUtilization: [],
       readIOPS:[],
-      writeIOPS: []
+      writeIOPS: [],
+      loadingContent: true
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -91,6 +93,10 @@ class ViewResults extends Component {
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
+
+    this.setState(prevState => ({
+      loadingContent: false
+    }));
   }
 
   getMetricData(captureId) {
@@ -197,6 +203,17 @@ class ViewResults extends Component {
               })}
           </TableBody>
         </Table>
+        {this.state.loadingContent &&
+          <div class="loading-capture-table">
+            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              <h5>Loading...</h5>
+          </div>
+        }
+        {!this.state.loadingContent && this.state.captures.length <= 0 &&
+          <div class="loading-capture-table">
+            <h5>There are no complete captures.</h5>
+          </div>
+        }
         </div>
       );
   }

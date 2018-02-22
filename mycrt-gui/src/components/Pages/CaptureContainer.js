@@ -7,6 +7,7 @@ var NOT_STARTED = 0;
 var IN_PROGRESS = 1;
 var COMPLETED = 2;
 var ERROR = 3;
+var LOADING = 4;
 
 class CaptureContainer extends Component {
 
@@ -35,14 +36,13 @@ class CaptureContainer extends Component {
   }
 
   render() {
-    var card = undefined;
-    if (this.props.cards != undefined && this.props.cards.length > 0) {
-      card = (this.props.cards)[0];
-    }
+    var noContent = (this.props.cards != undefined && this.props.cards.length == 0);
+
+    console.log("no content?: " + noContent);
 
     return (
       <div className="CaptureContainer">
-        {this.props.cards.length > 0 &&
+        {!noContent &&
           <div class = "capture-subcontainer">
           {this.props.cards.slice(0).reverse().map((card) => 
               <CaptureReplayItem
@@ -53,13 +53,24 @@ class CaptureContainer extends Component {
                 start={card.startTime}
                 end={card.endTime}
                 status={card.captureStatus}
+                loading={this.props.showLoadingCard}
               />
           )}
           </div>
         }
-        {this.props.cards.length == 0 &&
-          <div class = "no-captures">
-            <h5>There are no current captures.</h5>
+        {noContent &&
+          <div class="no-captures">
+          {this.props.showLoadingContent &&
+            <div>
+            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              <h5>Loading...</h5>
+            </div>
+          }
+          {!this.props.showLoadingContent &&
+            <div>
+              <h5>There are no current captures.</h5>
+            </div>
+          }
           </div>
         }
 

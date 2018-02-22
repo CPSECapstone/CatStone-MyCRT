@@ -18,6 +18,11 @@ import DatePicker from 'material-ui/DatePicker';
 import $ from 'jquery';
 
 var SERVER_PATH = "http://localhost:5000";
+var NOT_STARTED = 0;
+var IN_PROGRESS = 1;
+var COMPLETED = 2;
+var ERROR = 3;
+var LOADING = 4;
 
 class HomePage extends Component {
 	constructor(props) {
@@ -37,11 +42,15 @@ class HomePage extends Component {
       isErrorVisible: false,
       captureCards: [],
       rdsItems: [],
-      s3Items: []
+      s3Items: [],
+      showLoadingCard: true,
+      pausePolling: false,
+      loadingCaptureContent: true
     };
 
 
     // This binding is necessary to make `this` work in the callback
+    this.checkLoadingCard = this.checkLoadingCard.bind(this);
     this.getRdsData = this.getRdsData.bind(this);
     this.getS3Data = this.getS3Data.bind(this);
     this.getCaptureData = this.getCaptureData.bind(this);
@@ -71,17 +80,35 @@ class HomePage extends Component {
   }
 
   componentDidMount() {
-    var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
+    if (!this.state.pausePolling) {
+      var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
 
-    this.setState({intervalGetAllCaptures: intervalGetAllCaptures});
+      this.setState({
+        intervalGetAllCaptures: intervalGetAllCaptures
+      });
+    }
+
+    var intervalShowLoadingCard = setInterval(this.checkLoadingCard, 1500);
+    this.setState({
+      intervalShowLoadingCard: intervalShowLoadingCard
+    });
   }
 
   componentWillUnmount() {
     clearInterval(this.state.intervalGetAllCaptures);
   }
 
+  checkLoadingCard() {
+    this.setState({
+      showLoadingCard: this.state.captureCards.length <= 0
+    });
+  }
+
   sendCaptureData(formDataValues) {
     var parentContextState = this.props.parentContext.state;
+    this.setState({
+      pausePolling: true
+    });
 
     $.ajax({
       url: SERVER_PATH + "/users/captures",
@@ -92,6 +119,9 @@ class HomePage extends Component {
       data: JSON.stringify(formDataValues),
       success: function(data) {
         console.log("SUCCESS capture form");
+        this.setState({
+          pausePolling: false
+        });
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -116,6 +146,10 @@ class HomePage extends Component {
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
+
+    this.setState(prevState =>({
+      loadingCaptureContent: false
+    }));
   }
 
   getS3Data() {
@@ -352,7 +386,6 @@ class HomePage extends Component {
   }
 
   onCaptureSubmit() {
-    //TODO: send information from API to capture card
     var card = {
       alias: this.state.aliasValue,
       db_user: this.state.dbUsernameValue,
@@ -365,10 +398,17 @@ class HomePage extends Component {
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
-    // this.getCaptureData();
 
+    var formattedCard = {
+      captureAlias: this.state.aliasValue,
+      rdsInstance: this.state.rdsValue,
+      s3Bucket: this.state.s3Value,
+      endTime: this.state.captureEndDay,
+      startTime: this.state.captureStartDay,
+      captureStatus: LOADING
+    };
     var newCards = this.state.captureCards;
-    newCards.push(card);
+    newCards.push(formattedCard);
     this.setState(prevState => ({
       captureCards: newCards,
       isErrorVisible: false
@@ -530,7 +570,8 @@ class HomePage extends Component {
         { this.renderCaptureForm() }
       	<CaptureContainer
           cards={this.state.captureCards}
-          sampleDate={this.state.captureEndDay}
+          showLoadingCard={this.state.showLoadingCard}
+          showLoadingContent={this.state.loadingCaptureContent}
         />
       	<h3>Replays</h3>
       	<Button

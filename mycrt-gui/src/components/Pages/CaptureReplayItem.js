@@ -6,6 +6,7 @@ var NOT_STARTED = 0;
 var IN_PROGRESS = 1;
 var COMPLETED = 2;
 var ERROR = 3;
+var LOADING = 4;
 
 var endTime = new Date();
 
@@ -67,22 +68,38 @@ class CaptureReplayItem extends Component {
     } else if (this.props.status == ERROR) {
       captureStatusTextClass = "capture-error";
       captureStatusText = "Error Found";
+    } else if (this.props.status == LOADING) {
+      captureStatusTextClass = "capture-loading";
+      captureStatusText = "Processing...";
     }
     var captureStatusBarClass = captureStatusTextClass + "-bar";
 
     return (
-      <div className="CaptureReplayItem">
-        <div class={"status-bar " + captureStatusBarClass} />
-        <div class="capture-replay-item-content">
-          <div class={captureStatusTextClass}>
-            <h6>{captureStatusText}</h6>
+      <div>
+        {this.props.loading && 
+          <div className="CaptureReplayItem">
+            <div class="capture-replay-item-content">
+              <div class={"status-bar " + captureStatusTextClass + "-bar"} />
+              <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              <h5>Loading...</h5>
+            </div>
           </div>
-          <h4 class="capture-sub-item" >{this.props.alias}</h4>
-          <h5 class="capture-sub-item" >RDS: {this.props.rds}</h5>
-          <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
-          <h5>Time Remaining:</h5>
-          <h5>{this.getTimeLeft()}</h5>
-        </div>
+        }
+        {!this.props.loading &&
+          <div className="CaptureReplayItem">
+            <div class={"status-bar " + captureStatusBarClass} />
+            <div class="capture-replay-item-content">
+              <div class={captureStatusTextClass}>
+                <h6>{captureStatusText}</h6>
+              </div>
+              <h4 class="capture-sub-item" >{this.props.alias}</h4>
+              <h5 class="capture-sub-item" >RDS: {this.props.rds}</h5>
+              <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
+              <h5>Time Remaining:</h5>
+              <h5>{this.getTimeLeft()}</h5>
+            </div>
+          </div>
+        }
       </div>
     );
   }
