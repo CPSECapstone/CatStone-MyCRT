@@ -72,6 +72,7 @@ def get_metrics(metric_type, metric_alias, bucket_name):
         for line in f:
             if metric_type in line:
                 datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
+                datapoint[metric_type] = float(datapoint[metric_type])
                 metric_data.append(datapoint)
 
     return metric_data
