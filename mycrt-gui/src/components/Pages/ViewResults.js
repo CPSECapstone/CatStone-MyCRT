@@ -255,14 +255,14 @@ class ViewResults extends Component {
                 {this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}
                 </div>
               </h5>
-              <LineChart width={600} height={300} data={[this.state.freeableMemory[0], this.state.freeableMemory[1], this.state.freeableMemory[2]]} margin={{top: 5, right: 30, left: 20, bottom: 5}}>
-       <XAxis dataKey="Timestamp"/>
-       <YAxis/>
-       <CartesianGrid strokeDasharray="3 3"/>
-       <Tooltip/>
-       <Legend />
-       <Line type="monotone" dataKey="FreeableMemory" stroke="#8884d8" activeDot={{r: 8}}/>
-      </LineChart>
+              <LineChart width={800} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 20, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis domain={['dataMin', 'dataMax']}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="FreeableMemory" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
             </div>
           </Dialog>
         }
