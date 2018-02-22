@@ -112,7 +112,7 @@ def create_app(config={}):
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 'rdsInstances': response}), 200
 
-        return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode'],
+        return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
 
     @app.route('/users/metrics', methods=['GET'])
     @auth.login_required
