@@ -3,6 +3,6 @@ matrix:
       - language: python
         python: 3.4.3
         install:
-           - pip install -r requirements.txt
+           - pip install -r mycrt-backend/requirements.txt
         script:
            - pytest
