@@ -239,7 +239,7 @@ class ViewResults extends Component {
         {this.renderReplayTable()}
         {this.state.captureDetails &&
           <Dialog
-            title={"Capture: " + this.state.captureDetails.alias}
+            title={"Capture: " + this.state.captureDetails.captureAlias}
             actions={actions}
             modal={true}
             autoScrollBodyContent={true}
@@ -255,13 +255,41 @@ class ViewResults extends Component {
                 {this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}
                 </div>
               </h5>
-              <LineChart width={800} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 20, bottom: 5}}>
+              <h3>Freeable Memory</h3>
+              <LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 80, bottom: 5}}>
                  <XAxis dataKey="Timestamp"/>
-                 <YAxis domain={['dataMin', 'dataMax']}/>
+                 <YAxis label={{ value: "Bytes", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
                  <CartesianGrid strokeDasharray="3 3"/>
                  <Tooltip/>
                  <Legend />
-                 <Line type="monotone" dataKey="FreeableMemory" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+                 <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
+              <h3>CPU Utilization</h3>
+              <LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 80, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
+              <h3>Read IOPS</h3>
+              <LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 80, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
+              <h3>Write IOPS</h3>
+              <LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 80, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
               </LineChart>
             </div>
           </Dialog>
