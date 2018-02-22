@@ -37,38 +37,6 @@ const styles = {
   },
 };
 
-//TODO: replace with pulled data from API
-const tableData = [
-  {
-    alias: 'Test Alias 1',
-    complete: true,
-    ip: '10.15.10.123',
-    start: '10:00 AM Jan 1, 2017',
-    end: '12:00 PM Jan 1, 2017'
-  },
-  {
-    alias: 'Test Alias 2',
-    complete: true,
-    ip: '10.15.10.123',
-    start: '10:00 AM Jan 5, 2017',
-    end: '11:00 AM Jan 5, 2017'
-  },
-  {
-    alias: 'Test Alias 3',
-    complete: false,
-    ip: '10.15.10.123',
-    start: '8:00:00 AM Jan 10, 2017',
-    end: '9:00:00 AM Jan 10, 2017'
-  },
-  {
-    alias: 'Test Alias 4',
-    complete: true,
-    ip: '10.15.10.123',
-    start: '9:00:00 AM Jan 12, 2017',
-    end: '10:00:00 AM Jan 12, 2017'
-  }
-];
-
 class ViewResults extends Component {
   constructor(props) {
     super(props);
@@ -80,7 +48,10 @@ class ViewResults extends Component {
       captureDetails: undefined,
       isChartLoaded: false,
       captures: [],
-      captureMetrics: []
+      freeableMemory: [],
+      cpuUtilization: [],
+      readIOPS:[],
+      writeIOPS: []
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -127,13 +98,19 @@ class ViewResults extends Component {
     var component = this;
 
     $.ajax({
-      url: SERVER_PATH + "users/" + captureId + "/metrics",
+      url: SERVER_PATH + "/users/" + captureId + "/metrics",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.username + ':' + parentContextState.password)},
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(json) {
-        component.setState(prevState => ({captureCards: json["FreeableMemory"]}));
+        component.setState(prevState => ({
+          freeableMemory: json["FreeableMemory"],
+          cpuUtilization: json["CPUUtilization"],
+          readIOPS: json["ReadIOPS"],
+          writeIOPS: json["WriteIOPS"]
+        }));
+        console.log(this.state.freeableMemory);
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -152,6 +129,8 @@ class ViewResults extends Component {
       isLogOpen: true,
       captureDetails: this.state.captures[rowIndex]
     }));
+
+    this.getMetricData(this.state.captures[rowIndex].captureId);
   }
 
   sendData(formDataValues) {
@@ -251,7 +230,7 @@ class ViewResults extends Component {
       <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
          <div class="refresh-result-button">
             <Button 
-              onClick={this.getMetricData("testy")}
+              onClick={this.getCaptureData}
               content="Refresh Results"
               isSubmit={false}
             />
@@ -272,27 +251,17 @@ class ViewResults extends Component {
           >
             <div>
               <h5>Status: 
-                <div class= {this.state.captureDetails.complete ? "result-complete" : "result-fail"}>
-                {this.state.captureDetails.complete ? "Completed Successfully" : "Terminated With Errors"}
+                <div class= {this.state.captureDetails.captureStatus === COMPLETED ? "result-complete" : "result-fail"}>
+                {this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}
                 </div>
               </h5>
-              <LineChart width={600} height={300} data={[
-      {name: 'Page A', uv: 4000, pv: 2400, amt: 2400},
-      {name: 'Page B', uv: 3000, pv: 1398, amt: 2210},
-      {name: 'Page C', uv: 2000, pv: 9800, amt: 2290},
-      {name: 'Page D', uv: 2780, pv: 3908, amt: 2000},
-      {name: 'Page E', uv: 1890, pv: 4800, amt: 2181},
-      {name: 'Page F', uv: 2390, pv: 3800, amt: 2500},
-      {name: 'Page G', uv: 3490, pv: 4300, amt: 2100},
-]} margin={{top: 5, right: 30, left: 20, bottom: 5}}>
-       <XAxis dataKey="name"/>
+              <LineChart width={600} height={300} data={[this.state.freeableMemory[0], this.state.freeableMemory[1], this.state.freeableMemory[2]]} margin={{top: 5, right: 30, left: 20, bottom: 5}}>
+       <XAxis dataKey="Timestamp"/>
        <YAxis/>
        <CartesianGrid strokeDasharray="3 3"/>
        <Tooltip/>
        <Legend />
-       <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{r: 8}}/>
-       <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-       <Line type="monotone" dataKey="amt" stroke="#222222" />
+       <Line type="monotone" dataKey="FreeableMemory" stroke="#8884d8" activeDot={{r: 8}}/>
       </LineChart>
             </div>
           </Dialog>
