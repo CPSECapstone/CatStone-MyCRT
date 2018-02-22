@@ -82,7 +82,6 @@ class CaptureReplayItem extends Component {
           <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
           <h5>Time Remaining:</h5>
           <h5>{this.getTimeLeft()}</h5>
-          <h5>Status: {this.props.status}</h5>
         </div>
       </div>
     );

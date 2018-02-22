@@ -4,11 +4,13 @@ import sys
 import pymysql
 import boto3
 from botocore.exceptions import NoRegionError, ClientError
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil import parser
 from pymysql import OperationalError, MySQLError
 from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
+from src.metrics.metrics import save_metrics
 from flask import g
 
 db_query = """Select event_time, argument from mysql.general_log where
@@ -30,9 +32,6 @@ and LENGTH(argument) > 0
 ORDER by event_time desc"""
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
-    parsed_start = datetime.strptime(start_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
-    parsed_end = datetime.strptime(end_time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
-
     try:
         sql = db_query
 
@@ -49,6 +48,7 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name)
     if (newCapture):
         return newCapture[0][0]
+    print(newCapture, " was the new capture")
     return -1
 
 
@@ -116,3 +116,8 @@ def completeCapture(capture):
         print(errList)
     else:
         updateCapture(capture['captureId'], 2)
+
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", "us-east-2")
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "FreeableMemory", currentCapture['regionName'])
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "ReadIOPS", currentCapture['regionName'])
+    save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "WriteIOPS", currentCapture['regionName'])

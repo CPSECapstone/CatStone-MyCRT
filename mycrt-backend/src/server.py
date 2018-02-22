@@ -11,7 +11,7 @@ from .capture.capture import capture
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId
 
 from flask_mail import Mail
 
@@ -77,7 +77,7 @@ def get_users_captures():
     checkAllRDSInstances()
     allCaptures = getUsersCaptures(current_user.username)
 
-    return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
+    return jsonify({"count": len(allCaptures), "userCaptures": allCaptures}), 200
 
 @app.route('/users/captures', methods=['POST'])
 @auth.login_required
@@ -96,7 +96,7 @@ def post_capture():
         if (isinstance(response, int) and response > -1):
             return jsonify({'captureId': response}), 201
         else:
-            return jsonify({'error': response}), 400
+            return jsonify({'error': "Capture failed"}), 400
 
 @app.route('/users/s3Buckets', methods=['GET'])
 @auth.login_required
@@ -120,10 +120,23 @@ def get_rds_instances(region_name):
     return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode'],
 
 
-@app.route('/users/metrics', methods=['GET'])
+@app.route('/users/<captureId>/metrics', methods=["GET"])
 @auth.login_required
-def get_user_metrics():
-	return jsonify(get_all_metrics())
+def get_capture_metrics(captureId):
+    metrics = {}
+    availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
+
+    user_captures = getCaptureFromId(captureId)
+    user_capture = user_captures[0]
+
+    if (len(user_captures) == 0):
+        return str(404)
+    elif (user_capture['userId'] != g.user.get_id()):
+        return str(403)
+    for metric in availableMetrics:
+        metrics[metric] = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket']);
+
+    return jsonify(metrics), 200
 
 @auth.verify_password
 def verify_password(username_or_token, password):

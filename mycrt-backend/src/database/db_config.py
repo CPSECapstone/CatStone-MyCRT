@@ -5,4 +5,4 @@
 # For the above, <ip_address> can be localhost
 # Uncomment the line below if you want to work with a local DB
 
-db_string = 'sqlite:///test.db'
+db_string = 'mysql+pymysql://root@localhost/catdb'

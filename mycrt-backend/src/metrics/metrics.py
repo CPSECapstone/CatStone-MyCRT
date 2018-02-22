@@ -1,14 +1,18 @@
 import boto3
-import datetime
+import os.path
 from operator import itemgetter
-
+from flask import g
+from datetime import date, datetime, timedelta
 from botocore.exceptions import ClientError
 
-def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type):
+def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type, region_name):
     metric_file = alias + ".metrics"
+    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
+    client = boto3.client('cloudwatch', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key, region_name=region_name)
 
-    client = boto3.client('cloudwatch')
-    s3 = boto3.client('s3')
+    identifier = db_identifier.split('.')[0]
 
     metrics = client.get_metric_statistics(
         Namespace='AWS/RDS',
@@ -16,7 +20,7 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         Dimensions=[
             {
                 'Name': 'DBInstanceIdentifier',
-                'Value': db_identifier
+                'Value': identifier
             },
         ],
         StartTime=start_time,
@@ -27,7 +31,6 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
 
     metric_data = []
     sorted_metrics = sorted(metrics['Datapoints'], key=itemgetter('Timestamp'))
-
 
     with open(metric_file, "a") as f:
 
@@ -46,11 +49,15 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
+    finally:
+        os.remove(metric_file)
 
     return metric_data
 
 def get_metrics(metric_type, metric_alias, bucket_name):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
+     aws_secret_access_key=g.user.secret_key)
+
 
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
@@ -66,6 +73,14 @@ def get_metrics(metric_type, metric_alias, bucket_name):
         for line in f:
             if metric_type in line:
                 datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
+
+                parsed_time = datapoint['Timestamp'].split(":")
+                datapoint['Timestamp'] = parsed_time[0] + ':'+ parsed_time[1]
+
+                if metric_type is 'FreeableMemory':
+                    datapoint[metric_type] = float(datapoint[metric_type]) / 1000000
+
+                datapoint[metric_type] = round(float(datapoint[metric_type]), 2)
                 metric_data.append(datapoint)
 
     return metric_data
