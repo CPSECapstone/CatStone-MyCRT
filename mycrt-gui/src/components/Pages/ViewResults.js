@@ -18,6 +18,14 @@ import {
 import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
 
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+
+const SERVER_PATH = "http://localhost:5000";
+var NOT_STARTED = 0;
+var IN_PROGRESS = 1;
+var COMPLETED = 2;
+var ERROR = 3;
+
 const styles = {
   propContainer: {
     width: 200,
@@ -29,38 +37,6 @@ const styles = {
   },
 };
 
-//TODO: replace with pulled data from API
-const tableData = [
-  {
-    alias: 'Test Alias 1',
-    complete: true,
-    ip: '10.15.10.123',
-    start: '10:00 AM Jan 1, 2017',
-    end: '12:00 PM Jan 1, 2017'
-  },
-  {
-    alias: 'Test Alias 2',
-    complete: true,
-    ip: '10.15.10.123',
-    start: '10:00 AM Jan 5, 2017',
-    end: '11:00 AM Jan 5, 2017'
-  },
-  {
-    alias: 'Test Alias 3',
-    complete: false,
-    ip: '10.15.10.123',
-    start: '8:00:00 AM Jan 10, 2017',
-    end: '9:00:00 AM Jan 10, 2017'
-  },
-  {
-    alias: 'Test Alias 4',
-    complete: true,
-    ip: '10.15.10.123',
-    start: '9:00:00 AM Jan 12, 2017',
-    end: '10:00:00 AM Jan 12, 2017'
-  }
-];
-
 class ViewResults extends Component {
   constructor(props) {
     super(props);
@@ -70,15 +46,76 @@ class ViewResults extends Component {
       rowNumberSelected: undefined,
       isOpenDetailsClicked: false,
       captureDetails: undefined,
-      isChartLoaded: false
+      isChartLoaded: false,
+      captures: [],
+      freeableMemory: [],
+      cpuUtilization: [],
+      readIOPS:[],
+      writeIOPS: []
     };
 
     // This binding is necessary to make `this` work in the callback
+    this.getMetricData = this.getMetricData.bind(this);
+    this.getCaptureData = this.getCaptureData.bind(this);
     this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
+  }
+
+  componentDidMount() {
+    var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
+
+    this.setState({intervalGetAllCaptures: intervalGetAllCaptures});
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.intervalGetAllCaptures);
+  }
+
+  getCaptureData() {
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "/users/captures",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+      type: 'GET',
+      success: function(json) {
+        component.setState(prevState => ({captures: json["userCaptures"]}));
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  }
+
+  getMetricData(captureId) {
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "/users/" + captureId + "/metrics",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+      type: 'GET',
+      success: function(json) {
+        component.setState(prevState => ({
+          freeableMemory: json["FreeableMemory"],
+          cpuUtilization: json["CPUUtilization"],
+          readIOPS: json["ReadIOPS"],
+          writeIOPS: json["WriteIOPS"]
+        }));
+        console.log(this.state.freeableMemory);
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   }
 
   onLogClose() {
@@ -90,8 +127,10 @@ class ViewResults extends Component {
   onOpenDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
       isLogOpen: true,
-      captureDetails: tableData[rowIndex]
+      captureDetails: this.state.captures[rowIndex]
     }));
+
+    this.getMetricData(this.state.captures[rowIndex].captureId);
   }
 
   sendData(formDataValues) {
@@ -127,7 +166,7 @@ class ViewResults extends Component {
             <TableRow>
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Status">Status</TableHeaderColumn>
-              <TableHeaderColumn tooltip="The Database IP">Database IP</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The RDS Instance Name">RDS Instance</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="The End Time">End Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
@@ -139,20 +178,22 @@ class ViewResults extends Component {
             showRowHover={true}
             stripedRows={false}
           >
-            {tableData.map( (row, index) => {
+            {this.state.captures.map( (row, index) => {
               let boundItemClick = this.onOpenDetailsClick.bind(this, index);
-              return(
-              <TableRow key={index} >
-                <TableRowColumn>{row.alias}</TableRowColumn>
-                <TableRowColumn>
-                  {row.complete ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
-                </TableRowColumn>
-                <TableRowColumn>{row.ip}</TableRowColumn>
-                <TableRowColumn>{row.start}</TableRowColumn>
-                <TableRowColumn>{row.end}</TableRowColumn>
-                <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
-              </TableRow>
-              );
+              if (row.captureStatus === COMPLETED || row.captureStatus === ERROR) {
+                return(
+                <TableRow key={index} >
+                  <TableRowColumn>{row.captureAlias}</TableRowColumn>
+                  <TableRowColumn>
+                    {(row.captureStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
+                  </TableRowColumn>
+                  <TableRowColumn>{row.rdsInstance}</TableRowColumn>
+                  <TableRowColumn>{row.startTime}</TableRowColumn>
+                  <TableRowColumn>{row.endTime}</TableRowColumn>
+                  <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
+                </TableRow>
+                );
+              }
               })}
           </TableBody>
         </Table>
@@ -189,7 +230,7 @@ class ViewResults extends Component {
       <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
          <div class="refresh-result-button">
             <Button 
-              onClick={this.sendData}
+              onClick={this.getCaptureData}
               content="Refresh Results"
               isSubmit={false}
             />
@@ -198,7 +239,7 @@ class ViewResults extends Component {
         {this.renderReplayTable()}
         {this.state.captureDetails &&
           <Dialog
-            title={"Capture: " + this.state.captureDetails.alias}
+            title={"Capture: " + this.state.captureDetails.captureAlias}
             actions={actions}
             modal={true}
             autoScrollBodyContent={true}
@@ -209,11 +250,62 @@ class ViewResults extends Component {
             open={this.state.isLogOpen}
           >
             <div>
-              <h5>Status: 
-                <div class= {this.state.captureDetails.complete ? "result-complete" : "result-fail"}>
-                {this.state.captureDetails.complete ? "Completed Successfully" : "Terminated With Errors"}
+              <h4>Status: 
+                <div class= {this.state.captureDetails.captureStatus === COMPLETED ? "result-complete" : "result-fail"}>
+                <h5>{this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}</h5>
                 </div>
-              </h5>
+              </h4>
+              <h4>RDS Instance: 
+                <div>
+                <h5>{this.state.captureDetails.rdsInstance}</h5>
+                </div>
+              </h4>
+              <h4>Start Time: 
+                <div>
+                <h5>{this.state.captureDetails.startTime}</h5>
+                </div>
+              </h4>
+              <h4>End Time: 
+                <div>
+                <h5>{this.state.captureDetails.endTime}</h5>
+                </div>
+              </h4>
+              <h3>Freeable Memory</h3>
+              <LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
+              <h3>CPU Utilization</h3>
+              <LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
+              <h3>Read IOPS</h3>
+              <LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
+              <h3>Write IOPS</h3>
+              <LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+                 <XAxis dataKey="Timestamp"/>
+                 <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+                 <CartesianGrid strokeDasharray="3 3"/>
+                 <Tooltip/>
+                 <Legend />
+                 <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+              </LineChart>
             </div>
           </Dialog>
         }

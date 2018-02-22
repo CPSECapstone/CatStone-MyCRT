@@ -15,7 +15,6 @@ import TextField from 'material-ui/TextField';
 import TimePicker from 'material-ui/TimePicker';
 import DatePicker from 'material-ui/DatePicker';
 
-import io from 'socket.io-client';
 import $ from 'jquery';
 
 var SERVER_PATH = "http://localhost:5000";

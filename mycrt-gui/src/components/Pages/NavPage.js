@@ -22,7 +22,7 @@ class NavPage extends Component {
       case 0:
         return (<HomePage parentContext={parentContext}/>);
       case 1:
-        return (<ViewResults/>);
+        return (<ViewResults parentContext={parentContext}/>);
       default:
         return (<ComparePage/>);
       }
