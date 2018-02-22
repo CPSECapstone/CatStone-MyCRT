@@ -72,6 +72,10 @@ def get_metrics(metric_type, metric_alias, bucket_name):
         for line in f:
             if metric_type in line:
                 datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
+
+                if metric_type is 'FreeableMemory':
+                    datapoint[metric_type] = float(datapoint[metric_type]) / 1000000
+
                 datapoint[metric_type] = round(float(datapoint[metric_type]), 2)
                 metric_data.append(datapoint)
 
