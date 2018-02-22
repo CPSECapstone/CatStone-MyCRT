@@ -1,8 +1,8 @@
 import boto3
+import os.path
 from operator import itemgetter
 from flask import g
 from datetime import date, datetime, timedelta
-
 from botocore.exceptions import ClientError
 
 def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type, region_name):
@@ -23,10 +23,8 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
                 'Value': identifier
             },
         ],
-        # StartTime=start_time,
-        # EndTime=end_time,
-        StartTime=datetime.now() - timedelta(days=2),
-        EndTime=datetime.now(),
+        StartTime=start_time,
+        EndTime=end_time,
         Period=360,
         Statistics=['Average']
     )
@@ -51,12 +49,15 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
+    finally:
+        os.remove(metric_file)
 
     return metric_data
 
 def get_metrics(metric_type, metric_alias, bucket_name):
     s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
+
 
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
@@ -72,6 +73,9 @@ def get_metrics(metric_type, metric_alias, bucket_name):
         for line in f:
             if metric_type in line:
                 datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
+
+                parsed_time = datapoint['Timestamp'].split(":")
+                datapoint['Timestamp'] = parsed_time[0] + ':'+ parsed_time[1]
 
                 if metric_type is 'FreeableMemory':
                     datapoint[metric_type] = float(datapoint[metric_type]) / 1000000
