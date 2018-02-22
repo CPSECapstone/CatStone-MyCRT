@@ -5,12 +5,12 @@ from datetime import date, datetime, timedelta
 
 from botocore.exceptions import ClientError
 
-def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type):
+def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type, region_name):
     metric_file = alias + ".metrics"
     s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
     client = boto3.client('cloudwatch', aws_access_key_id=g.user.access_key,
-     aws_secret_access_key=g.user.secret_key)
+     aws_secret_access_key=g.user.secret_key, region_name=region_name)
 
     identifier = db_identifier.split('.')[0]
 
@@ -30,7 +30,7 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         Period=360,
         Statistics=['Average']
     )
-    
+
     metric_data = []
     sorted_metrics = sorted(metrics['Datapoints'], key=itemgetter('Timestamp'))
 
