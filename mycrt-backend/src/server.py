@@ -138,6 +138,22 @@ def get_capture_metrics(captureId):
 
     return jsonify(metrics), 200
 
+@app.route('/users/<replayId>/metrics', methods=["GET"])
+@auth.login_required
+def get_capture_metrics(captureId):
+    metrics = {}
+    availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
+
+    user_replays = getReplayFromId(replayId)
+    user_replay = user_replays[0]
+
+    if (len(user_replays) == 0):
+        return str(404)
+    elif (user_replay['userId'] != g.user.get_id()):
+        return str(403)
+    for metric in availableMetrics:
+        metrics[metric] = get_metrics(metric, user_capture['replayAlias'] + '.metrics', user_capture['s3Bucket']);
+
 @auth.verify_password
 def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
