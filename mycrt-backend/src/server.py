@@ -100,7 +100,7 @@ def post_capture():
 
 @app.route('/users/replays', methods=['GET'])
 @auth.login_required
-def get_users_captures():
+def get_users_replays():
     current_user = g.user
 
     #checkAllRDSInstances()
