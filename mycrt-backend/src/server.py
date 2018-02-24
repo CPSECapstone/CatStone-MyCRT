@@ -98,6 +98,19 @@ def post_capture():
         else:
             return jsonify({'error': "Capture failed"}), 400
 
+@app.route('/users/<captureId>/replays', methods=['GET'])
+@auth.login_required
+def get_associated_replays_from_capture(captureId):
+	user_replays = getReplaysFromCapture(captureId)
+
+	if (len(user_replays) == 0):
+		return str(404)
+	for replay in user_replays:
+		if (replay.userId != g.user.get_id())
+			return str(403)
+			
+	return jsonify({'count': len(user_replays), 'userReplays': user_replays})
+
 @app.route('/users/s3Buckets', methods=['GET'])
 @auth.login_required
 def get_s3_instances():
