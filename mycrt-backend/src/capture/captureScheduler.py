@@ -5,8 +5,8 @@ from src.capture.capture import completeCapture
 import datetime
 
 
-def checkAllRDSInstances():
-    currentCaptures = getAllCapturesThatHaveNotCompleted()
+def checkAllRDSInstances(db_session):
+    currentCaptures = getAllCapturesThatHaveNotCompleted(db_session)
 
     #The current time 
     now = datetime.datetime.now() + datetime.timedelta(hours=8)
@@ -14,6 +14,6 @@ def checkAllRDSInstances():
     #Go through all the captures we received
     for capture in currentCaptures:
         if capture['endTime'] <= now:
-            completeCapture(capture)
+            completeCapture(capture, db_session)
         elif capture['startTime'] <= now and capture['endTime'] > now:
-            updateCapture(capture['captureId'], 1)
+            updateCapture(capture['captureId'], 1, db_session)
