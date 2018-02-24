@@ -98,6 +98,16 @@ def post_capture():
         else:
             return jsonify({'error': "Capture failed"}), 400
 
+@app.route('/users/replays', methods=['GET'])
+@auth.login_required
+def get_users_captures():
+    current_user = g.user
+
+    #checkAllRDSInstances()
+    userReplays = getUsersReplays(g.userId)
+
+    return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
+
 @app.route('/users/s3Buckets', methods=['GET'])
 @auth.login_required
 def get_s3_instances():
