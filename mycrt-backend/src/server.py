@@ -70,7 +70,7 @@ def create_app(config={}):
     def get_users_captures():
         current_user = g.user
 
-        checkAllRDSInstances()
+        checkAllRDSInstances(db.get_session())
         allCaptures = getUsersCaptures(current_user.username, db.get_session())
 
         return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
@@ -88,7 +88,8 @@ def create_app(config={}):
                     jsonData['start_time'],
                     jsonData['end_time'],
                     jsonData['alias'],
-                    jsonData['bucket_name'])
+                    jsonData['bucket_name'],
+                    db.get_session())
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
             else:
@@ -97,7 +98,7 @@ def create_app(config={}):
     @app.route('/users/s3Buckets', methods=['GET'])
     @auth.login_required
     def get_s3_instances():
-        response = getS3Instances()
+        response = getS3Instances(g.user)
 
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 's3Instances': response}), 200
@@ -107,7 +108,7 @@ def create_app(config={}):
     @app.route('/users/rdsInstances/<region_name>', methods=['GET'])
     @auth.login_required
     def get_rds_instances(region_name):
-        response = getRDSInstances(region_name)
+        response = getRDSInstances(region_name, g.user)
 
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 'rdsInstances': response}), 200

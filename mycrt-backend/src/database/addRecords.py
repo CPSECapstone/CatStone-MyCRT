@@ -22,7 +22,7 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 	except:
 		db_session.rollback()
   
-	return getCaptureFromAlias(captureAlias)
+	return getCaptureFromAlias(captureAlias, db_session)
 
 
 '''Simple function to insert a capture metric

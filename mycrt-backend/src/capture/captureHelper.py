@@ -3,6 +3,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 def getRDSInstances(region_name, user, botoAPI = boto3):
+    print(user)
     DBInstances = []
     if (user == None):
         rds = botoAPI.client('rds')
