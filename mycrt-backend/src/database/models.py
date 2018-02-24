@@ -138,6 +138,7 @@ class Replay(Base):
     rdsUsername = Column(String(64))
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
+    regionName = Column(String(64))
 
     def __init__(self, userId, captureId, replayAlias, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
         self.userId = userId
@@ -147,11 +148,12 @@ class Replay(Base):
         self.rdsUsername = rdsUsername
         self.rdsPassword = rdsPassword
         self.rdsDatabase = rdsDatabase
+        self.regionName = regionName
 
     def __repr__(self):
-        return '<Replay %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
+        return '<Replay %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName)
 
-    def convertToDict(captures):
+    def convertToDict(replays):
         allDicts = []
 
         for replay in replays:
@@ -165,7 +167,8 @@ class Replay(Base):
                        'rdsInstance': replay[7],
                        'rdsUsername': replay[8],
                        'rdsPassword': replay[9],
-                       'rdsDatabase': replay[10]}
+                       'rdsDatabase': replay[10],
+                       'regionName': replay[11]}
             allDicts.append(newDict)
 
         return allDicts
