@@ -1,20 +1,15 @@
-import argparse
-import os.path
-import sys
 import boto3
-import json
 
-from botocore.exceptions import NoRegionError, ClientError
-from flask import g
+from botocore.exceptions import ClientError
 
-def getRDSInstances(region_name, botoAPI = boto3):
+def getRDSInstances(region_name, user, botoAPI = boto3):
     DBInstances = []
-    if (g.user == None):
+    if (user == None):
         rds = botoAPI.client('rds')
     else:
         rds = botoAPI.client('rds', region_name=region_name,
-        aws_access_key_id=g.user.access_key,
-        aws_secret_access_key=g.user.secret_key)
+        aws_access_key_id=user.access_key,
+        aws_secret_access_key=user.secret_key)
 
     try:
         response = rds.describe_db_instances()
@@ -28,13 +23,13 @@ def getRDSInstances(region_name, botoAPI = boto3):
 
     return DBInstances
 
-def getS3Instances(botoAPI = boto3):
+def getS3Instances(user, botoAPI = boto3):
     S3Instances = []
-    if (g.user == None):
+    if (user == None):
         s3 = botoAPI.client('s3')
     else:
-        s3 = botoAPI.client('s3', aws_access_key_id=g.user.access_key,
-        aws_secret_access_key=g.user.secret_key)
+        s3 = botoAPI.client('s3', aws_access_key_id=user.access_key,
+        aws_secret_access_key=user.secret_key)
 
     try:
         response = s3.list_buckets()
