@@ -101,7 +101,7 @@ def create_app(config={}):
 	    current_user = g.user
 
 	    #checkAllRDSInstances()
-	    userReplays = getUsersReplays(g.userId)
+	    userReplays = getUsersReplays(g.userId, db.get_session())
 
 	    return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
 
