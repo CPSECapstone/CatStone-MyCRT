@@ -139,7 +139,7 @@ def create_app(config={}):
 	    metrics = {}
 	    availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
-	    user_replays = getReplayFromId(replayId)
+	    user_replays = getReplayFromId(replayId, db.get_session())
 	    user_replay = user_replays[0]
 
 	    if (len(user_replays) == 0):
