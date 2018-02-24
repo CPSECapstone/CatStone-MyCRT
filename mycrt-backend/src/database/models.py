@@ -151,6 +151,25 @@ class Replay(Base):
     def __repr__(self):
         return '<Replay %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
 
+    def convertToDict(captures):
+        allDicts = []
+
+        for replay in replays:
+            newDict = {'replayId': replay[0],
+                       'userId': replay[1],
+                       'captureId': replay[2],
+                       'replayAlias': replay[3],
+                       'rdsInstance': replay[4],
+                       's3Bucket': replay[5],
+                       'logFileName': replay[6],
+                       'rdsInstance': replay[7],
+                       'rdsUsername': replay[8],
+                       'rdsPassword': replay[9],
+                       'rdsDatabase': replay[10]}
+            allDicts.append(newDict)
+
+        return allDicts
+
 	#user = relationship('User', foreign_keys='Replay.id')
     capture = relationship('Capture', foreign_keys='Replay.captureId')
 
