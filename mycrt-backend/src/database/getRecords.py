@@ -1,4 +1,4 @@
-from .models import Capture, User
+from .models import Capture, User, Replay
 from flask import g
 
 def getUserFromEmail(email, db_session):
@@ -73,6 +73,15 @@ def getCaptureFromId(captureId, db_session):
 	captureInformation = Capture.query.filter(Capture.captureId == captureId)
 	result = []
 	result = Capture.convertToDict(db_session.execute(captureInformation).fetchall())
+
+	return result
+
+def getCaptureFromReplayId(replayId, db_session):
+	""" Function to get a capture related to a given replay
+
+	"""
+	relatedCapture = db_session.query(Capture).join(Replay).filter(Replay.replayId == replayId)
+	result = Capture.convertToDict(db_session.execute(relatedCapture).fetchall())
 
 	return result
 
