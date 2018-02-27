@@ -123,7 +123,7 @@ def create_app(config={}):
 
         if (len(user_replays) == 0):
             return str(404)
-	    
+
         for replay in user_replays:
             if (replay.userId != g.user.get_id()):
                 return str(403)
@@ -168,22 +168,23 @@ def create_app(config={}):
 
         return jsonify(metrics), 200
 
-	@app.route('/users/<replayId>/metrics', methods=["GET"])
-	@auth.login_required
-	def get_capture_metrics(captureId):
-	    metrics = {}
-	    availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
+    @app.route('/users/<replayId>/metrics', methods=["GET"])
+    @auth.login_required
+    def get_replay_metrics(captureId):
+        metrics = {}
+        availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
-	    user_replays = getReplayFromId(replayId, db.get_session())
-	    user_replay = user_replays[0]
+        user_replays = getReplayFromId(replayId, db.get_session())
+        user_replay = user_replays[0]
 
-	    if (len(user_replays) == 0):
-	        return str(404)
-	    elif (user_replay['userId'] != g.user.get_id()):
-	        return str(403)
-	    for metric in availableMetrics:
-	        metrics[metric] = get_metrics(metric, user_capture['replayAlias'] + '.metrics', user_capture['s3Bucket']);
+        if (len(user_replays) == 0):
+            return str(404)
+        elif (user_replay['userId'] != g.user.get_id()):
+            return str(403)
+        for metric in availableMetrics:
+            metrics[metric] = get_metrics(metric, user_capture['replayAlias'] + '.metrics', user_capture['s3Bucket'])
 
+        return jsonify(metrics), 200
 
     @auth.verify_password
     def verify_password(username_or_token, password):
