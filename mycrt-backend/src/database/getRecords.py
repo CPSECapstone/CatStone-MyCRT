@@ -1,4 +1,4 @@
-from .models import Capture, User
+from .models import Capture, User, Replay
 from flask import g
 
 def getUserFromEmail(email, db_session):
@@ -76,6 +76,15 @@ def getCaptureFromId(captureId, db_session):
 
 	return result
 
+def getCaptureFromReplayId(replayId, db_session):
+	""" Function to get a capture related to a given replay
+
+	"""
+	relatedCapture = db_session.query(Capture).join(Replay).filter(Replay.replayId == replayId)
+	result = Capture.convertToDict(db_session.execute(relatedCapture).fetchall())
+
+	return result
+
 def getCaptureFromAlias(captureAlias, db_session):
 	""" Function to get a capture after receiving a captureId
 
@@ -107,5 +116,12 @@ def getAllCapturesThatHaveNotCompleted(db_session):
 	"""Function to get all current captures that have a status of 0
 	"""
 
-	captureInformation =Capture.query.filter(Capture.captureStatus <= 1).filter(Capture.userId == g.user.id)
+	captureInformation = Capture.query.filter(Capture.captureStatus <= 1).filter(Capture.userId == g.user.id)
 	return Capture.convertToDict(db_session.execute(captureInformation).fetchall())
+
+def getReplaysFromCapture(captureId, db_session):
+	"""Function to get all replays and captures related to a specific captureId
+	"""
+	replays = Replay.query.filter(Replay.captureId == captureId)
+
+	return Replay.convertToDict(db_session.execute(replays).fetchall())
