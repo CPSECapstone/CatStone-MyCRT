@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 
 import './CaptureReplayItem.css';
 
-var NOT_STARTED = 0;
-var IN_PROGRESS = 1;
-var COMPLETED = 2;
-var ERROR = 3;
-var LOADING = 4;
+const NOT_STARTED = 0;
+const IN_PROGRESS = 1;
+const COMPLETED = 2;
+const ERROR = 3;
+const LOADING = 4;
 
 var endTime = new Date();
 
@@ -56,19 +56,19 @@ class CaptureReplayItem extends Component {
   render() {
     var captureStatusText = "";
     var captureStatusTextClass = "";
-    if (this.props.status == NOT_STARTED) {
+    if (this.props.status === NOT_STARTED) {
       captureStatusTextClass = "capture-not-started";
       captureStatusText = "Not Started";
-    } else if (this.props.status == IN_PROGRESS) {
+    } else if (this.props.status === IN_PROGRESS) {
       captureStatusTextClass = "capture-in-progress";
       captureStatusText = "In Progress";
-    } else if (this.props.status == COMPLETED) {
+    } else if (this.props.status === COMPLETED) {
       captureStatusTextClass = "capture-complete";
       captureStatusText = "Complete";
-    } else if (this.props.status == ERROR) {
+    } else if (this.props.status === ERROR) {
       captureStatusTextClass = "capture-error";
       captureStatusText = "Error Found";
-    } else if (this.props.status == LOADING) {
+    } else if (this.props.status === LOADING) {
       captureStatusTextClass = "capture-loading";
       captureStatusText = "Processing...";
     }
