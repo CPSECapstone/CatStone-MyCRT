@@ -36,6 +36,9 @@ ORDER BY \'
 	EXTRACT(MINUTE FROM event_time),\'
 	EXTRACT(SECOND FROM event_time)"""
 
+CAPTURE_STATUS_ERROR = 3
+CAPTURE_STATUS_SUCCESS = 2
+
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, db_session):
     try:
         sql = db_query
@@ -117,10 +120,10 @@ def completeCapture(capture, db_session):
         os.remove(fileName)
 
     if len(errList) > 0:
-        updateCapture(capture['captureId'], 3, db_session)
+        updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
         print(errList)
     else:
-        updateCapture(capture['captureId'], 2, db_session)
+        updateCapture(capture['captureId'], CAPTURE_STATUS_SUCCESS, db_session)
 
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", currentCapture['regionName'])
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "FreeableMemory", currentCapture['regionName'])
