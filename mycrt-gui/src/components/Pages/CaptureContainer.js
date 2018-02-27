@@ -3,11 +3,11 @@ import React, { Component } from 'react';
 import './CaptureContainer.css';
 import CaptureReplayItem from './CaptureReplayItem.js';
 
-var NOT_STARTED = 0;
-var IN_PROGRESS = 1;
-var COMPLETED = 2;
-var ERROR = 3;
-var LOADING = 4;
+const NOT_STARTED = 0;
+const IN_PROGRESS = 1;
+const COMPLETED = 2;
+const ERROR = 3;
+const LOADING = 4;
 
 class CaptureContainer extends Component {
 
@@ -36,9 +36,7 @@ class CaptureContainer extends Component {
   }
 
   render() {
-    var noContent = (this.props.cards != undefined && this.props.cards.length == 0);
-
-    console.log("no content?: " + noContent);
+    var noContent = (this.props.cards !== undefined && this.props.cards.length === 0);
 
     return (
       <div className="CaptureContainer">
