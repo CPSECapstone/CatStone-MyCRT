@@ -17,7 +17,19 @@ import DatePicker from 'material-ui/DatePicker';
 
 import $ from 'jquery';
 
+const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
+"ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+"ca-central-1",
+"cn-north-1",
+"eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
+"sa-east-1"];
+
 var SERVER_PATH = "http://localhost:5000";
+var rdsRegionItems = [];    
+
+for (var i = 0; i < rdsRegions.length; i++) {
+  rdsRegionItems.push(<MenuItem value={rdsRegions[i]} key={rdsRegions[i]} primaryText={`${rdsRegions[i]}`} />)
+}
 
 class HomePage extends Component {
 	constructor(props) {
@@ -214,7 +226,7 @@ class HomePage extends Component {
   handleRegionChange(event, index, value) {
     this.getRdsData(value);
     this.getS3Data();
-
+    
     this.setState(prevState => ({
       rdsRegionValue: value
     }));
@@ -377,14 +389,6 @@ class HomePage extends Component {
   }
 
   renderCaptureForm() {
-    const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
-                        "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
-                        "ca-central-1",
-                        "cn-north-1",
-                        "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
-                        "sa-east-1"];
-    var rdsRegionItems = [];
-
     const actions = [
       <FlatButton
         label="Cancel"
@@ -404,10 +408,6 @@ class HomePage extends Component {
         width: 300,
       },
     };
-
-    for (var i = 0; i < rdsRegions.length; i++) {
-      rdsRegionItems.push(<MenuItem value={rdsRegions[i]} key={i} primaryText={`${rdsRegions[i]}`} />)
-    }
 
     return (
       <Dialog
@@ -436,7 +436,7 @@ class HomePage extends Component {
               style={dropdownStyle.customWidth}
               value={this.state.rdsValue}
               onChange={this.handleRdsChange}>
-              {this.state.rdsItems != undefined ? this.state.rdsItems : []}
+              {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
             </DropDownMenu>
           </div>
           <div class="add-capture-item">
@@ -446,7 +446,7 @@ class HomePage extends Component {
               maxHeight={300}
               value={this.state.s3Value}
               onChange={this.handleS3Change}>
-              {this.state.s3Items != undefined ? this.state.s3Items : []}
+              {this.state.s3Items !== undefined ? this.state.s3Items : []}
             </DropDownMenu>
           </div>
           <div class="add-capture-item">
