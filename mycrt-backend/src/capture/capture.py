@@ -28,8 +28,13 @@ and argument NOT LIKE \'set %% utf8%%\'
 and argument NOT LIKE \'set sql_safe_updates%%\'
 and argument NOT LIKE \'SHOW %%\'
 and argument NOT LIKE \'SET SESSION %% READ\'
-and LENGTH(argument) > 0
-ORDER by event_time desc"""
+and LENGTH(argument) > 0\'
+ORDER BY \'
+    EXTRACT(YEAR_MONTH FROM event_time),\'
+    EXTRACT(DAY FROM event_time),\'
+    EXTRACT(HOUR FROM event_time),\'
+	EXTRACT(MINUTE FROM event_time),\'
+	EXTRACT(SECOND FROM event_time)"""
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, db_session):
     try:
