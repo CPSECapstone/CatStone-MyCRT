@@ -17,7 +17,25 @@ import DatePicker from 'material-ui/DatePicker';
 
 import $ from 'jquery';
 
+const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
+"ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+"ca-central-1",
+"cn-north-1",
+"eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
+"sa-east-1"];
+
 var SERVER_PATH = "http://localhost:5000";
+var NOT_STARTED = 0;
+var IN_PROGRESS = 1;
+var COMPLETED = 2;
+var ERROR = 3;
+var LOADING = 4;
+
+var rdsRegionItems = [];    
+
+for (var i = 0; i < rdsRegions.length; i++) {
+  rdsRegionItems.push(<MenuItem value={rdsRegions[i]} key={rdsRegions[i]} primaryText={`${rdsRegions[i]}`} />)
+}
 
 class HomePage extends Component {
 	constructor(props) {
@@ -37,11 +55,15 @@ class HomePage extends Component {
       isErrorVisible: false,
       captureCards: [],
       rdsItems: [],
-      s3Items: []
+      s3Items: [],
+      showLoadingCard: true,
+      pausePolling: false,
+      loadingCaptureContent: true
     };
 
 
     // This binding is necessary to make `this` work in the callback
+    this.checkLoadingCard = this.checkLoadingCard.bind(this);
     this.getRdsData = this.getRdsData.bind(this);
     this.getS3Data = this.getS3Data.bind(this);
     this.getCaptureData = this.getCaptureData.bind(this);
@@ -71,17 +93,35 @@ class HomePage extends Component {
   }
 
   componentDidMount() {
-    var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
+    if (!this.state.pausePolling) {
+      var intervalGetAllCaptures = setInterval(this.getCaptureData, 1500);
 
-    this.setState({intervalGetAllCaptures: intervalGetAllCaptures});
+      this.setState({
+        intervalGetAllCaptures: intervalGetAllCaptures
+      });
+    }
+
+    var intervalShowLoadingCard = setInterval(this.checkLoadingCard, 1500);
+    this.setState({
+      intervalShowLoadingCard: intervalShowLoadingCard
+    });
   }
 
   componentWillUnmount() {
     clearInterval(this.state.intervalGetAllCaptures);
   }
 
+  checkLoadingCard() {
+    this.setState({
+      showLoadingCard: this.state.captureCards.length <= 0
+    });
+  }
+
   sendCaptureData(formDataValues) {
     var parentContextState = this.props.parentContext.state;
+    this.setState({
+      pausePolling: true
+    });
 
     $.ajax({
       url: SERVER_PATH + "/users/captures",
@@ -92,6 +132,9 @@ class HomePage extends Component {
       data: JSON.stringify(formDataValues),
       success: function(data) {
         console.log("SUCCESS capture form");
+        this.setState({
+          pausePolling: false
+        });
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -116,6 +159,10 @@ class HomePage extends Component {
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
+
+    this.setState(prevState =>({
+      loadingCaptureContent: false
+    }));
   }
 
   getS3Data() {
@@ -214,7 +261,7 @@ class HomePage extends Component {
   handleRegionChange(event, index, value) {
     this.getRdsData(value);
     this.getS3Data();
-
+    
     this.setState(prevState => ({
       rdsRegionValue: value
     }));
@@ -352,7 +399,6 @@ class HomePage extends Component {
   }
 
   onCaptureSubmit() {
-    //TODO: send information from API to capture card
     var card = {
       alias: this.state.aliasValue,
       db_user: this.state.dbUsernameValue,
@@ -365,10 +411,17 @@ class HomePage extends Component {
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
-    // this.getCaptureData();
 
+    var formattedCard = {
+      captureAlias: this.state.aliasValue,
+      rdsInstance: this.state.rdsValue,
+      s3Bucket: this.state.s3Value,
+      endTime: this.state.captureEndDay,
+      startTime: this.state.captureStartDay,
+      captureStatus: LOADING
+    };
     var newCards = this.state.captureCards;
-    newCards.push(card);
+    newCards.push(formattedCard);
     this.setState(prevState => ({
       captureCards: newCards,
       isErrorVisible: false
@@ -377,14 +430,6 @@ class HomePage extends Component {
   }
 
   renderCaptureForm() {
-    const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
-                        "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
-                        "ca-central-1",
-                        "cn-north-1",
-                        "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
-                        "sa-east-1"];
-    var rdsRegionItems = [];
-
     const actions = [
       <FlatButton
         label="Cancel"
@@ -404,10 +449,6 @@ class HomePage extends Component {
         width: 300,
       },
     };
-
-    for (var i = 0; i < rdsRegions.length; i++) {
-      rdsRegionItems.push(<MenuItem value={rdsRegions[i]} key={i} primaryText={`${rdsRegions[i]}`} />)
-    }
 
     return (
       <Dialog
@@ -436,7 +477,7 @@ class HomePage extends Component {
               style={dropdownStyle.customWidth}
               value={this.state.rdsValue}
               onChange={this.handleRdsChange}>
-              {this.state.rdsItems != undefined ? this.state.rdsItems : []}
+              {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
             </DropDownMenu>
           </div>
           <div class="add-capture-item">
@@ -446,7 +487,7 @@ class HomePage extends Component {
               maxHeight={300}
               value={this.state.s3Value}
               onChange={this.handleS3Change}>
-              {this.state.s3Items != undefined ? this.state.s3Items : []}
+              {this.state.s3Items !== undefined ? this.state.s3Items : []}
             </DropDownMenu>
           </div>
           <div class="add-capture-item">
@@ -530,7 +571,8 @@ class HomePage extends Component {
         { this.renderCaptureForm() }
       	<CaptureContainer
           cards={this.state.captureCards}
-          sampleDate={this.state.captureEndDay}
+          showLoadingCard={this.state.showLoadingCard}
+          showLoadingContent={this.state.loadingCaptureContent}
         />
       	<h3>Replays</h3>
       	<Button

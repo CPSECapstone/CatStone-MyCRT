@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getReplaysFromCapture
 import time
 
 def create_app(config={}):
@@ -95,38 +95,40 @@ def create_app(config={}):
             else:
                 return jsonify({'error': response}), 400
 
-	@app.route('/users/replays', methods=['GET'])
-	@auth.login_required
-	def get_users_replays():
-	    current_user = g.user
+    @app.route('/users/<replayId>/replays', methods=['GET'])
+    @auth.login_required
+    def get_associated_replays_from_replay(captureId):
+        user_captures = getCaptureFromId(captureId, db.get_session())
+        user_capture = user_captures[0]
 
-	    #checkAllRDSInstances()
-	    userReplays = getUsersReplays(g.userId, db.get_session())
+        if (len(user_captures) == 0):
+            return str(404)
+        elif (user_capture['userId'] != g.user.get_id()):
+            return str(403)
 
-	    return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
+        user_replays = getReplaysFromCapture(user_capture.captureId, db.get_session())
 
-	@app.route('/users/replays', methods=['POST'])
-	@auth.login_required
-	def post_capture():
-	    if request.headers['Content-Type'] == 'application/json':
-	        jsonData = request.json
+        if (len(user_replays) == 0):
+            return str(404)
+        for replay in user_replays:
+            if (replay.userId != g.user.get_id()):
+                return str(403)
 
-			if ('capture_id' not in jsonData or
-				'rds_endpoint' not in jsonData or
-	            'region_name' not in jsonData or
-	            'db_user' not in jsonData or
-	            'db_password' not in jsonData or
-	            'db_name' not in jsonData or
-	            'alias' not in jsonData):
-	                return jsonify({"error": "Missing field in request."}), 400
+        return jsonify({'count': len(user_replays), 'capture': user_capture, 'userReplays': user_replays})
 
-			#Call replay function here
-	        #response = replay()
+    @app.route('/users/<captureId>/replays', methods=['GET'])
+    @auth.login_required
+    def get_associated_replays_from_capture(captureId):
+        user_replays = getReplaysFromCapture(captureId, db.get_session())
 
-	        if (isinstance(response, int) and response > -1):
-	            return jsonify({'replayId': response}), 201
-	        else:
-	            return jsonify({'error': "Replay failed"}), 400
+        if (len(user_replays) == 0):
+            return str(404)
+
+        for replay in user_replays:
+            if (replay.userId != g.user.get_id()):
+                return str(403)
+
+        return jsonify({'count': len(user_replays), 'userReplays': user_replays})
 
     @app.route('/users/s3Buckets', methods=['GET'])
     @auth.login_required

@@ -6,31 +6,54 @@
 }
 
 .results-help-text {
-	color: #aaaaaa;
+  color: #aaaaaa;
 }
 
 .refresh-result-button {
-	padding-bottom: 15px;
+  padding-bottom: 15px;
 }
 
 .open-log-link:hover {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 .result-complete {
-	color: #8be262;
+  color: #8be262;
 }
 
 .result-fail {
-	color: #ff6161;
+  color: #ff6161;
 }
 
 .result-complete:hover {
-	color: #8be262;
-	cursor: default;
+  color: #8be262;
+  cursor: default;
 }
 
 .result-fail:hover {
-	color: #ff6161;
-	cursor: default;
+  color: #ff6161;
+  cursor: default;
+}
+
+.loading-capture-table {
+  text-align: center;
+  background: #ececec;
+  color: #aaaaaa;
+  height: 100px;
+  padding: 30px;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
 }
