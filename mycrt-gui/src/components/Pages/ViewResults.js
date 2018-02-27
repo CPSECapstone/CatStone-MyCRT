@@ -21,11 +21,10 @@ import Toggle from 'material-ui/Toggle';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const SERVER_PATH = "http://localhost:5000";
-const NOT_STARTED = 0;
-const IN_PROGRESS = 1;
-const COMPLETED = 2;
-const ERROR = 3;
-const LOADING = 4;
+var NOT_STARTED = 0;
+var IN_PROGRESS = 1;
+var COMPLETED = 2;
+var ERROR = 3;
 
 const styles = {
   propContainer: {
@@ -49,11 +48,11 @@ class ViewResults extends Component {
       captureDetails: undefined,
       isChartLoaded: false,
       captures: [],
+      selectedCaptures: [],
       freeableMemory: [],
       cpuUtilization: [],
       readIOPS:[],
-      writeIOPS: [],
-      loadingContent: true
+      writeIOPS: []
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -64,6 +63,7 @@ class ViewResults extends Component {
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
+    this.renderCaptureDetails = this.renderCaptureDetails.bind(this);
   }
 
   componentDidMount() {
@@ -74,6 +74,10 @@ class ViewResults extends Component {
 
   componentWillUnmount() {
     clearInterval(this.state.intervalGetAllCaptures);
+  }
+
+  onCaptureRowSelection(selectedRows) {
+    console.log(selectedRows);
   }
 
   getCaptureData() {
@@ -93,10 +97,6 @@ class ViewResults extends Component {
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
-
-    this.setState(prevState => ({
-      loadingContent: false
-    }));
   }
 
   getMetricData(captureId) {
@@ -163,6 +163,7 @@ class ViewResults extends Component {
           fixedHeader={true}
           selectable={true}
           multiSelectable={true}
+          onRowSelection={this.onCaptureRowSelection}
         >
           <TableHeader
             displaySelectAll={true}
@@ -203,17 +204,6 @@ class ViewResults extends Component {
               })}
           </TableBody>
         </Table>
-        {this.state.loadingContent &&
-          <div class="loading-capture-table">
-            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-              <h5>Loading...</h5>
-          </div>
-        }
-        {!this.state.loadingContent && this.state.captures.length <= 0 &&
-          <div class="loading-capture-table">
-            <h5>There are no complete captures.</h5>
-          </div>
-        }
         </div>
       );
   }
@@ -227,7 +217,7 @@ class ViewResults extends Component {
       );
   }  
 
-  render() {
+  renderCaptureDetails() {
     const actions = [
       <FlatButton
         label="Close"
@@ -241,6 +231,81 @@ class ViewResults extends Component {
       />,
     ];
 
+    return (
+      <Dialog
+        title={"Capture: " + this.state.captureDetails.captureAlias}
+        actions={actions}
+        modal={true}
+        autoScrollBodyContent={true}
+        contentStyle={{
+          width: '100%',
+          maxWidth: 'none',
+        }}
+        open={this.state.isLogOpen}
+      >
+        <div>
+          <h4>Status: 
+            <div class= {this.state.captureDetails.captureStatus === COMPLETED ? "result-complete" : "result-fail"}>
+            <h5>{this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}</h5>
+            </div>
+          </h4>
+          <h4>RDS Instance: 
+            <div>
+            <h5>{this.state.captureDetails.rdsInstance}</h5>
+            </div>
+          </h4>
+          <h4>Start Time: 
+            <div>
+            <h5>{this.state.captureDetails.startTime}</h5>
+            </div>
+          </h4>
+          <h4>End Time: 
+            <div>
+            <h5>{this.state.captureDetails.endTime}</h5>
+            </div>
+          </h4>
+          <h3>Freeable Memory</h3>
+          <LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+          </LineChart>
+          <h3>CPU Utilization</h3>
+          <LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+          </LineChart>
+          <h3>Read IOPS</h3>
+          <LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+          </LineChart>
+          <h3>Write IOPS</h3>
+          <LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+          </LineChart>
+        </div>
+      </Dialog>
+      );
+  }
+
+  render() {
     return(
     <div class="ViewResults">
       <h2>View Results</h2>
@@ -255,132 +320,11 @@ class ViewResults extends Component {
         {this.renderCaptureTable()}
         {this.renderReplayTable()}
         {this.state.captureDetails &&
-          <Dialog
-            title={"Capture: " + this.state.captureDetails.captureAlias}
-            actions={actions}
-            modal={true}
-            autoScrollBodyContent={true}
-            contentStyle={{
-              width: '100%',
-              maxWidth: 'none',
-            }}
-            open={this.state.isLogOpen}
-          >
-            <div>
-              <h4>Status: 
-                <div class= {this.state.captureDetails.captureStatus === COMPLETED ? "result-complete" : "result-fail"}>
-                <h5>{this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}</h5>
-                </div>
-              </h4>
-              <h4>RDS Instance: 
-                <div>
-                <h5>{this.state.captureDetails.rdsInstance}</h5>
-                </div>
-              </h4>
-              <h4>Start Time: 
-                <div>
-                <h5>{this.state.captureDetails.startTime}</h5>
-                </div>
-              </h4>
-              <h4>End Time: 
-                <div>
-                <h5>{this.state.captureDetails.endTime}</h5>
-                </div>
-              </h4>
-              <h3>Freeable Memory</h3>
-              <LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-                 <XAxis dataKey="Timestamp"/>
-                 <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
-                 <CartesianGrid strokeDasharray="3 3"/>
-                 <Tooltip/>
-                 <Legend />
-                 <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-              </LineChart>
-              <h3>CPU Utilization</h3>
-              <LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-                 <XAxis dataKey="Timestamp"/>
-                 <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
-                 <CartesianGrid strokeDasharray="3 3"/>
-                 <Tooltip/>
-                 <Legend />
-                 <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-              </LineChart>
-              <h3>Read IOPS</h3>
-              <LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-                 <XAxis dataKey="Timestamp"/>
-                 <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
-                 <CartesianGrid strokeDasharray="3 3"/>
-                 <Tooltip/>
-                 <Legend />
-                 <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-              </LineChart>
-              <h3>Write IOPS</h3>
-              <LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-                 <XAxis dataKey="Timestamp"/>
-                 <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
-                 <CartesianGrid strokeDasharray="3 3"/>
-                 <Tooltip/>
-                 <Legend />
-                 <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-              </LineChart>
-            </div>
-          </Dialog>
+          <div>{this.renderCaptureDetails()}</div>
         }
       </div>
       );
   }
-//TODO: remove
-/*
-  render() {
-    return (
-      <div className="ViewResults">
-         <h2>View Results</h2>
-         <div class="buttons">
-            <Button 
-              onClick={this.sendData}
-              content="Refresh"
-              isSubmit={false}
-            />
-          </div>
-         <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Alias</th>
-              <th>Database IP</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-              <th>View</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Ly's Database</td>
-              <td>10.15.10.123</td>
-              <td>10:00:00 AM Jan 1, 2017</td>
-              <td>12:00:00 PM Jan 2, 2017</td>
-              <td>
-                <a href="https://www.google.com" target="_blank">Open Logs</a>
-              </td>
-            </tr>
-            <tr>
-              <td> {JSON.stringify(this.state.formData)} </td>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-            </tr>
-            <tr>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-              <td> </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }*/
 }
 
 export default ViewResults;
