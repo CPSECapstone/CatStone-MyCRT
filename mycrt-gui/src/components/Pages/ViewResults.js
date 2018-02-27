@@ -21,11 +21,11 @@ import Toggle from 'material-ui/Toggle';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const SERVER_PATH = "http://localhost:5000";
-var NOT_STARTED = 0;
-var IN_PROGRESS = 1;
-var COMPLETED = 2;
-var ERROR = 3;
-var LOADING = 4;
+const NOT_STARTED = 0;
+const IN_PROGRESS = 1;
+const COMPLETED = 2;
+const ERROR = 3;
+const LOADING = 4;
 
 const styles = {
   propContainer: {
