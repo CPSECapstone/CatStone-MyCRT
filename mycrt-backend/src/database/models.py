@@ -1,13 +1,13 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                             as Serializer, BadSignature, SignatureExpired)
 from config import SECRET_KEY
 
-from .mycrt_database import Base
+from .mycrt_database import MyCrtDb
 
-class User(Base):
+class User(MyCrtDb.Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     username = Column(String(128), unique=True, nullable=False)
@@ -55,7 +55,7 @@ class User(Base):
         return user
 
 
-class Notification(Base):
+class Notification(MyCrtDb.Base):
     __tablename__ = 'notifications'
 
     notificationId = Column(Integer(), primary_key=True, autoincrement=True)
@@ -73,7 +73,7 @@ class Notification(Base):
 
 	#user = relationship('User', foreign_keys='Notification.id')
 
-class Capture(Base):
+class Capture(MyCrtDb.Base):
     __tablename__ = 'capture'
     captureId = Column(Integer(), primary_key=True, autoincrement=True)
     userId = Column(Integer(), ForeignKey(User.id))
@@ -128,33 +128,55 @@ class Capture(Base):
         return allDicts
 	#user = relationship('User', foreign_keys='Capture.id')
 
-class Replay(Base):
+class Replay(MyCrtDb.Base):
     __tablename__ = 'replay'
     replayId = Column(Integer(), primary_key=True, autoincrement=True)
     userId = Column(Integer(), ForeignKey(User.id))
     captureId = Column(Integer(), ForeignKey(Capture.captureId))
-    replayAlias = Column(String(64), unique=True)
-    rdsInstance = Column(String(64))
+    replayAlias = Column(String(128), unique=True)
+    s3Bucket = Column(String(64))
+    rdsInstance = Column(String(128))
     rdsUsername = Column(String(64))
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
+    regionName = Column(String(64))
 
-    def __init__(self, userId, captureId, replayAlias, rdsInstance, rdsUsername, rdsPassword, rdsDatabase):
+    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName):
         self.userId = userId
         self.captureId = captureId
         self.replayAlias = replayAlias
+        self.s3Bucket = s3Bucket
         self.rdsInstance = rdsInstance
         self.rdsUsername = rdsUsername
         self.rdsPassword = rdsPassword
         self.rdsDatabase = rdsDatabase
+        self.regionName = regionName
 
     def __repr__(self):
-        return '<Replay %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase)
+        return '<Replay %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName)
+
+    def convertToDict(replays):
+        allDicts = []
+
+        for replay in replays:
+            newDict = {'replayId': replay[0],
+                       'userId': replay[1],
+                       'captureId': replay[2],
+                       'replayAlias': replay[3],
+                       's3Bucket': replay[4],
+                       'rdsInstance': replay[5],
+                       'rdsUsername': replay[6],
+                       'rdsPassword': replay[7],
+                       'rdsDatabase': replay[8],
+                       'regionName': replay[9]}
+            allDicts.append(newDict)
+
+        return allDicts
 
 	#user = relationship('User', foreign_keys='Replay.id')
     capture = relationship('Capture', foreign_keys='Replay.captureId')
 
-class Metric(Base):
+class Metric(MyCrtDb.Base):
     __tablename__ = 'metric'
     metricId = Column(Integer(), primary_key=True, autoincrement=True)
     captureAlias = Column(String(64), ForeignKey(Capture.captureAlias), nullable=True)

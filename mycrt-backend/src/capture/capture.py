@@ -31,7 +31,10 @@ and argument NOT LIKE \'SET SESSION %% READ\'
 and LENGTH(argument) > 0
 ORDER by event_time desc"""
 
-def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name):
+CAPTURE_STATUS_ERROR = 3
+CAPTURE_STATUS_SUCCESS = 2
+
+def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, db_session):
     try:
         sql = db_query
 
@@ -45,14 +48,14 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
             connection.close()
 
     newCapture = insertCapture(g.user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
-        '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name)
+        '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
     if (newCapture):
         return newCapture[0][0]
     print(newCapture, " was the new capture")
     return -1
 
 
-def completeCapture(capture):
+def completeCapture(capture, db_session):
     s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
     currentCapture = capture
@@ -112,10 +115,10 @@ def completeCapture(capture):
         os.remove(fileName)
 
     if len(errList) > 0:
-        updateCapture(capture['captureId'], 3)
+        updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
         print(errList)
     else:
-        updateCapture(capture['captureId'], 2)
+        updateCapture(capture['captureId'], CAPTURE_STATUS_SUCCESS, db_session)
 
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", currentCapture['regionName'])
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "FreeableMemory", currentCapture['regionName'])
