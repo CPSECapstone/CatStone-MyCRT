@@ -3,6 +3,7 @@ import os.path
 import sys
 import pymysql
 import boto3
+import csv
 from botocore.exceptions import NoRegionError, ClientError
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -28,14 +29,13 @@ and argument NOT LIKE \'set %% utf8%%\'
 and argument NOT LIKE \'set sql_safe_updates%%\'
 and argument NOT LIKE \'SHOW %%\'
 and argument NOT LIKE \'SET SESSION %% READ\'
-and LENGTH(argument) > 0\'
-ORDER BY \'
-    EXTRACT(YEAR_MONTH FROM event_time),\'
-    EXTRACT(DAY FROM event_time),\'
-    EXTRACT(HOUR FROM event_time),\'
-	EXTRACT(MINUTE FROM event_time),\'
-	EXTRACT(SECOND FROM event_time)"""
-
+and LENGTH(argument) > 0
+ORDER BY
+EXTRACT(YEAR_MONTH FROM event_time),
+EXTRACT(DAY FROM event_time),
+EXTRACT(HOUR FROM event_time),
+EXTRACT(MINUTE FROM event_time),
+EXTRACT(SECOND FROM event_time)"""
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
 
@@ -71,7 +71,7 @@ def completeCapture(capture, db_session):
     if os.path.exists(fileName):
         os.remove(fileName)
 
-    with open(fileName, 'w') as f:
+    with open(fileName, 'w', newline='') as f:
         try:
             sql = db_query
 
@@ -100,7 +100,7 @@ def completeCapture(capture, db_session):
                     cursor.execute(sql)
                     for row in cursor.fetchall():
                         if row["event_time"] >= currentCapture['startTime'] and row["event_time"] <= currentCapture['endTime']:
-                            queries.insert(0, row["argument"] + ";\n")
+                            queries.append([str(row["event_time"]), str(row["argument"].replace('\n', ' ').replace('\t', ' '))])
         except MySQLError as e:
             errList.append(e)
         finally:
@@ -108,8 +108,10 @@ def completeCapture(capture, db_session):
             if connection.open:
                 connection.close()
 
+        file_writer = csv.writer(f)
+
         for query in queries:
-            f.write(query)
+            file_writer.writerow(query)
 
     try:
         if len(errList) == 0:
