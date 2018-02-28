@@ -161,11 +161,19 @@ class ViewResults extends Component {
     var disabled = true;
     var selectedRows = [];
 
-    //TODO: fix bug for unselecting all 
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(i);
       }
+    } else if (rows === "none") {
+      for (var i = 0; i < this.state.captures.length; i++) {
+        selectedRows.push(-1);
+      }
+      this.setState(prevState => ({
+        isCompareDisabled: true,
+        selectedCaptureRows: selectedRows
+      }));
+      return;
     } else {
       selectedRows = rows;
     }
