@@ -97,8 +97,8 @@ def create_app(config={}):
 
     @app.route('/users/replays/<replayId>/replays', methods=['GET'])
     @auth.login_required
-    def get_associated_replays_from_replay(captureId):
-        user_captures = getCaptureFromId(captureId, db.get_session())
+    def get_associated_replays_from_replay(replayId):
+        user_captures = getCaptureFromReplayId(replayId, db.get_session())
         user_capture = user_captures[0]
 
         if (len(user_captures) == 0):
@@ -118,14 +118,14 @@ def create_app(config={}):
 
     @app.route('/users/captures/<capture_id>/replays', methods=['GET'])
     @auth.login_required
-    def get_associated_replays_from_capture(captureId):
-        user_replays = getReplaysFromCapture(captureId, db.get_session())
+    def get_associated_replays_from_capture(capture_id):
+        user_replays = getReplaysFromCapture(capture_id, db.get_session())
 
         if (len(user_replays) == 0):
             return str(404)
 
         for replay in user_replays:
-            if (replay.userId != g.user.get_id()):
+            if (replay['userId'] != g.user.get_id()):
                 return str(403)
 
         return jsonify({'count': len(user_replays), 'userReplays': user_replays}), 200
