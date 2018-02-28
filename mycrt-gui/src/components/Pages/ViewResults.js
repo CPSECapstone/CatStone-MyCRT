@@ -44,18 +44,26 @@ class ViewResults extends Component {
       formData: {},
       isLogOpen: false,
       rowNumberSelected: undefined,
-      isOpenDetailsClicked: false,
+      isCompareOpen: false,
       captureDetails: undefined,
+      selectedCaptureRows: [],
       isChartLoaded: false,
       captures: [],
-      selectedCaptures: [],
+      selectedCaptureIds: [],
+      isCompareDisabled: true,
       freeableMemory: [],
       cpuUtilization: [],
       readIOPS:[],
-      writeIOPS: []
+      writeIOPS: [],
+      showCaptureResultsLoading: true
     };
 
     // This binding is necessary to make `this` work in the callback
+    this.fillComparisonData = this.fillComparisonData.bind(this);
+    this.getComparisonData = this.getComparisonData.bind(this);
+    this.onCompareClick = this.onCompareClick.bind(this);
+    this.onCaptureRowSelection = this.onCaptureRowSelection.bind(this);
+
     this.getMetricData = this.getMetricData.bind(this);
     this.getCaptureData = this.getCaptureData.bind(this);
     this.sendData = this.sendData.bind(this);
@@ -76,8 +84,95 @@ class ViewResults extends Component {
     clearInterval(this.state.intervalGetAllCaptures);
   }
 
-  onCaptureRowSelection(selectedRows) {
+  fillComparisonData(captureIndex, metricName, metric, comparisonArray) {
+    //TODO: wait for getMetricData is finish before doing this
+    var j = 0;
+    var k = 0;
+
+    var newComparisonArray = comparisonArray;
+    if (captureIndex === 0) {
+      for (j; j < metric.length; j++) {
+        var metricString = metricName + '1';
+        newComparisonArray.push(
+        {
+          'Timestamp': metric[j]['Timestamp'],
+          metricString: metric[j][metricName]
+        }
+        );
+        console.log(newComparisonArray);
+      }
+    } else {
+      for (k; k < metric.length; k++) {
+        newComparisonArray[k][metricName + (captureIndex + 1).toString()] = metric[k][metricName];
+      }
+    }
+    console.log(newComparisonArray);
+    return newComparisonArray;
+  }
+
+  getComparisonData() {
+    var freeableMemoryData = [];
+    var cpuUtilizationData = [];
+    var readIOPSData = [];
+    var writeIOPSData = [];
+    var i = 0;
+
+    for (i; i < this.state.selectedCaptureIds.length; i++) {
+      this.getMetricData(this.state.selectedCaptureIds[i]);
+      freeableMemoryData = this.fillComparisonData(i, 'FreeableMemory', this.state.freeableMemory,freeableMemoryData);
+      cpuUtilizationData = this.fillComparisonData(i, 'CPUUtilization', this.state.cpuUtilization, cpuUtilizationData);
+      readIOPSData = this.fillComparisonData(i, 'ReadIOPS', this.state.readIOPS, readIOPSData);
+      writeIOPSData = this.fillComparisonData(i, 'WriteIOPS', this.state.writeIOPS, writeIOPSData);
+    }
+
+    this.setState(prevState => ({
+      freeableMemory: freeableMemoryData,
+      cpuUtilization: cpuUtilizationData,
+      readIOPS: readIOPSData,
+      writeIOPS: writeIOPSData
+    }));
+  }
+
+  onCompareClick() {
+    this.getComparisonData();
+
+    this.setState(prevState => ({
+      isCompareOpen: true
+    }))
+  }
+
+  onCaptureRowSelection(rows) {
     console.log(selectedRows);
+
+    // check if compare button should be disabled or enabled
+    var disabled = true;
+    var selectedRows = [];
+
+    //TODO: fix bug for unselecting all 
+    if (rows === "all") {
+      for (var i = 0; i < this.state.captures.length; i++) {
+        selectedRows.push(i);
+      }
+    } else {
+      selectedRows = rows;
+    }
+
+    if (selectedRows.length > 1 && selectedRows.length <= 3) {
+      disabled = false;
+    } 
+    this.setState(prevState => ({
+      isCompareDisabled: disabled,
+      selectedCaptureRows: selectedRows
+    }));
+
+    // get capture ids from row indexes
+    var selectedCaptureIds = [];
+    for (var index in selectedRows) {
+      selectedCaptureIds.push(this.state.captures[index].captureId);
+    }
+    this.setState(prevState => ({
+      selectedCaptureIds: selectedCaptureIds
+    }));
   }
 
   getCaptureData() {
@@ -91,7 +186,10 @@ class ViewResults extends Component {
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(json) {
-        component.setState(prevState => ({captures: json["userCaptures"]}));
+        component.setState(prevState => ({
+          captures: json["userCaptures"],
+          showCaptureResultsLoading: false
+        }));
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -170,7 +268,7 @@ class ViewResults extends Component {
             adjustForCheckbox={true}
             enableSelectAll={true}
           >
-            <TableRow>
+            <TableRow >
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Status">Status</TableHeaderColumn>
               <TableHeaderColumn tooltip="The RDS Instance Name">RDS Instance</TableHeaderColumn>
@@ -189,7 +287,7 @@ class ViewResults extends Component {
               let boundItemClick = this.onOpenDetailsClick.bind(this, index);
               if (row.captureStatus === COMPLETED || row.captureStatus === ERROR) {
                 return(
-                <TableRow key={index} >
+                <TableRow key={index} selected={this.state.selectedCaptureRows.indexOf(index) !== -1} >
                   <TableRowColumn>{row.captureAlias}</TableRowColumn>
                   <TableRowColumn>
                     {(row.captureStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
@@ -204,6 +302,17 @@ class ViewResults extends Component {
               })}
           </TableBody>
         </Table>
+          {this.state.showCaptureResultsLoading &&
+            <div class="loading-capture-table">
+            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              <h5>Loading...</h5>
+            </div>
+          }
+          {!this.state.showCaptureResultsLoading && this.state.captures.length === 0 &&
+            <div class="loading-capture-table">
+              <h5>There are no capture results.</h5>
+            </div>
+          }
         </div>
       );
   }
@@ -312,9 +421,10 @@ class ViewResults extends Component {
       <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
          <div class="refresh-result-button">
             <Button 
-              onClick={this.getCaptureData}
-              content="Refresh Results"
+              onClick={this.onCompareClick}
+              content="Compare"
               isSubmit={false}
+              isDisabled={this.state.isCompareDisabled}
             />
           </div>
         {this.renderCaptureTable()}
