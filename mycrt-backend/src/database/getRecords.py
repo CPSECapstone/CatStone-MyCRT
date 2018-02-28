@@ -132,6 +132,15 @@ def getUsersReplays(userId, db_session):
 
     return result
 
+def getReplayFromAlias(replayAlias, db_session):
+	""" Function to get a capture after receiving a captureId
+
+		Keyword arguments:
+		captureId -- the id of the capture you want to access
+	"""
+	replayInformation = Replay.query.filter(Replay.replayAlias == replayAlias)
+	return Replay.convertToDict(db_session.execute(replayInformation).fetchall())
+
 def getReplaysFromCapture(captureId, db_session):
 	"""Function to get all replays and captures related to a specific captureId
 	"""
