@@ -47,10 +47,15 @@ class ViewResults extends Component {
       isCompareOpen: false,
       captureDetails: undefined,
       selectedCaptureRows: [],
-      isChartLoaded: false,
+      isComparisonChartLoaded: true,
+      comparisonIndex: -1,
       captures: [],
       selectedCaptureIds: [],
       isCompareDisabled: true,
+      compareFreeableMemory: [],
+      compareCpuUtilization: [],
+      compareReadIOPS:[],
+      compareWriteIOPS: [],
       freeableMemory: [],
       cpuUtilization: [],
       readIOPS:[],
@@ -62,6 +67,7 @@ class ViewResults extends Component {
     this.fillComparisonData = this.fillComparisonData.bind(this);
     this.getComparisonData = this.getComparisonData.bind(this);
     this.onCompareClick = this.onCompareClick.bind(this);
+    this.onCompareClose = this.onCompareClose.bind(this);
     this.onCaptureRowSelection = this.onCaptureRowSelection.bind(this);
 
     this.getMetricData = this.getMetricData.bind(this);
@@ -72,6 +78,7 @@ class ViewResults extends Component {
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
     this.renderCaptureDetails = this.renderCaptureDetails.bind(this);
+    this.renderCompare = this.renderCompare.bind(this);
   }
 
   componentDidMount() {
@@ -84,26 +91,36 @@ class ViewResults extends Component {
     clearInterval(this.state.intervalGetAllCaptures);
   }
 
-  fillComparisonData(captureIndex, metricName, metric, comparisonArray) {
-    //TODO: wait for getMetricData is finish before doing this
-    var j = 0;
-    var k = 0;
+  fillComparisonData(metricName, metric, comparisonArray) {
+    var captureIndex = this.state.comparisonIndex;
 
     var newComparisonArray = comparisonArray;
     if (captureIndex === 0) {
-      for (j; j < metric.length; j++) {
-        var metricString = metricName + '1';
+      console.log(metric.length);
+      for (var j = 0; j < metric.length; j++) {
         newComparisonArray.push(
         {
           'Timestamp': metric[j]['Timestamp'],
-          metricString: metric[j][metricName]
-        }
-        );
-        console.log(newComparisonArray);
+          'Capture1': metric[j][metricName]
+        });
       }
     } else {
-      for (k; k < metric.length; k++) {
-        newComparisonArray[k][metricName + (captureIndex + 1).toString()] = metric[k][metricName];
+      console.log(metric.length);
+      var newMetricName = "Capture" + (captureIndex + 1);
+      var upperBound = newComparisonArray.length > metric.length ? metric.length : newComparisonArray.length;
+      for (var k = 0; k < upperBound; k++) {
+        var newValue = metric[k][metricName];
+        newComparisonArray[k][newMetricName] = newValue;
+      }
+      //handling different lengths of metrics
+      console.log("upper bound is: " + upperBound);
+      console.log("current metric length is: " +metric.length);
+      for (var l = upperBound - 1; l < metric.length; l++) {
+        newComparisonArray.push(
+        {
+          'Timestamp': metric[l]['Timestamp']
+        });
+        newComparisonArray[l][newMetricName] = metric[l][metricName];
       }
     }
     console.log(newComparisonArray);
@@ -111,26 +128,16 @@ class ViewResults extends Component {
   }
 
   getComparisonData() {
-    var freeableMemoryData = [];
-    var cpuUtilizationData = [];
-    var readIOPSData = [];
-    var writeIOPSData = [];
-    var i = 0;
-
-    for (i; i < this.state.selectedCaptureIds.length; i++) {
-      this.getMetricData(this.state.selectedCaptureIds[i]);
-      freeableMemoryData = this.fillComparisonData(i, 'FreeableMemory', this.state.freeableMemory,freeableMemoryData);
-      cpuUtilizationData = this.fillComparisonData(i, 'CPUUtilization', this.state.cpuUtilization, cpuUtilizationData);
-      readIOPSData = this.fillComparisonData(i, 'ReadIOPS', this.state.readIOPS, readIOPSData);
-      writeIOPSData = this.fillComparisonData(i, 'WriteIOPS', this.state.writeIOPS, writeIOPSData);
-    }
-
     this.setState(prevState => ({
-      freeableMemory: freeableMemoryData,
-      cpuUtilization: cpuUtilizationData,
-      readIOPS: readIOPSData,
-      writeIOPS: writeIOPSData
+      isComparisonChartLoaded: false,
+      comparisonIndex: 0,
+      compareFreeableMemory: [],
+      compareCpuUtilization: [],
+      compareReadIOPS:[],
+      compareWriteIOPS: []
     }));
+
+    this.getMetricData(this.state.selectedCaptureIds[0]);
   }
 
   onCompareClick() {
@@ -141,8 +148,14 @@ class ViewResults extends Component {
     }))
   }
 
+  onCompareClose() {
+    this.setState(prevState => ({
+      isCompareOpen: false
+    }))
+  }
+
   onCaptureRowSelection(rows) {
-    console.log(selectedRows);
+    console.log(rows);
 
     // check if compare button should be disabled or enabled
     var disabled = true;
@@ -167,8 +180,8 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedCaptureIds = [];
-    for (var index in selectedRows) {
-      selectedCaptureIds.push(this.state.captures[index].captureId);
+    for (var i = 0; i < selectedRows.length; i++) {
+      selectedCaptureIds.push(this.state.captures[selectedRows[i]].captureId);
     }
     this.setState(prevState => ({
       selectedCaptureIds: selectedCaptureIds
@@ -200,6 +213,7 @@ class ViewResults extends Component {
   getMetricData(captureId) {
     var parentContextState = this.props.parentContext.state;
     var component = this;
+    console.log("getting metric data FOR CAPTURE ID: " + captureId);
 
     $.ajax({
       url: SERVER_PATH + "/users/" + captureId + "/metrics",
@@ -214,7 +228,34 @@ class ViewResults extends Component {
           readIOPS: json["ReadIOPS"],
           writeIOPS: json["WriteIOPS"]
         }));
-        console.log(this.state.freeableMemory);
+
+        var i = this.state.comparisonIndex;
+        console.log("comparison index is: " + i);
+        //combine comparison data
+        if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length) {
+          console.log("gettign comparison data")
+          var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory);
+          var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization);
+          var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS);
+          var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS);
+
+          component.setState(prevState => ({
+            compareFreeableMemory: fm,
+            compareCpuUtilization: cu,
+            compareReadIOPS: ri,
+            compareWriteIOPS: wi,
+            comparisonIndex: i + 1
+          }));
+
+          if ((i + 1) < this.state.selectedCaptureIds.length) {
+            this.getMetricData(this.state.selectedCaptureIds[i + 1]);
+          } else {
+              component.setState(prevState => ({
+              isComparisonChartLoaded: true,
+              comparisonIndex: -1
+            }));
+          }
+        }
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -414,6 +455,94 @@ class ViewResults extends Component {
       );
   }
 
+  renderCompare() {
+    //TODO: more descriptive labels instead of Capture1, Capture2, etc.
+    const actions = [
+      <FlatButton
+        label="Close"
+        primary={true}
+        onClick={this.onCompareClose}
+      />
+    ];
+
+    return (
+      <Dialog
+        title={"Comparison"}
+        actions={actions}
+        modal={true}
+        autoScrollBodyContent={true}
+        contentStyle={{
+          width: '100%',
+          maxWidth: 'none',
+        }}
+        open={this.state.isCompareOpen}
+      >
+      {this.state.isComparisonChartLoaded &&
+        <div>
+          <h3>Freeable Memory</h3>
+          <LineChart width={900} height={300} data={this.state.compareFreeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             {this.state.selectedCaptureIds.length === 3 &&
+              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+             }
+          </LineChart>
+          <h3>CPU Utilization</h3>
+          <LineChart width={900} height={300} data={this.state.compareCpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             {this.state.selectedCaptureIds.length === 3 &&
+              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+             }
+          </LineChart>
+          <h3>Read IOPS</h3>
+          <LineChart width={900} height={300} data={this.state.compareReadIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             {this.state.selectedCaptureIds.length === 3 &&
+              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+             }
+          </LineChart>
+          <h3>Write IOPS</h3>
+          <LineChart width={900} height={300} data={this.state.compareWriteIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+             <XAxis dataKey="Timestamp"/>
+             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+             <CartesianGrid strokeDasharray="3 3"/>
+             <Tooltip/>
+             <Legend />
+             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             {this.state.selectedCaptureIds.length === 3 &&
+              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+             }
+          </LineChart>
+        </div>
+      }
+      {!this.state.isComparisonChartLoaded &&
+        <div>
+          <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              <h5>Loading...</h5>
+        </div>
+      }
+      </Dialog>
+      );
+  }
+
   render() {
     return(
     <div class="ViewResults">
@@ -432,6 +561,7 @@ class ViewResults extends Component {
         {this.state.captureDetails &&
           <div>{this.renderCaptureDetails()}</div>
         }
+        {this.renderCompare()}
       </div>
       );
   }
