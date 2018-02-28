@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getReplaysFromCapture
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture
 import time
 
 def create_app(config={}):
@@ -95,40 +95,40 @@ def create_app(config={}):
             else:
                 return jsonify({'error': response}), 400
 
-    @app.route('/users/<replayId>/replays', methods=['GET'])
+    @app.route('/users/replays/<replayId>/replays', methods=['GET'])
     @auth.login_required
-    def get_associated_replays_from_replay(captureId):
-        user_captures = getCaptureFromId(captureId, db.get_session())
+    def get_associated_replays_from_replay(replayId):
+        user_captures = getCaptureFromReplayId(replayId, db.get_session())
         user_capture = user_captures[0]
 
         if (len(user_captures) == 0):
-            return str(404)
+            return jsonify(), 404
         elif (user_capture['userId'] != g.user.get_id()):
-            return str(403)
+            return jsonify(), 403
 
-        user_replays = getReplaysFromCapture(user_capture.captureId, db.get_session())
+        user_replays = getReplaysFromCapture(user_capture['captureId'], db.get_session())
 
         if (len(user_replays) == 0):
-            return str(404)
+            return jsonify(), 404
         for replay in user_replays:
-            if (replay.userId != g.user.get_id()):
-                return str(403)
+            if (replay['userId'] != g.user.get_id()):
+                return jsonify(), 403
 
         return jsonify({'count': len(user_replays), 'capture': user_capture, 'userReplays': user_replays})
 
-    @app.route('/users/<captureId>/replays', methods=['GET'])
+    @app.route('/users/captures/<capture_id>/replays', methods=['GET'])
     @auth.login_required
-    def get_associated_replays_from_capture(captureId):
-        user_replays = getReplaysFromCapture(captureId, db.get_session())
+    def get_associated_replays_from_capture(capture_id):
+        user_replays = getReplaysFromCapture(capture_id, db.get_session())
 
         if (len(user_replays) == 0):
-            return str(404)
-	    
-        for replay in user_replays:
-            if (replay.userId != g.user.get_id()):
-                return str(403)
+            return jsonify(), 404
 
-        return jsonify({'count': len(user_replays), 'userReplays': user_replays})
+        for replay in user_replays:
+            if (replay['userId'] != g.user.get_id()):
+                return jsonify(), 403
+
+        return jsonify({'count': len(user_replays), 'userReplays': user_replays}), 200
 
     @app.route('/users/s3Buckets', methods=['GET'])
     @auth.login_required
@@ -160,11 +160,29 @@ def create_app(config={}):
         user_capture = user_captures[0]
 
         if (len(user_captures) == 0):
-            return str(404)
+            return jsonify(), 404
         elif (user_capture['userId'] != g.user.get_id()):
-            return str(403)
+            return jsonify(), 403
         for metric in availableMetrics:
             metrics[metric] = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
+
+        return jsonify(metrics), 200
+
+    @app.route('/users/<replayId>/metrics', methods=["GET"])
+    @auth.login_required
+    def get_replay_metrics(captureId):
+        metrics = {}
+        availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
+
+        user_replays = getReplayFromId(replayId, db.get_session())
+        user_replay = user_replays[0]
+
+        if (len(user_replays) == 0):
+            return jsonify(), 404
+        elif (user_replay['userId'] != g.user.get_id()):
+            return jsonify(), 403
+        for metric in availableMetrics:
+            metrics[metric] = get_metrics(metric, user_capture['replayAlias'] + '.metrics', user_capture['s3Bucket'])
 
         return jsonify(metrics), 200
 
