@@ -13,6 +13,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
 from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getReplaysFromCapture
+from .database.addRecords import insertReplay
 import time
 
 def create_app(config={}):
@@ -112,21 +113,32 @@ def create_app(config={}):
             jsonData = request.json
 
             if ('capture_id' not in jsonData or
+                'replay_alias' not in jsonData or
                 'rds_endpoint' not in jsonData or
                 'region_name' not in jsonData or
                 'db_user' not in jsonData or
                 'db_password' not in jsonData or
                 'db_name' not in jsonData or
-                'alias' not in jsonData):
+                'bucket_name' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
 
 			#Call replay function here
 	        #response = replay()
+            response = insertReplay(g.user.get_id(),
+                                    jsonData['capture_id'],
+                                    jsonData['replay_alias'],
+                                    jsonData['bucket_name'],
+                                    jsonData['rds_endpoint'],
+                                    jsonData['db_user'],
+                                    jsonData['db_password'],
+                                    jsonData['db_name'],
+                                    jsonData['region_name'],
+                                    db.get_session())
 
-            if (isinstance(response, int) and response > -1):
-                return jsonify({'replayId': response}), 201
-            else:
-                return jsonify({'error': "Replay failed"}), 400
+            #if (isinstance(response, int) and response > -1):
+            return jsonify({'replayId': response[0]['replayId']}), 201
+            #else:
+                #return jsonify({'error': "Replay failed"}), 400
 
     @app.route('/users/<replayId>/replays', methods=['GET'])
     @auth.login_required
