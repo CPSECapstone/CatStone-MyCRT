@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getReplaysFromCapture
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromReplayId, getReplaysFromCapture
 import time
 
 def create_app(config={}):
@@ -95,7 +95,7 @@ def create_app(config={}):
             else:
                 return jsonify({'error': response}), 400
 
-    @app.route('/users/<replayId>/replays', methods=['GET'])
+    @app.route('/users/replays/<replayId>/replays', methods=['GET'])
     @auth.login_required
     def get_associated_replays_from_replay(captureId):
         user_captures = getCaptureFromId(captureId, db.get_session())
@@ -116,7 +116,7 @@ def create_app(config={}):
 
         return jsonify({'count': len(user_replays), 'capture': user_capture, 'userReplays': user_replays})
 
-    @app.route('/users/<captureId>/replays', methods=['GET'])
+    @app.route('/users/captures/<capture_id>/replays', methods=['GET'])
     @auth.login_required
     def get_associated_replays_from_capture(captureId):
         user_replays = getReplaysFromCapture(captureId, db.get_session())
@@ -128,7 +128,7 @@ def create_app(config={}):
             if (replay.userId != g.user.get_id()):
                 return str(403)
 
-        return jsonify({'count': len(user_replays), 'userReplays': user_replays})
+        return jsonify({'count': len(user_replays), 'userReplays': user_replays}), 200
 
     @app.route('/users/s3Buckets', methods=['GET'])
     @auth.login_required
