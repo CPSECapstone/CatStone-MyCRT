@@ -127,7 +127,7 @@ def getUsersReplays(userId, db_session):
             db_session -- the database session to query from
     '''
     result = []
-    user_replays = db_session.query(Replay).join(User).filter(User.userId == userId)
+    user_replays = db_session.query(Replay).join(User).filter(User.id == userId)
     result = Replay.convertToDict(db_session.execute(user_replays).fetchall())
 
     return result

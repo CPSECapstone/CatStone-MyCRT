@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getReplaysFromCapture
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getReplaysFromCapture, getUsersReplays
 from .database.addRecords import insertReplay
 import time
 
@@ -99,10 +99,9 @@ def create_app(config={}):
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
     def get_users_replays():
-        current_user = g.user
-
+        
         #checkAllRDSInstances()
-        userReplays = getUsersReplays(g.userId, db.get_session())
+        userReplays = getUsersReplays(g.user.get_id() , db.get_session())
 
         return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
 
