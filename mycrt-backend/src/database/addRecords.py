@@ -12,7 +12,9 @@ from .getRecords import getCaptureFromAlias
                                 "test-rds",
                                 "test",
                                 "testPW",
-                                "testDB")
+                                "testDB",
+                                "testRegion",
+                                0)
 '''
 def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, db_session):
 	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
