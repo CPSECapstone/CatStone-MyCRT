@@ -106,12 +106,12 @@ def create_app(config={}):
         elif (user_capture['userId'] != g.user.get_id()):
             return str(403)
 
-        user_replays = getReplaysFromCapture(user_capture.captureId, db.get_session())
+        user_replays = getReplaysFromCapture(user_capture['captureId'], db.get_session())
 
         if (len(user_replays) == 0):
             return str(404)
         for replay in user_replays:
-            if (replay.userId != g.user.get_id()):
+            if (replay['userId'] != g.user.get_id()):
                 return str(403)
 
         return jsonify({'count': len(user_replays), 'capture': user_capture, 'userReplays': user_replays})
