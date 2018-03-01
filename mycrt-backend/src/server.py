@@ -13,7 +13,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
 from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays, getReplayFromAlias, getReplayFromId
-import time
+from .database.addRecords import insertReplay
 
 def create_app(config={}):
     # app configuration
