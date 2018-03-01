@@ -23,7 +23,7 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 		db_session.commit()
 	except:
 		db_session.rollback()
-  
+
 	return getCaptureFromAlias(captureAlias, db_session)
 
 '''Function used to insert a replay into the database

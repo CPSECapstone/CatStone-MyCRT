@@ -13,7 +13,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
 from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays, getReplayFromAlias, getReplayFromId
-import time
+from .database.addRecords import insertReplay
 
 def create_app(config={}):
     # app configuration
@@ -102,17 +102,17 @@ def create_app(config={}):
             if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0):
                 return jsonify({"error": "Alias is already unavailable."}), 400
 
-            response = capture(jsonData['rds_endpoint'],
-                               jsonData['region_name'],
-                               jsonData['db_user'],
-                               jsonData['db_password'],
-                               jsonData['db_name'],
-                               jsonData['start_time'],
-                               jsonData['end_time'],
-                               jsonData['alias'],
-                               jsonData['bucket_name'],
-                               db.get_session())
-
+            response = capture( jsonData['rds_endpoint'],
+                                jsonData['region_name'],
+                                jsonData['db_user'],
+                                jsonData['db_password'],
+                                jsonData['db_name'],
+                                jsonData['start_time'],
+                                jsonData['end_time'],
+                                jsonData['alias'],
+                                g.user,
+                                jsonData['bucket_name'],
+                                db.get_session())
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
             else:
