@@ -50,7 +50,9 @@ class ViewResults extends Component {
       isComparisonChartLoaded: true,
       comparisonIndex: -1,
       captures: [],
+      replays: [],
       selectedCaptureIds: [],
+      selectedReplayIds: [],
       isCompareDisabled: true,
       compareFreeableMemory: [],
       compareCpuUtilization: [],
@@ -72,6 +74,7 @@ class ViewResults extends Component {
 
     this.getMetricData = this.getMetricData.bind(this);
     this.getCaptureData = this.getCaptureData.bind(this);
+    this.getReplayData = this.getReplayData.bind(this);
     this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
 
@@ -218,6 +221,10 @@ class ViewResults extends Component {
     });
   }
 
+  getReplayData() {
+
+  }
+  
   getMetricData(captureId) {
     var parentContextState = this.props.parentContext.state;
     var component = this;
@@ -371,7 +378,64 @@ class ViewResults extends Component {
     return (
       <div>
       <h3>Replay Results</h3>
-        </div>
+      <Table
+          height={'100%'}
+          fixedHeader={true}
+          selectable={true}
+          multiSelectable={true}
+          onRowSelection={this.onCaptureRowSelection}
+        >
+          <TableHeader
+            displaySelectAll={true}
+            adjustForCheckbox={true}
+            enableSelectAll={true}
+          >
+            <TableRow >
+              <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The Status">Status</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The RDS Instance Name">RDS Instance</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The End Time">End Time</TableHeaderColumn>
+              <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody
+            displayRowCheckbox={true}
+            deselectOnClickaway={false}
+            showRowHover={true}
+            stripedRows={false}
+          >
+            {this.state.captures.map( (row, index) => {
+              let boundItemClick = this.onOpenDetailsClick.bind(this, index);
+              if (row.captureStatus === COMPLETED || row.captureStatus === ERROR) {
+                return(
+                <TableRow key={index} selected={this.state.selectedCaptureRows.indexOf(index) !== -1} >
+                  <TableRowColumn>{row.captureAlias}</TableRowColumn>
+                  <TableRowColumn>
+                    {(row.captureStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
+                  </TableRowColumn>
+                  <TableRowColumn>{row.rdsInstance}</TableRowColumn>
+                  <TableRowColumn>{row.startTime}</TableRowColumn>
+                  <TableRowColumn>{row.endTime}</TableRowColumn>
+                  <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
+                </TableRow>
+                );
+              }
+              })}
+          </TableBody>
+        </Table>
+          {this.state.showCaptureResultsLoading &&
+            <div class="loading-capture-table">
+            <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              <h5>Loading...</h5>
+            </div>
+          }
+          {!this.state.showCaptureResultsLoading && this.state.captures.length === 0 &&
+            <div class="loading-capture-table">
+              <h5>There are no capture results.</h5>
+            </div>
+          }
+      </div>
       );
   }  
 
