@@ -142,7 +142,7 @@ class Replay(MyCrtDb.Base):
     regionName = Column(String(64))
     replayStatus = Column(Integer(), default=0)
 
-    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, replayStatus):
+    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, replayStatus=0):
         self.userId = userId
         self.captureId = captureId
         self.replayAlias = replayAlias
