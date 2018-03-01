@@ -43,18 +43,19 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
         queries = []
 
-    except OperationalError as e:
-        return e
-    finally:
         if connection.open:
             connection.close()
+    except OperationalError as e:
+        return {'Error': {'Message': 'Failed to connect to your database with credentials',
+                      'Code': 400}}
 
     newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
     if (newCapture):
         return newCapture[0][0]
-    print(newCapture, " was the new capture")
-    return -1
+
+    return {'Error': {'Message': 'Failed to insert capture into database',
+                      'Code': 400}}
 
 
 def completeCapture(capture, user, db_session):

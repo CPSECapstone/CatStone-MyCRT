@@ -58,7 +58,8 @@ class HomePage extends Component {
       s3Items: [],
       showLoadingCard: true,
       pausePolling: false,
-      loadingCaptureContent: true
+      loadingCaptureContent: true,
+      showDBConnectFailure: false
     };
 
 
@@ -85,6 +86,7 @@ class HomePage extends Component {
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this);
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this);
     this.handleDBNameChange = this.handleDBNameChange.bind(this);
+    this.handleErrorMessageChange = this.handleErrorMessageChange.bind(this);
 
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
@@ -135,9 +137,13 @@ class HomePage extends Component {
         this.setState({
           pausePolling: false
         });
+        this.onCaptureButton();    
       }.bind(this),
       error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
+        if (xhr.responseText.includes("Failed to connect")) {
+          this.setState({showDBConnectFailure: true});
+        }
+        console.error(this.props.url, status, err.toString(), xhr.responseText);
       }.bind(this)
     });
   }
@@ -252,6 +258,11 @@ class HomePage extends Component {
     }));
   }
 
+  handleErrorMessageChange() {
+    this.setState(prevState => {
+      showDBConnectFailure: !prevState.showDBConnectFailure;
+    });
+  }
   hideReplayCallout() {
     this.setState(prevState => ({
       isReplayCalloutVisible: false
@@ -426,7 +437,6 @@ class HomePage extends Component {
       captureCards: newCards,
       isErrorVisible: false
     }))
-    this.onCaptureButton();
   }
 
   renderCaptureForm() {
@@ -497,6 +507,10 @@ class HomePage extends Component {
                 onChange={this.handleAliasChange}
               />
           </div>
+          {this.state.showDBConnectFailure &&
+          <div class="error-message">
+            Database credentials are invalid, please check your input.
+          </div>}
           <div class="add-capture-item">
             Database Name
              <TextField

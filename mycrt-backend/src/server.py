@@ -116,7 +116,8 @@ def create_app(config={}):
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
             else:
-                return jsonify({'error': response}), 400
+                return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
+                
 
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
