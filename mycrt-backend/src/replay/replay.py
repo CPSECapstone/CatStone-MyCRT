@@ -32,7 +32,7 @@ def get_transaction_log(replay_alias, bucket_name):
 def replay(rds_endpoint, region_name, db_user, db_password, db_name, alias, bucket_name, db_session):
 
     transactions = get_transaction_log(alias, bucket_name)
-    
+
     try:
         connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
 
@@ -48,24 +48,3 @@ def replay(rds_endpoint, region_name, db_user, db_password, db_name, alias, buck
         print(e)
         if connection.open:
             connection.close()
-
-
-def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, db_session):
-    try:
-        sql = db_query
-
-        connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
-        queries = []
-
-    except OperationalError as e:
-        return e
-    finally:
-        if connection.open:
-            connection.close()
-
-    newCapture = insertCapture(g.user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
-        '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
-    if (newCapture):
-        return newCapture[0][0]
-    print(newCapture, " was the new capture")
-    return -1
