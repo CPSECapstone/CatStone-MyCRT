@@ -140,8 +140,9 @@ class Replay(MyCrtDb.Base):
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
     regionName = Column(String(64))
+    replayStatus = Column(Integer(), default=0)
 
-    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName):
+    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, replayStatus):
         self.userId = userId
         self.captureId = captureId
         self.replayAlias = replayAlias
@@ -151,9 +152,10 @@ class Replay(MyCrtDb.Base):
         self.rdsPassword = rdsPassword
         self.rdsDatabase = rdsDatabase
         self.regionName = regionName
+        self.replayStatus = replayStatus
 
     def __repr__(self):
-        return '<Replay %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName)
+        return '<Replay %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName, self.replayStatus)
 
     def convertToDict(replays):
         allDicts = []
@@ -168,7 +170,8 @@ class Replay(MyCrtDb.Base):
                        'rdsUsername': replay[6],
                        'rdsPassword': replay[7],
                        'rdsDatabase': replay[8],
-                       'regionName': replay[9]}
+                       'regionName': replay[9],
+                       'replayStatus': replay[10]}
             allDicts.append(newDict)
 
         return allDicts
