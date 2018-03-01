@@ -13,7 +13,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
 from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays, getReplayFromAlias, getReplayFromId
-import time
+from .database.addRecords import insertReplay
 
 def create_app(config={}):
     # app configuration
@@ -100,19 +100,19 @@ def create_app(config={}):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0):
-                return jsonify({"error": "Alias is already unavailable."}), 400
+                return jsonify({"error": "Alias is unavailable."}), 400
 
-            response = capture(jsonData['rds_endpoint'],
-                               jsonData['region_name'],
-                               jsonData['db_user'],
-                               jsonData['db_password'],
-                               jsonData['db_name'],
-                               jsonData['start_time'],
-                               jsonData['end_time'],
-                               jsonData['alias'],
-                               jsonData['bucket_name'],
-                               db.get_session())
-
+            response = capture( jsonData['rds_endpoint'],
+                                jsonData['region_name'],
+                                jsonData['db_user'],
+                                jsonData['db_password'],
+                                jsonData['db_name'],
+                                jsonData['start_time'],
+                                jsonData['end_time'],
+                                jsonData['alias'],
+                                g.user,
+                                jsonData['bucket_name'],
+                                db.get_session())
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
             else:
@@ -156,7 +156,7 @@ def create_app(config={}):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0):
-                return jsonify({"error": "Alias is already unavailable."}), 400
+                return jsonify({"error": "Alias is unavailable."}), 400
 
             response = insertReplay(g.user.get_id(),
                                     jsonData['capture_id'],
@@ -175,15 +175,14 @@ def create_app(config={}):
     @auth.login_required
     def get_associated_replays_from_replay(replayId):
         user_captures = getCaptureFromReplayId(replayId, db.get_session())
-        user_capture = user_captures[0]
-
         if (len(user_captures) == 0):
             return jsonify(), 404
-        elif (user_capture['userId'] != g.user.get_id()):
+
+        user_capture = user_captures[0]
+        if (user_capture['userId'] != g.user.get_id()):
             return jsonify(), 403
 
         user_replays = getReplaysFromCapture(user_capture['captureId'], db.get_session())
-
         if (len(user_replays) == 0):
             return jsonify(), 404
         for replay in user_replays:
@@ -229,7 +228,7 @@ def create_app(config={}):
     @app.route('/users/captures/<capture_id>/metrics', methods=["GET"])
     @auth.login_required
     def get_capture_metrics(capture_id):
-        metrics = {}
+        response = metrics = {}
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
         user_captures = getCaptureFromId(capture_id, db.get_session())
@@ -240,9 +239,14 @@ def create_app(config={}):
         user_capture = user_captures[0]
         if (user_capture['userId'] != g.user.get_id()):
             return jsonify(), 403
-            
+
         for metric in availableMetrics:
-            metrics[metric] = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
+            response = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
+            print(response)
+            if ('Error' not in response.keys()):
+                metrics[metric] = response
+            else:
+                return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
 
         return jsonify(metrics), 200
 
@@ -261,7 +265,12 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            metrics[metric] = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
+            response = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
+            print(response)
+            if ('Error' not in response.keys()):
+                metrics[metric] = response
+            else:
+                return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
 
         return jsonify(metrics), 200
 
