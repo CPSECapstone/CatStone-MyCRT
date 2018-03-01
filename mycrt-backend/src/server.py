@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays
 import time
 
 def create_app(config={}):
@@ -94,7 +94,7 @@ def create_app(config={}):
                 return jsonify({'captureId': response}), 201
             else:
                 return jsonify({'error': response}), 400
-              
+
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
     def get_users_replays():
@@ -194,13 +194,13 @@ def create_app(config={}):
 
         return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
 
-    @app.route('/users/<captureId>/metrics', methods=["GET"])
+    @app.route('/users/captures/<capture_id>/metrics', methods=["GET"])
     @auth.login_required
-    def get_capture_metrics(captureId):
+    def get_capture_metrics(capture_id):
         metrics = {}
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
-        user_captures = getCaptureFromId(captureId, db.get_session())
+        user_captures = getCaptureFromId(capture_id, db.get_session())
         user_capture = user_captures[0]
 
         if (len(user_captures) == 0):
@@ -212,13 +212,13 @@ def create_app(config={}):
 
         return jsonify(metrics), 200
 
-    @app.route('/users/<replayId>/metrics', methods=["GET"])
+    @app.route('/users/replays/<replay_id>/metrics', methods=["GET"])
     @auth.login_required
-    def get_replay_metrics(captureId):
+    def get_replay_metrics(replay_id):
         metrics = {}
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
-        user_replays = getReplayFromId(replayId, db.get_session())
+        user_replays = getReplayFromId(replay_id, db.get_session())
         user_replay = user_replays[0]
 
         if (len(user_replays) == 0):
