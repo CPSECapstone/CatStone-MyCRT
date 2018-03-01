@@ -175,15 +175,14 @@ def create_app(config={}):
     @auth.login_required
     def get_associated_replays_from_replay(replayId):
         user_captures = getCaptureFromReplayId(replayId, db.get_session())
-        user_capture = user_captures[0]
-
         if (len(user_captures) == 0):
             return jsonify(), 404
-        elif (user_capture['userId'] != g.user.get_id()):
+
+        user_capture = user_captures[0]
+        if (user_capture['userId'] != g.user.get_id()):
             return jsonify(), 403
 
         user_replays = getReplaysFromCapture(user_capture['captureId'], db.get_session())
-
         if (len(user_replays) == 0):
             return jsonify(), 404
         for replay in user_replays:
