@@ -100,7 +100,7 @@ def create_app(config={}):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0):
-                return jsonify({"error": "Alias is already unavailable."}), 400
+                return jsonify({"error": "Alias is unavailable."}), 400
 
             response = capture( jsonData['rds_endpoint'],
                                 jsonData['region_name'],
@@ -156,7 +156,7 @@ def create_app(config={}):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0):
-                return jsonify({"error": "Alias is already unavailable."}), 400
+                return jsonify({"error": "Alias is unavailable."}), 400
 
             response = insertReplay(g.user.get_id(),
                                     jsonData['capture_id'],
