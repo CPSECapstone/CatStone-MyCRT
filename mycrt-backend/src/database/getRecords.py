@@ -159,3 +159,12 @@ def getReplaysFromCapture(captureId, db_session):
 	replays = Replay.query.filter(Replay.captureId == captureId)
 
 	return Replay.convertToDict(db_session.execute(replays).fetchall())
+
+def getReplayStatus(replayId, db_session):
+	"""Function to get a replay's status after receiving a replayId
+
+		Keyword arguments:
+		replayId -- the id of the replay you want to access
+	"""
+	replayInformation = db_session.query(Replay.replayId, Replay.replayStatus).filter(Replay.replayId == replayId)
+	return db_session.execute(replayInformation).fetchall()
