@@ -56,7 +56,6 @@ def get_metrics(metric_type, metric_alias, bucket_name):
     s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
 
-
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
     except ClientError as e:
