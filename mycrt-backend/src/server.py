@@ -242,10 +242,6 @@ def create_app(config={}):
 
         for metric in availableMetrics:
             response = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
-<<<<<<< HEAD
-=======
-            print(response)
->>>>>>> origin/CAT-18/28-Start-Replay-and-Metrics-Comparison
             if (type(response) is not dict):
                 metrics[metric] = response
             else:
