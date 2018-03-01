@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays, getReplayFromAlias
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays, getReplayFromAlias, getReplayFromId
 import time
 
 def create_app(config={}):
@@ -59,11 +59,18 @@ def create_app(config={}):
         success = user_repository.register_user(username, password, email, access_key, secret_key)
         return Response(status=201 if success else 400)
 
-    @app.route('/users/captures/<id>', methods=['GET'])
+    @app.route('/users/captures/<capture_id>', methods=['GET'])
     @auth.login_required
-    def get_capture():
-        userCapture = getCaptureRDSInformation(id, db.get_session())
-        return jsonify({'capture': userCapture})
+    def get_capture(capture_id):
+        userCaptures = getCaptureFromId(capture_id, db.get_session())
+        if (len(userCaptures) == 0):
+            return jsonify(), 404
+
+        userCapture = userCaptures[0]
+        if (userCapture['userId'] != g.user.get_id()):
+            return jsonify(), 403
+
+        return jsonify(userCapture), 200
 
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
