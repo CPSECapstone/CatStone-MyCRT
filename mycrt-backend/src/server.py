@@ -110,8 +110,8 @@ def create_app(config={}):
                                 jsonData['start_time'],
                                 jsonData['end_time'],
                                 jsonData['alias'],
-                                g.user,
                                 jsonData['bucket_name'],
+                                g.user,
                                 db.get_session())
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
@@ -242,8 +242,7 @@ def create_app(config={}):
 
         for metric in availableMetrics:
             response = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
-            print(response)
-            if ('Error' not in response.keys()):
+            if (type(response) is not dict):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
@@ -267,7 +266,7 @@ def create_app(config={}):
         for metric in availableMetrics:
             response = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
             print(response)
-            if ('Error' not in response.keys()):
+            if (type(response) is not dict):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
