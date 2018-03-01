@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays, getReplayFromAlias
 import time
 
 def create_app(config={}):
@@ -80,16 +80,32 @@ def create_app(config={}):
     def post_capture():
         if request.headers['Content-Type'] == 'application/json':
             jsonData = request.json
+
+            if ('rds_endpoint' not in jsonData or
+                'region_name' not in jsonData or
+                'db_user' not in jsonData or
+                'db_password' not in jsonData or
+                'db_name' not in jsonData or
+                'start_time' not in jsonData or
+                'end_time' not in jsonData or
+                'alias' not in jsonData or
+                'bucket_name' not in jsonData):
+                    return jsonify({"error": "Missing field in request."}), 400
+
+            if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0):
+                return jsonify({"error": "Alias is already unavailable."}), 400
+
             response = capture(jsonData['rds_endpoint'],
-                    jsonData['region_name'],
-                    jsonData['db_user'],
-                    jsonData['db_password'],
-                    jsonData['db_name'],
-                    jsonData['start_time'],
-                    jsonData['end_time'],
-                    jsonData['alias'],
-                    jsonData['bucket_name'],
-                    db.get_session())
+                               jsonData['region_name'],
+                               jsonData['db_user'],
+                               jsonData['db_password'],
+                               jsonData['db_name'],
+                               jsonData['start_time'],
+                               jsonData['end_time'],
+                               jsonData['alias'],
+                               jsonData['bucket_name'],
+                               db.get_session())
+
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
             else:
@@ -99,7 +115,6 @@ def create_app(config={}):
     @auth.login_required
     def get_users_replays():
 
-        #checkAllRDSInstances()
         userReplays = getUsersReplays(g.user.get_id() , db.get_session())
 
         return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
@@ -120,8 +135,9 @@ def create_app(config={}):
                 'bucket_name' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
 
-			#Call replay function here
-	        #response = replay()
+            if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0):
+                return jsonify({"error": "Alias is already unavailable."}), 400
+
             response = insertReplay(g.user.get_id(),
                                     jsonData['capture_id'],
                                     jsonData['replay_alias'],
@@ -133,11 +149,7 @@ def create_app(config={}):
                                     jsonData['region_name'],
                                     db.get_session())
 
-            #if (isinstance(response, int) and response > -1):
             return jsonify({'replayId': response[0]['replayId']}), 201
-            #else:
-                #return jsonify({'error': "Replay failed"}), 400
-
 
     @app.route('/users/replays/<replayId>/replays', methods=['GET'])
     @auth.login_required
