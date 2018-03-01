@@ -112,11 +112,11 @@ def getUsersSuccessfulCaptures(userId, db_session):
 	captureInformation = Capture.query.filter(Capture.userId == userId, Capture.captureStatus == 1)
 	return db_session.execute(captureInformation).fetchall()
 
-def getAllCapturesThatHaveNotCompleted(db_session):
+def getAllCapturesThatHaveNotCompleted(userId, db_session):
 	"""Function to get all current captures that have a status of 0
 	"""
 
-	captureInformation = Capture.query.filter(Capture.captureStatus <= 1).filter(Capture.userId == g.user.id)
+	captureInformation = Capture.query.filter(Capture.captureStatus <= 1).filter(Capture.userId == userId)
 	return Capture.convertToDict(db_session.execute(captureInformation).fetchall())
 
 def getUsersReplays(userId, db_session):
@@ -131,6 +131,18 @@ def getUsersReplays(userId, db_session):
     result = Replay.convertToDict(db_session.execute(user_replays).fetchall())
 
     return result
+
+def getReplayFromId(replayId, db_session):
+	""" Function to get a replay after receiving a replayId
+
+		Keyword arguments:
+		replayId -- the id of the replay you want to access
+	"""
+	replayInformation = Replay.query.filter(Replay.replayId == replayId)
+	result = []
+	result = Replay.convertToDict(db_session.execute(replayInformation).fetchall())
+
+	return result
 
 def getReplayFromAlias(replayAlias, db_session):
 	""" Function to get a capture after receiving a captureId
