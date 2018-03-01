@@ -77,7 +77,7 @@ def create_app(config={}):
     def get_users_captures():
         current_user = g.user
 
-        checkAllRDSInstances(db.get_session())
+        checkAllRDSInstances(current_user, db.get_session())
         allCaptures = getUsersCaptures(current_user.username, db.get_session())
 
         return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
@@ -243,7 +243,7 @@ def create_app(config={}):
         for metric in availableMetrics:
             response = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
             print(response)
-            if ('Error' not in response.keys()):
+            if (type(response) is not dict):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
@@ -267,7 +267,7 @@ def create_app(config={}):
         for metric in availableMetrics:
             response = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
             print(response)
-            if ('Error' not in response.keys()):
+            if (type(response) is not dict):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
