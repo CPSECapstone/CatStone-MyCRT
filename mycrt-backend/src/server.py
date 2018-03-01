@@ -126,6 +126,19 @@ def create_app(config={}):
 
         return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
 
+    @app.route('/users/replays/<replay_id>', methods=['GET'])
+    @auth.login_required
+    def get_replay(replay_id):
+        userReplays = getReplayFromId(replay_id, db.get_session())
+        if (len(userReplays) == 0):
+            return jsonify(), 404
+
+        userReplay = userReplays[0]
+        if (userReplay['userId'] != g.user.get_id()):
+            return jsonify(), 403
+            
+        return jsonify(userReplay), 200
+
     @app.route('/users/replays', methods=['POST'])
     @auth.login_required
     def post_replay():
