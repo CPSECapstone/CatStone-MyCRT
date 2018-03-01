@@ -180,7 +180,7 @@ class ViewResults extends Component {
 
     if (selectedRows.length > 1 && selectedRows.length <= 3) {
       disabled = false;
-    } 
+    }
     this.setState(prevState => ({
       isCompareDisabled: disabled,
       selectedCaptureRows: selectedRows
@@ -224,7 +224,7 @@ class ViewResults extends Component {
     console.log("getting metric data FOR CAPTURE ID: " + captureId);
 
     $.ajax({
-      url: SERVER_PATH + "/users/" + captureId + "/metrics",
+      url: SERVER_PATH + "/users/captures/" + captureId + "/metrics",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
@@ -373,7 +373,7 @@ class ViewResults extends Component {
       <h3>Replay Results</h3>
         </div>
       );
-  }  
+  }
 
   renderCaptureDetails() {
     const actions = [
@@ -402,22 +402,22 @@ class ViewResults extends Component {
         open={this.state.isLogOpen}
       >
         <div>
-          <h4>Status: 
+          <h4>Status:
             <div class= {this.state.captureDetails.captureStatus === COMPLETED ? "result-complete" : "result-fail"}>
             <h5>{this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}</h5>
             </div>
           </h4>
-          <h4>RDS Instance: 
+          <h4>RDS Instance:
             <div>
             <h5>{this.state.captureDetails.rdsInstance}</h5>
             </div>
           </h4>
-          <h4>Start Time: 
+          <h4>Start Time:
             <div>
             <h5>{this.state.captureDetails.startTime}</h5>
             </div>
           </h4>
-          <h4>End Time: 
+          <h4>End Time:
             <div>
             <h5>{this.state.captureDetails.endTime}</h5>
             </div>
@@ -557,7 +557,7 @@ class ViewResults extends Component {
       <h2>View Results</h2>
       <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
          <div class="refresh-result-button">
-            <Button 
+            <Button
               onClick={this.onCompareClick}
               content="Compare"
               isSubmit={false}
