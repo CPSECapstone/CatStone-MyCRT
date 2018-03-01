@@ -152,7 +152,6 @@ class ViewResults extends Component {
     }));
 
     this.getCaptureMetricData(this.state.selectedCaptureIds[0]);
-    this.getReplayMetricData(this.state.selectedReplayIds[0]);
   }
 
   onCompareClick() {
@@ -193,7 +192,7 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-    if (selectedRows.length > 1 && selectedRows.length <= 3) {
+    if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
       disabled = false;
     }
     this.setState(prevState => ({
@@ -235,7 +234,7 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-    if (selectedRows.length > 1 && selectedRows.length <= 3) {
+    if (selectedRows.length + this.state.selectedCaptureRows.length > 1 && selectedRows.length + this.state.selectedCaptureRows.length <= 3) {
       disabled = false;
     }
     this.setState(prevState => ({
@@ -317,9 +316,10 @@ class ViewResults extends Component {
         }));
 
         var i = this.state.comparisonIndex;
-        console.log("comparison index is: " + i);
+        console.log("comparison index is: WORK" + i);
+        console.log("The selected items to compare " + this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length);        
         //combine comparison data
-        if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length) {
+        if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
           var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory);
           var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization);
@@ -336,7 +336,11 @@ class ViewResults extends Component {
 
           if ((i + 1) < this.state.selectedCaptureIds.length) {
             this.getCaptureMetricData(this.state.selectedCaptureIds[i + 1]);
-          } else {
+          }
+          else if ((i + 1) < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
+            this.getReplayMetricData(this.state.selectedReplayIds[0]);
+          } 
+          else {
               component.setState(prevState => ({
               isComparisonChartLoaded: true,
               comparisonIndex: -1
@@ -353,7 +357,7 @@ class ViewResults extends Component {
   getReplayMetricData(replayId) {
     var parentContextState = this.props.parentContext.state;
     var component = this;
-    console.log("getting metric data FOR CAPTURE ID: " + replayId);
+    console.log("getting metric data FOR Replay ID: " + replayId);
 
     $.ajax({
       url: SERVER_PATH + "/users/replays/" + replayId + "/metrics",
@@ -371,6 +375,7 @@ class ViewResults extends Component {
 
         var i = this.state.comparisonIndex;
         console.log("comparison index is: " + i);
+        console.log("The selected items to compare " + this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length);
         //combine comparison data
         if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
@@ -689,23 +694,23 @@ class ViewResults extends Component {
       >
         <div>
           <h4>Status:
-            <div class= {this.state.captureDetails.captureStatus === COMPLETED ? "result-complete" : "result-fail"}>
-            <h5>{this.state.captureDetails.captureStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}</h5>
+            <div class= {this.state.replayDetails.replayStatus === COMPLETED ? "result-complete" : "result-fail"}>
+            <h5>{this.state.replayDetails.replayStatus === COMPLETED ? "Completed Successfully" : "Terminated With Errors"}</h5>
             </div>
           </h4>
           <h4>RDS Instance:
             <div>
-            <h5>{this.state.captureDetails.rdsInstance}</h5>
+            <h5>{this.state.replayDetails.rdsInstance}</h5>
             </div>
           </h4>
           <h4>Start Time:
             <div>
-            <h5>{this.state.captureDetails.startTime}</h5>
+            <h5>{this.state.replayDetails.startTime}</h5>
             </div>
           </h4>
           <h4>End Time:
             <div>
-            <h5>{this.state.captureDetails.endTime}</h5>
+            <h5>{this.state.replayDetails.endTime}</h5>
             </div>
           </h4>
           <h3>Freeable Memory</h3>
@@ -854,6 +859,9 @@ class ViewResults extends Component {
         {this.renderReplayTable()}
         {this.state.captureDetails &&
           <div>{this.renderCaptureDetails()}</div>
+        }
+        {this.state.replayDetails &&
+          <div>{this.renderReplayDetails()}</div>
         }
         {this.renderCompare()}
       </div>
