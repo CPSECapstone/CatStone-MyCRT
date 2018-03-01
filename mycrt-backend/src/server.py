@@ -94,7 +94,7 @@ def create_app(config={}):
                 return jsonify({'captureId': response}), 201
             else:
                 return jsonify({'error': response}), 400
-              
+
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
     def get_users_replays():
@@ -194,7 +194,7 @@ def create_app(config={}):
 
         return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
 
-    @app.route('/users/<captureId>/metrics', methods=["GET"])
+    @app.route('/users/captures/<captureId>/metrics', methods=["GET"])
     @auth.login_required
     def get_capture_metrics(captureId):
         metrics = {}
@@ -212,7 +212,7 @@ def create_app(config={}):
 
         return jsonify(metrics), 200
 
-    @app.route('/users/<replayId>/metrics', methods=["GET"])
+    @app.route('/users/replays/<replayId>/metrics', methods=["GET"])
     @auth.login_required
     def get_replay_metrics(captureId):
         metrics = {}
