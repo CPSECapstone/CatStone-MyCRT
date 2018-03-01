@@ -1,6 +1,4 @@
-import argparse
 import os.path
-import sys
 import pymysql
 import boto3
 import csv
@@ -12,7 +10,6 @@ from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
 from src.metrics.metrics import save_metrics
-from flask import g
 
 db_query = """Select event_time, argument from mysql.general_log where
 user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\'
@@ -39,7 +36,7 @@ EXTRACT(SECOND FROM event_time)"""
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
 
-def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, db_session):
+def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session):
     try:
         sql = db_query
 
@@ -52,7 +49,7 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         if connection.open:
             connection.close()
 
-    newCapture = insertCapture(g.user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
+    newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
     if (newCapture):
         return newCapture[0][0]
@@ -60,9 +57,9 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
     return -1
 
 
-def completeCapture(capture, db_session):
-    s3 = boto3.client('s3', aws_access_key_id=g.user.access_key,
-     aws_secret_access_key=g.user.secret_key)
+def completeCapture(capture, user, db_session):
+    s3 = boto3.client('s3', aws_access_key_id=user.access_key,
+     aws_secret_access_key=user.secret_key)
     currentCapture = capture
 
     fileName = currentCapture['captureAlias'] + '.log'

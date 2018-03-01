@@ -12,7 +12,7 @@ from .capture.capture import capture
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
-from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture
+from .database.getRecords import getCaptureRDSInformation, getUserFromUsername, getUserFromEmail, getUsersCaptures, getCaptureFromId, getCaptureFromReplayId, getReplaysFromCapture, getUsersReplays
 import time
 
 def create_app(config={}):
@@ -88,13 +88,14 @@ def create_app(config={}):
                     jsonData['start_time'],
                     jsonData['end_time'],
                     jsonData['alias'],
+                    g.user,
                     jsonData['bucket_name'],
                     db.get_session())
             if (isinstance(response, int) and response > -1):
                 return jsonify({'captureId': response}), 201
             else:
                 return jsonify({'error': response}), 400
-              
+
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
     def get_users_replays():
