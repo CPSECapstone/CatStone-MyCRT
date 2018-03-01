@@ -60,10 +60,8 @@ def get_metrics(metric_type, metric_alias, bucket_name):
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
     except ClientError as e:
-        if e.response['Error']['Code'] == "404":
-            print("The object does not exist.")
-        else:
-            raise
+        return e.response
+
 
     metric_data = []
 

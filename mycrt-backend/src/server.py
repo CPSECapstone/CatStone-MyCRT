@@ -229,7 +229,7 @@ def create_app(config={}):
     @app.route('/users/captures/<capture_id>/metrics', methods=["GET"])
     @auth.login_required
     def get_capture_metrics(capture_id):
-        metrics = {}
+        response = metrics = {}
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
         user_captures = getCaptureFromId(capture_id, db.get_session())
@@ -242,7 +242,12 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            metrics[metric] = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
+            response = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
+            print(response)
+            if ('Error' not in response.keys()):
+                metrics[metric] = response
+            else:
+                return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
 
         return jsonify(metrics), 200
 
@@ -261,7 +266,12 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            metrics[metric] = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
+            response = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
+            print(response)
+            if ('Error' not in response.keys()):
+                metrics[metric] = response
+            else:
+                return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
 
         return jsonify(metrics), 200
 
