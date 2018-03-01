@@ -136,7 +136,7 @@ def create_app(config={}):
         userReplay = userReplays[0]
         if (userReplay['userId'] != g.user.get_id()):
             return jsonify(), 403
-            
+
         return jsonify(userReplay), 200
 
     @app.route('/users/replays', methods=['POST'])
@@ -233,12 +233,14 @@ def create_app(config={}):
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
         user_captures = getCaptureFromId(capture_id, db.get_session())
-        user_capture = user_captures[0]
 
         if (len(user_captures) == 0):
             return jsonify(), 404
-        elif (user_capture['userId'] != g.user.get_id()):
+
+        user_capture = user_captures[0]
+        if (user_capture['userId'] != g.user.get_id()):
             return jsonify(), 403
+            
         for metric in availableMetrics:
             metrics[metric] = get_metrics(metric, user_capture['captureAlias'] + '.metrics', user_capture['s3Bucket'])
 
@@ -251,14 +253,15 @@ def create_app(config={}):
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
         user_replays = getReplayFromId(replay_id, db.get_session())
-        user_replay = user_replays[0]
-
         if (len(user_replays) == 0):
             return jsonify(), 404
-        elif (user_replay['userId'] != g.user.get_id()):
+
+        user_replay = user_replays[0]
+        if (user_replay['userId'] != g.user.get_id()):
             return jsonify(), 403
+
         for metric in availableMetrics:
-            metrics[metric] = get_metrics(metric, user_capture['replayAlias'] + '.metrics', user_capture['s3Bucket'])
+            metrics[metric] = get_metrics(metric, user_replay['replayAlias'] + '.metrics', user_replay['s3Bucket'])
 
         return jsonify(metrics), 200
 
