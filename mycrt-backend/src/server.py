@@ -6,6 +6,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 from flask_httpauth import HTTPBasicAuth
+from pymysql import OperationalError, MySQLError
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 
@@ -102,6 +103,15 @@ def create_app(config={}):
             if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0):
                 return jsonify({"error": "Alias is unavailable."}), 400
 
+            try:
+                connection = pymysql.connect(jsonData['rds_endpoint'], user=jsonData['db_user'], passwd=jsonData['db_password'], db=jsonData['db_name'], connect_timeout=5)
+                queries = []
+
+                if connection.open:
+                    connection.close()
+            except OperationalError as e:
+                return jsonify({'error': 'Failed to connect to your database with credentials'}), 400
+
             response = capture( jsonData['rds_endpoint'],
                                 jsonData['region_name'],
                                 jsonData['db_user'],
@@ -117,7 +127,7 @@ def create_app(config={}):
                 return jsonify({'captureId': response}), 201
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
-                
+
 
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
@@ -158,6 +168,15 @@ def create_app(config={}):
 
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0):
                 return jsonify({"error": "Alias is unavailable."}), 400
+
+            try:
+                connection = pymysql.connect(jsonData['rds_endpoint'], user=jsonData['db_user'], passwd=jsonData['db_password'], db=jsonData['db_name'], connect_timeout=5)
+                queries = []
+
+                if connection.open:
+                    connection.close()
+            except OperationalError as e:
+                return jsonify({'error': 'Failed to connect to your database with credentials'}), 400
 
             response = insertReplay(g.user.get_id(),
                                     jsonData['capture_id'],
