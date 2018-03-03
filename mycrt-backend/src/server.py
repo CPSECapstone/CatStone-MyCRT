@@ -192,7 +192,7 @@ def create_app(config={}):
                                     jsonData['db_password'],
                                     jsonData['db_name'],
                                     jsonData['region_name'],
-                                    jsonData['is_fast']
+                                    jsonData['is_fast'],
                                     db.get_session())
 
             return jsonify({'replayId': response[0]['replayId']}), 201
