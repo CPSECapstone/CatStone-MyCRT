@@ -1,3 +1,4 @@
+import pymysql
 from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
