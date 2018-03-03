@@ -166,7 +166,8 @@ def create_app(config={}):
                 'db_user' not in jsonData or
                 'db_password' not in jsonData or
                 'db_name' not in jsonData or
-                'bucket_name' not in jsonData):
+                'bucket_name' not in jsonData or
+                'is_fast' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0 or
@@ -191,6 +192,7 @@ def create_app(config={}):
                                     jsonData['db_password'],
                                     jsonData['db_name'],
                                     jsonData['region_name'],
+                                    jsonData['is_fast']
                                     db.get_session())
 
             return jsonify({'replayId': response[0]['replayId']}), 201

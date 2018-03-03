@@ -140,9 +140,10 @@ class Replay(MyCrtDb.Base):
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
     regionName = Column(String(64))
+    isFast = Column(Boolean())
     replayStatus = Column(Integer(), default=0)
 
-    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, replayStatus=0):
+    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, isFast, replayStatus=0):
         self.userId = userId
         self.captureId = captureId
         self.replayAlias = replayAlias
@@ -152,10 +153,11 @@ class Replay(MyCrtDb.Base):
         self.rdsPassword = rdsPassword
         self.rdsDatabase = rdsDatabase
         self.regionName = regionName
+        self.isFast = isFast
         self.replayStatus = replayStatus
 
     def __repr__(self):
-        return '<Replay %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName, self.replayStatus)
+        return '<Replay %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName, self.isFast, self.replayStatus)
 
     def convertToDict(replays):
         allDicts = []
@@ -171,7 +173,8 @@ class Replay(MyCrtDb.Base):
                        'rdsPassword': replay[7],
                        'rdsDatabase': replay[8],
                        'regionName': replay[9],
-                       'replayStatus': replay[10]}
+                       'isFast': replay[10],
+                       'replayStatus': replay[11]}
             allDicts.append(newDict)
 
         return allDicts
