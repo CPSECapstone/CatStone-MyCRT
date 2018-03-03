@@ -135,8 +135,16 @@ def create_app(config={}):
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
     def get_users_replays():
+        isFast = request.args.get('isFast')
 
-        userReplays = getUsersReplays(g.user.get_id() , db.get_session())
+        if (isinstance(isFast, str) and isFast.lower() == 'true'):
+            isFast = 1
+        elif (isinstance(isFast, str) and isFast.lower() == 'false'):
+            isFast = 0
+        else:
+            isFast = None
+
+        userReplays = getUsersReplays(g.user.get_id(), isFast, db.get_session())
 
         return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
 
@@ -173,7 +181,7 @@ def create_app(config={}):
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0 or
                 len(getCaptureFromAlias(jsonData['replay_alias'], db.get_session())) != 0):
                 return jsonify({"error": "Alias is unavailable."}), 400
-
+            '''
             try:
                 connection = pymysql.connect(jsonData['rds_endpoint'], user=jsonData['db_user'], passwd=jsonData['db_password'], db=jsonData['db_name'], connect_timeout=5)
                 queries = []
@@ -182,7 +190,7 @@ def create_app(config={}):
                     connection.close()
             except OperationalError as e:
                 return jsonify({'error': 'Failed to connect to your database with credentials'}), 400
-
+            '''
             response = insertReplay(g.user.get_id(),
                                     jsonData['capture_id'],
                                     jsonData['replay_alias'],
