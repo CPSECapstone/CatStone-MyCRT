@@ -1,6 +1,6 @@
 import pymysql
 
-from .models import Capture
+from .models import Capture, Replay
 
 def updateCapture(captureId, captureStatus, db_session):
     """Function to update a given capture's status
