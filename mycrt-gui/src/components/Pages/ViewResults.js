@@ -373,11 +373,12 @@ class ViewResults extends Component {
           writeIOPS: json["WriteIOPS"]
         }));
 
-        var i = this.state.comparisonIndex;
-        console.log("comparison index is: " + i);
+        var i = this.state.comparisonIndex - this.state.selectedCaptureIds.length;
+        var comparisonIndex = this.state.comparisonIndex;
+        console.log("comparison index is: " + comparisonIndex);
         console.log("The selected items to compare " + this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length);
         //combine comparison data
-        if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
+        if (!this.state.isComparisonChartLoaded && comparisonIndex < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
           var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory);
           var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization);
@@ -389,7 +390,7 @@ class ViewResults extends Component {
             compareCpuUtilization: cu,
             compareReadIOPS: ri,
             compareWriteIOPS: wi,
-            comparisonIndex: i + 1
+            comparisonIndex: comparisonIndex + 1
           }));
 
           if ((i + 1) < this.state.selectedReplayIds.length) {
