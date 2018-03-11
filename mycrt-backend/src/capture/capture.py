@@ -10,6 +10,7 @@ from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
 from src.metrics.metrics import save_metrics
+from src.email.email_server import sendEmail
 
 db_query = """Select event_time, argument from mysql.general_log where
 user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\'
@@ -121,9 +122,11 @@ def completeCapture(capture, user, db_session):
 
     if len(errList) > 0:
         updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
+        sendEmail(capture['captureId'], user.email, db_session)
         print(errList)
     else:
         updateCapture(capture['captureId'], CAPTURE_STATUS_SUCCESS, db_session)
+        sendEmail(capture['captureId'], user.email, db_session)
 
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", currentCapture['regionName'])
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "FreeableMemory", currentCapture['regionName'])
