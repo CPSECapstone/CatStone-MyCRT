@@ -3,9 +3,9 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../..'))
-from src.tests.mocking.mockBoto import mockBoto
-from src.tests.mocking.mockUser import MockUser
-from capture.captureHelper import getRDSInstances, getS3Instances
+from tests.mocking.mockBoto import mockBoto
+from tests.mocking.mockUser import MockUser
+from src.capture.captureHelper import getRDSInstances, getS3Instances
 
 class TestCaptureHelper(unittest.TestCase):
     def setUp(self):

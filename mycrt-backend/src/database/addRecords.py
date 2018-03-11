@@ -1,6 +1,6 @@
 from .user_repository import UserRepository
-from .models import Capture, Metric
-from .getRecords import getCaptureFromAlias
+from .models import Capture, Replay, Metric
+from .getRecords import getCaptureFromAlias, getReplayFromAlias
 
 '''Function used to insert a capture into the database
    Example usage: insertCapture(1,
@@ -12,7 +12,9 @@ from .getRecords import getCaptureFromAlias
                                 "test-rds",
                                 "test",
                                 "testPW",
-                                "testDB")
+                                "testDB",
+                                "testRegion",
+                                0)
 '''
 def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, db_session):
 	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
@@ -21,8 +23,29 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
 		db_session.commit()
 	except:
 		db_session.rollback()
-  
+
 	return getCaptureFromAlias(captureAlias, db_session)
+
+'''Function used to insert a replay into the database
+   Example usage: insertCapture(1,
+                                1,
+                                "test-replay-2",
+                                "testBucket",
+                                "test-rds",
+                                "test",
+                                "testPW",
+                                "testDB",
+                                "testRegion")
+'''
+def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, db_session):
+	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
+	try:
+		db_session.add(replay)
+		db_session.commit()
+	except:
+		db_session.rollback()
+
+	return getReplayFromAlias(replayAlias, db_session)
 
 
 '''Simple function to insert a capture metric
