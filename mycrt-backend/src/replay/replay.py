@@ -2,11 +2,14 @@ import os.path
 import boto3
 import csv
 from botocore.exceptions import NoRegionError, ClientError
-from src.database.addRecords import insertCapture
+from src.database.updateRecords import updateReplay
 from flask import g
 import pymysql
 from pymysql import OperationalError, MySQLError
 
+
+REPLAY_STATUS_ERROR = 3
+REPLAY_STATUS_SUCCESS = 2
 
 def get_transaction_log(replay_alias, bucket_name):
     s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
@@ -29,9 +32,10 @@ def get_transaction_log(replay_alias, bucket_name):
 
     return transactions
 
-def replay(rds_endpoint, region_name, db_user, db_password, db_name, alias, bucket_name, db_session):
+def replay(replay_id, rds_endpoint, region_name, db_user, db_password, db_name, alias, bucket_name, db_session):
 
     transactions = get_transaction_log(alias, bucket_name)
+    errList = []
 
     try:
         connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
@@ -45,6 +49,12 @@ def replay(rds_endpoint, region_name, db_user, db_password, db_name, alias, buck
         if connection.open:
             connection.close()
     except MySQLError as e:
-        print(e)
+        errList.append(e)
         if connection.open:
             connection.close()
+
+    if len(errList) > 0:
+        updateReplay(replay_id, REPLAY_STATUS_ERROR, db_session)
+        print(errList)
+    else:
+        updateReplay(replay_id, REPLAY_STATUS_SUCCESS, db_session)
