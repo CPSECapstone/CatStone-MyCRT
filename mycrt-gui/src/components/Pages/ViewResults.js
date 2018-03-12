@@ -65,6 +65,7 @@ class ViewResults extends Component {
       readIOPS:[],
       writeIOPS: [],
       comparisonAliases: [],
+      relatedCaptureId: -1,
       showCaptureResultsLoading: true,
       showReplayResultsLoading: true
     };
@@ -89,6 +90,8 @@ class ViewResults extends Component {
     this.renderCaptureDetails = this.renderCaptureDetails.bind(this);
     this.renderReplayDetails = this.renderReplayDetails.bind(this);
     this.renderCompare = this.renderCompare.bind(this);
+
+    this.isRelatedReplayOrCapture = this.isRelatedReplayOrCapture.bind(this);
   }
 
   componentDidMount() {
@@ -173,6 +176,7 @@ class ViewResults extends Component {
     // check if compare button should be disabled or enabled
     var disabled = true;
     var selectedRows = [];
+    var relatedCaptureId = -1;
 
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
@@ -184,7 +188,8 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
-        selectedCaptureRows: selectedRows
+        selectedCaptureRows: selectedRows,
+        relatedCaptureId: relatedCaptureId
       }));
       return;
     } else {
@@ -203,9 +208,11 @@ class ViewResults extends Component {
     var selectedCaptureIds = [];
     for (var i = 0; i < selectedRows.length; i++) {
       selectedCaptureIds.push(this.state.captures[selectedRows[i]].captureId);
+      relatedCaptureId = this.state.captures[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
-      selectedCaptureIds: selectedCaptureIds
+      selectedCaptureIds: selectedCaptureIds,
+      relatedCaptureId: relatedCaptureId 
     }));
   }
 
@@ -213,6 +220,7 @@ class ViewResults extends Component {
     // check if compare button should be disabled or enabled
     var disabled = true;
     var selectedRows = [];
+    var relatedCaptureId = -1;
 
     if (rows === "all") {
       for (var i = 0; i < this.state.replays.length; i++) {
@@ -224,7 +232,8 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
-        selectedReplayRows: selectedRows
+        selectedReplayRows: selectedRows,
+        relatedCaptureId: relatedCaptureId        
       }));
       return;
     } else {
@@ -243,9 +252,11 @@ class ViewResults extends Component {
     var selectedReplayIds = [];
     for (var i = 0; i < selectedRows.length; i++) {
       selectedReplayIds.push(this.state.replays[selectedRows[i]].replayId);
+      relatedCaptureId = this.state.replays[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
-      selectedReplayIds: selectedReplayIds
+      selectedReplayIds: selectedReplayIds,
+      relatedCaptureId: relatedCaptureId   
     }));
   }
 
@@ -261,7 +272,7 @@ class ViewResults extends Component {
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
-          captures: json["userCaptures"],
+          captures: json["userCaptures"].filter(capture => capture.captureStatus > IN_PROGRESS),
           showCaptureResultsLoading: false
         }));
       }.bind(this),
@@ -283,7 +294,7 @@ class ViewResults extends Component {
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
-          replays: json["userReplays"].filter(replay => replay.replayStatus >= 1),
+          replays: json["userReplays"].filter(replay => replay.replayStatus > IN_PROGRESS),
           showReplayResultsLoading: false
         }));
       }.bind(this),
@@ -451,7 +462,14 @@ class ViewResults extends Component {
     });
   }
 
+  isRelatedReplayOrCapture(captureId) {
+    return (this.state.selectedCaptureRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
+      (this.state.selectedReplayRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
+      (this.state.relatedCaptureId === -1);
+  }
+
   renderCaptureTable() {
+    var that = this;
     return (
       <div>
       <h3>Capture Results</h3>
@@ -465,7 +483,7 @@ class ViewResults extends Component {
           <TableHeader
             displaySelectAll={true}
             adjustForCheckbox={true}
-            enableSelectAll={true}
+            enableSelectAll={false}
           >
             <TableRow >
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
@@ -484,7 +502,7 @@ class ViewResults extends Component {
           >
             {this.state.captures.map( (row, index) => {
               let boundItemClick = this.onOpenCaptureDetailsClick.bind(this, index);
-              if (row.captureStatus === COMPLETED || row.captureStatus === ERROR) {
+              if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
                 <TableRow key={index} selected={this.state.selectedCaptureRows.indexOf(index) !== -1} >
                   <TableRowColumn>{row.captureAlias}</TableRowColumn>
@@ -518,6 +536,7 @@ class ViewResults extends Component {
 
   renderReplayTable() {
     //TODO: add Replay table
+    var that = this;
     return (
       <div>
       <h3>Replay Results</h3>
@@ -550,7 +569,7 @@ class ViewResults extends Component {
           >
             {this.state.replays.map( (row, index) => {
               let boundItemClick = this.onOpenReplayDetailsClick.bind(this, index);
-              if (row.replayStatus === COMPLETED || row.replayStatus === ERROR) {
+              if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
                 <TableRow key={index} selected={this.state.selectedReplayRows.indexOf(index) !== -1} >
                   <TableRowColumn>{row.replayAlias}</TableRowColumn>
