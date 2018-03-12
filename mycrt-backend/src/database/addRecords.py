@@ -1,5 +1,5 @@
 from .user_repository import UserRepository
-from .models import Capture, Replay, Metric
+from .models import Capture, Replay, Metric, ScheduledQuery
 from .getRecords import getCaptureFromAlias, getReplayFromAlias
 
 '''Function used to insert a capture into the database
@@ -48,7 +48,6 @@ def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsern
 
 	return getReplayFromAlias(replayAlias, db_session)
 
-
 '''Simple function to insert a capture metric
    Example: insertCaptureMetric("test-capture-2",
                                 "testBucket",
@@ -87,3 +86,12 @@ def insertMetric(db_session,captureAlias=None, replayAlias=None, s3Bucket=None,
 def insertUser(userName, userPassword, email, accessKey, secretKey, db_session):
         user_repository = UserRepository(db_session)
         user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
+
+#Simple function to insert a scheduled query
+def insertScheduledQuery(replayId, userId, startTime, query, db_session):
+	scheduled_query = ScheduledQuery(replayId, userId, startTime, query)
+	try:
+		db_session.add(scheduled_query)
+		db_session.commit()
+	except:
+		db_session.rollback()

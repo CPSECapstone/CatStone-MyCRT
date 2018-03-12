@@ -185,6 +185,21 @@ class Replay(MyCrtDb.Base):
 	#user = relationship('User', foreign_keys='Replay.id')
     capture = relationship('Capture', foreign_keys='Replay.captureId')
 
+class ScheduledQuery(MyCrtDb.Base):
+    __tablename__ = 'scheduled_query'
+    queryId = Column(Integer(), primary_key=True, autoincrement=True)
+    replayId = Column(Integer(), ForeignKey(Replay.replayId))
+    userId = Column(Integer(), ForeignKey(User.id))
+    startTime = Column(DateTime(timezone=True))
+    query = Column(String(16384), nullable=False)
+
+    def __init__(self, replayId, userId, startTime, query):
+        self.replayId = replayId
+        self.userId = userId
+        self.startTime = startTime
+        self.query = query
+
+
 class Metric(MyCrtDb.Base):
     __tablename__ = 'metric'
     metricId = Column(Integer(), primary_key=True, autoincrement=True)
