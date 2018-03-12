@@ -1,4 +1,6 @@
 import pymysql
+import os
+
 from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
@@ -332,6 +334,8 @@ def create_app(config={}):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
+
+        os.remove(alias + ".metrics")
 
         return jsonify(metrics), 200
 
