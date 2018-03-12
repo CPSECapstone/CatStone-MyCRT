@@ -176,13 +176,14 @@ def create_app(config={}):
                 'db_password' not in jsonData or
                 'db_name' not in jsonData or
                 'bucket_name' not in jsonData or
+                'start_time' not in jsonData or
                 'is_fast' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0 or
                 len(getCaptureFromAlias(jsonData['replay_alias'], db.get_session())) != 0):
                 return jsonify({"error": "Alias is unavailable."}), 400
-            '''
+
             try:
                 connection = pymysql.connect(jsonData['rds_endpoint'], user=jsonData['db_user'], passwd=jsonData['db_password'], db=jsonData['db_name'], connect_timeout=5)
                 queries = []
@@ -191,7 +192,7 @@ def create_app(config={}):
                     connection.close()
             except OperationalError as e:
                 return jsonify({'error': 'Failed to connect to your database with credentials'}), 400
-            '''
+
             response = insertReplay(g.user.get_id(),
                                     jsonData['capture_id'],
                                     jsonData['replay_alias'],
@@ -201,6 +202,7 @@ def create_app(config={}):
                                     jsonData['db_password'],
                                     jsonData['db_name'],
                                     jsonData['region_name'],
+                                    jsonData['start_time'].split('.', 1)[0].replace('T', ' '),
                                     jsonData['is_fast'],
                                     db.get_session())
 

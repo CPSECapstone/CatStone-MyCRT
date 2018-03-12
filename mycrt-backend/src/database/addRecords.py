@@ -38,8 +38,8 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
                                 "testRegion",
                                 true)
 '''
-def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, isFast, db_session):
-	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, isFast)
+def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, db_session):
+	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast)
 	try:
 		db_session.add(replay)
 		db_session.commit()
@@ -55,12 +55,12 @@ def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsern
                                 "test-capture-1.log")
 
 '''
-def insertCaptureMetric(capture, bucket, metricFile):
-	insertMetric(captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
+def insertCaptureMetric(db_session, capture, bucket, metricFile):
+	insertMetric(db_session, captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
 
 #Simple function to insert a replay metric
-def insertReplayMetric(replay, bucket, metricFile):
-	insertMetric(replayAlias=replay, s3Bucket=bucket, metricFileName=metricFile)
+def insertReplayMetric(db_session, replay, bucket, metricFile):
+	insertMetric(db_session, replayAlias=replay, s3Bucket=bucket, metricFileName=metricFile)
 
 #Function used to insert MetricFiles
 #Note: This should NOT be used anywhere else in the system.
