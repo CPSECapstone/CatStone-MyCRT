@@ -64,6 +64,7 @@ class ViewResults extends Component {
       cpuUtilization: [],
       readIOPS:[],
       writeIOPS: [],
+      comparisonAliases: [],
       showCaptureResultsLoading: true,
       showReplayResultsLoading: true
     };
@@ -103,33 +104,28 @@ class ViewResults extends Component {
     clearInterval(this.state.intervalGetAllReplays);
   }
 
-  fillComparisonData(metricName, metric, comparisonArray) {
+  fillComparisonData(metricName, metric, comparisonArray, alias) {
     var captureIndex = this.state.comparisonIndex;
-
     var newComparisonArray = comparisonArray;
+
     if (captureIndex === 0) {
-      console.log(metric.length);
       for (var j = 0; j < metric.length; j++) {
         newComparisonArray.push(
         {
           'Timestamp': metric[j]['Timestamp'],
-          'Capture1': metric[j][metricName]
         });
+
+        newComparisonArray[j][alias] = metric[j][metricName];
       }
     } else {
-      console.log(metric.length);
-      var newMetricName = "Capture" + (captureIndex + 1);
+      var newMetricName = alias;
       var upperBound = newComparisonArray.length > metric.length ? metric.length : newComparisonArray.length;
       for (var k = 0; k < upperBound; k++) {
         var newValue = metric[k][metricName];
         newComparisonArray[k][newMetricName] = newValue;
       }
       //handling different lengths of metrics
-      console.log("upper bound is: " + upperBound);
-      console.log("current metric length is: " +metric.length);
       for (var l = upperBound - 1; l < metric.length; l++) {
-        console.log("l is currently" + l);
-        console.log(metric[l]);
         newComparisonArray.push(
         {
           'Timestamp': metric[l]['Timestamp']
@@ -137,7 +133,6 @@ class ViewResults extends Component {
         newComparisonArray[l][newMetricName] = metric[l][metricName];
       }
     }
-    console.log(newComparisonArray);
     return newComparisonArray;
   }
 
@@ -148,10 +143,16 @@ class ViewResults extends Component {
       compareFreeableMemory: [],
       compareCpuUtilization: [],
       compareReadIOPS:[],
-      compareWriteIOPS: []
+      compareWriteIOPS: [],
+      comparisonAliases: []
     }));
 
-    this.getCaptureMetricData(this.state.selectedCaptureIds[0]);
+    if (this.state.selectedCaptureIds[0] === undefined) {
+       this.getReplayMetricData(this.state.selectedReplayIds[0]);
+    }
+    else {
+       this.getCaptureMetricData(this.state.selectedCaptureIds[0]);
+    }
   }
 
   onCompareClick() {
@@ -169,8 +170,6 @@ class ViewResults extends Component {
   }
 
   onCaptureRowSelection(rows) {
-    console.log(rows);
-
     // check if compare button should be disabled or enabled
     var disabled = true;
     var selectedRows = [];
@@ -211,8 +210,6 @@ class ViewResults extends Component {
   }
 
   onReplayRowSelection(rows) {
-    console.log(rows);
-
     // check if compare button should be disabled or enabled
     var disabled = true;
     var selectedRows = [];
@@ -286,7 +283,7 @@ class ViewResults extends Component {
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
-          replays: json["userReplays"],
+          replays: json["userReplays"].filter(replay => replay.replayStatus >= 1),
           showReplayResultsLoading: false
         }));
       }.bind(this),
@@ -316,21 +313,24 @@ class ViewResults extends Component {
         }));
 
         var i = this.state.comparisonIndex;
-        console.log("comparison index is: WORK" + i);
-        console.log("The selected items to compare " + this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length);        
+        console.log("comparison index is: " + i);
+        console.log("The selected items to compare " + (this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length));        
         //combine comparison data
         if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
-          var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory);
-          var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization);
-          var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS);
-          var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS);
+          var captureAlias = component.state.captures.filter(c => c.captureId === captureId)[0].captureAlias;
+          var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory, captureAlias);
+          var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization, captureAlias);
+          var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS, captureAlias);
+          var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS, captureAlias);
 
+          console.log(component.state.comparsionAliases);          
           component.setState(prevState => ({
             compareFreeableMemory: fm,
             compareCpuUtilization: cu,
             compareReadIOPS: ri,
             compareWriteIOPS: wi,
+            comparsionAliases: component.state.comparisonAliases.push(captureAlias),
             comparisonIndex: i + 1
           }));
 
@@ -373,23 +373,27 @@ class ViewResults extends Component {
           writeIOPS: json["WriteIOPS"]
         }));
 
-        var i = this.state.comparisonIndex;
-        console.log("comparison index is: " + i);
-        console.log("The selected items to compare " + this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length);
+        var i = this.state.comparisonIndex - this.state.selectedCaptureIds.length;
+        var comparisonIndex = this.state.comparisonIndex;
+        console.log("comparison index is: " + comparisonIndex);
+        console.log("The selected items to compare " + (this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length));
         //combine comparison data
-        if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
+        if (!this.state.isComparisonChartLoaded && comparisonIndex < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
-          var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory);
-          var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization);
-          var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS);
-          var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS);
+          var replayAlias = component.state.replays.filter(r => r.replayId === replayId)[0].replayAlias;
+          var fm = this.fillComparisonData('FreeableMemory', json["FreeableMemory"], this.state.compareFreeableMemory, replayAlias);
+          var cu = this.fillComparisonData('CPUUtilization', json["CPUUtilization"], this.state.compareCpuUtilization, replayAlias);
+          var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS, replayAlias);
+          var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS, replayAlias);
 
+          console.log(component.state.comparsionAliases);
           component.setState(prevState => ({
             compareFreeableMemory: fm,
             compareCpuUtilization: cu,
             compareReadIOPS: ri,
             compareWriteIOPS: wi,
-            comparisonIndex: i + 1
+            comparsionAliases: component.state.comparisonAliases.push(replayAlias),
+            comparisonIndex: comparisonIndex + 1
           }));
 
           if ((i + 1) < this.state.selectedReplayIds.length) {
@@ -764,6 +768,8 @@ class ViewResults extends Component {
       />
     ];
 
+    var aliases = this.state.comparisonAliases;
+
     return (
       <Dialog
         title={"Comparison"}
@@ -785,10 +791,10 @@ class ViewResults extends Component {
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
              <Legend />
-             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-             {this.state.selectedCaptureIds.length === 3 &&
-              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[0]} stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[1]} stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             {this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length === 3 &&
+              <Line type="monotone" dataKey={aliases[2]} stroke="#333333" dot={false} activeDot={{r: 8}}/>
              }
           </LineChart>
           <h3>CPU Utilization</h3>
@@ -798,10 +804,10 @@ class ViewResults extends Component {
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
              <Legend />
-             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-             {this.state.selectedCaptureIds.length === 3 &&
-              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[0]} stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[1]} stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             {this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length === 3 &&
+              <Line type="monotone" dataKey={aliases[2]}  stroke="#333333" dot={false} activeDot={{r: 8}}/>
              }
           </LineChart>
           <h3>Read IOPS</h3>
@@ -811,10 +817,10 @@ class ViewResults extends Component {
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
              <Legend />
-             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[0]} stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[1]} stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
              {this.state.selectedCaptureIds.length === 3 &&
-              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+              <Line type="monotone" dataKey={aliases[2]}  stroke="#333333" dot={false} activeDot={{r: 8}}/>
              }
           </LineChart>
           <h3>Write IOPS</h3>
@@ -824,10 +830,10 @@ class ViewResults extends Component {
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
              <Legend />
-             <Line type="monotone" dataKey="Capture1" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-             <Line type="monotone" dataKey="Capture2" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[0]} stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+             <Line type="monotone" dataKey={aliases[1]} stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
              {this.state.selectedCaptureIds.length === 3 &&
-              <Line type="monotone" dataKey="Capture3" stroke="#333333" dot={false} activeDot={{r: 8}}/>
+              <Line type="monotone" dataKey={aliases[2]}  stroke="#333333" dot={false} activeDot={{r: 8}}/>
              }
           </LineChart>
         </div>

@@ -1,3 +1,4 @@
+import pymysql
 from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
@@ -314,9 +315,9 @@ def create_app(config={}):
         user_capture_replay = user_captures_replays[0]
 
         if ('captureAlias' in user_capture_replay.keys()):
-            alias = 'captureAlias'
+            alias = user_capture_replay['captureAlias']
         elif ('replayAlias' in user_capture_replay.keys()):
-            alias = 'replayAlias'
+            alias = user_capture_replay['replayAlias']
         else:
             return jsonify({'error': 'Invalid capture/replay'}), 500
 

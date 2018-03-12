@@ -12,6 +12,7 @@ import FlatButton from 'material-ui/FlatButton';
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import TextField from 'material-ui/TextField';
+import Checkbox from 'material-ui/Checkbox';
 import TimePicker from 'material-ui/TimePicker';
 import DatePicker from 'material-ui/DatePicker';
 
@@ -52,13 +53,20 @@ class HomePage extends Component {
       dbPasswordValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
+      selectedCapture: "Select your capture",
+      availableCaptures: undefined,
+      fastReplay: true,
       isErrorVisible: false,
       captureCards: [],
+      replayCards: [],
       rdsItems: [],
       s3Items: [],
       showLoadingCard: true,
       pausePolling: false,
       loadingCaptureContent: true,
+      showReplayLoadingCard: true,
+      pauseReplayPolling: false,
+      loadingReplayContent: true,
       showDBConnectFailure: false
     };
 
@@ -74,6 +82,7 @@ class HomePage extends Component {
     this.hideCaptureCallout = this.hideCaptureCallout.bind(this);
     this.showReplayCallout = this.showReplayCallout.bind(this);
     this.hideReplayCallout = this.hideReplayCallout.bind(this);
+    this.onReplayClose = this.onReplayClose.bind(this);
 
     this.handleRegionChange = this.handleRegionChange.bind(this);
     this.handleRdsChange = this.handleRdsChange.bind(this);
@@ -87,11 +96,19 @@ class HomePage extends Component {
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this);
     this.handleDBNameChange = this.handleDBNameChange.bind(this);
     this.handleErrorMessageChange = this.handleErrorMessageChange.bind(this);
+    this.handleCaptureSelection = this.handleCaptureSelection.bind(this);
 
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
     this.renderCaptureForm = this.renderCaptureForm.bind(this);
+    this.renderReplayForm = this.renderReplayForm.bind(this);
+
+    this.getSuccessfulCaptures = this.getSuccessfulCaptures.bind(this);
+    this.onReplaySubmit = this.onReplaySubmit.bind(this);
+    this.sendReplayData = this.sendReplayData.bind(this);
+    this.getReplayData = this.getReplayData.bind(this);
+    this.checkReplayLoadingCard = this.checkReplayLoadingCard.bind(this);
   }
 
   componentDidMount() {
@@ -103,10 +120,24 @@ class HomePage extends Component {
       });
     }
 
+    if (!this.state.pauseReplayPolling) {
+      var intervalGetAllReplays = setInterval(this.getReplayData, 1500);
+
+      this.setState({
+        intervalGetAllReplays: intervalGetAllReplays
+      });
+    }
+
     var intervalShowLoadingCard = setInterval(this.checkLoadingCard, 1500);
+    var intervalShowReplayLoadingCard = setInterval(this.checkReplayLoadingCard, 1500);
+
     this.setState({
       intervalShowLoadingCard: intervalShowLoadingCard
     });
+
+    this.setState({
+      intervalShowReplayLoadingCard: intervalShowReplayLoadingCard
+    })
   }
 
   componentWillUnmount() {
@@ -117,6 +148,12 @@ class HomePage extends Component {
     this.setState({
       showLoadingCard: this.state.captureCards.length <= 0
     });
+  }
+
+  checkReplayLoadingCard() {
+    this.setState({
+      showReplayLoadingCard: this.state.replayCards.length <= 0
+    })
   }
 
   sendCaptureData(formDataValues) {
@@ -148,6 +185,36 @@ class HomePage extends Component {
     });
   }
 
+  sendReplayData(formDataValues) {
+    var parentContextState = this.props.parentContext.state;
+
+    this.setState({
+      pauseReplayPolling: true
+    });
+
+    $.ajax({
+      url: SERVER_PATH + "/users/replays",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+      type: 'POST',
+      data: JSON.stringify(formDataValues),
+      success: function(data) {
+        console.log("SUCCESS Replay form");
+        this.setState({
+          pauseReplayPolling: false
+        });
+        this.onReplayClose();    
+      }.bind(this),
+      error: function(xhr, status, err) {
+        if (xhr.responseText.includes("Failed to connect")) {
+          this.setState({showDBConnectFailure: true});
+        }
+        console.error(this.props.url, status, err.toString(), xhr.responseText);
+      }.bind(this)
+    });
+  }
+
   getCaptureData() {
     var parentContextState = this.props.parentContext.state;
     var component = this;
@@ -169,6 +236,48 @@ class HomePage extends Component {
     this.setState(prevState =>({
       loadingCaptureContent: false
     }));
+  }
+
+  getReplayData() {
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "/users/replays",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+      type: 'GET',
+      success: function(json) {
+        component.setState(prevState => ({replayCards: json["userReplays"]}));
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+
+    this.setState(prevState =>({
+      loadingReplayContent: false
+    }));
+  }
+
+  getSuccessfulCaptures() {
+    var parentContextState = this.props.parentContext.state;
+    var component = this;
+
+    $.ajax({
+      url: SERVER_PATH + "/users/captures",
+      dataType: 'json',
+      headers: {'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+      type: 'GET',
+      success: function(json) {
+        component.setState({successfulCaptures: json["userCaptures"].filter(capture => capture.captureStatus === 2)});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   }
 
   getS3Data() {
@@ -252,10 +361,19 @@ class HomePage extends Component {
   }
 
   showReplayCallout() {
+    this.getSuccessfulCaptures();
+
     this.setState(prevState => ({
       isReplayCalloutVisible: true,
       isCaptureCalloutVisible: false
     }));
+  }
+
+  handleCaptureSelection(event, index, value) {
+    this.setState(prevState => ({
+      selectedCapture: value,
+      selectedCaptureId: value.split(':')[0]
+    }))
   }
 
   handleErrorMessageChange() {
@@ -409,6 +527,18 @@ class HomePage extends Component {
     this.hideCaptureCallout();
   }
 
+  onReplayClose() {
+    this.setState(prevState => ({
+      s3Value: undefined,
+      rdsValue: undefined,
+      captureStartDay: undefined,
+      captureEndDay: undefined,
+      isErrorVisible: false
+    }));
+
+    this.hideReplayCallout();
+  }
+  
   onCaptureSubmit() {
     var card = {
       alias: this.state.aliasValue,
@@ -437,6 +567,40 @@ class HomePage extends Component {
       captureCards: newCards,
       isErrorVisible: false
     }))
+  }
+
+  onReplaySubmit() {
+    var replay = {
+      capture_id: this.state.selectedCaptureId,
+      replay_alias: this.state.aliasValue,
+      db_user: this.state.dbUsernameValue,
+      db_password: this.state.dbPasswordValue,
+      db_name: this.state.dbNameValue,
+      region_name: this.state.rdsRegionValue,
+      rds_endpoint: this.state.rdsValue,
+      bucket_name: this.state.s3Value,
+      is_fast: this.state.fastReplay
+    }
+
+    this.sendReplayData(replay);
+
+    var formattedCard = {
+      replayAlias: this.state.aliasValue,
+      rdsInstance: this.state.rdsValue,
+      s3Bucket: this.state.s3Value,
+      replayStatus: LOADING,
+      is_fast: this.state.fastReplay
+    }
+
+    var newCards = this.state.replayCards;
+    newCards.push(formattedCard);
+
+    this.setState({
+      replayCards: newCards,
+      isErrorVisible: false
+    })
+
+
   }
 
   renderCaptureForm() {
@@ -573,6 +737,119 @@ class HomePage extends Component {
     );
   }
 
+  renderReplayForm() {
+    const actions = [
+      <FlatButton
+        label="Cancel"
+        primary={true}
+        onClick={this.onReplayClose}
+      />,
+      <FlatButton
+        label="Submit"
+        primary={true}
+        disabled={false}
+        onClick={this.onReplaySubmit}
+      />
+    ];
+
+    const dropdownStyle = {
+      customWidth: {
+        width: 300,
+      },
+    };
+
+    var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c => 
+      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureId + ":" + c.captureAlias}`}/>) 
+      : [];
+
+    return (
+      <Dialog title="Add Replay"
+       actions={actions}
+       modal={true}
+       open={this.state.isReplayCalloutVisible}
+       autoScrollBodyContent={true}>
+         <div class="add-replay-item">
+            Related Capture
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              value={this.state.selectedCapture}
+              onChange={this.handleCaptureSelection}>
+              {captureItems}
+            </DropDownMenu>
+         </div>
+         <div class="add-replay-item">
+            RDS Region
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              value={this.state.rdsRegionValue}
+              onChange={this.handleRegionChange}>
+              {rdsRegionItems !== undefined ? rdsRegionItems : []}
+            </DropDownMenu>
+          </div>
+          <div class="add-replay-item">
+            RDS Instance
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              value={this.state.rdsValue}
+              onChange={this.handleRdsChange}>
+              {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
+            </DropDownMenu>
+          </div>
+          <div class="add-replay-item">
+             S3 Bucket
+            <DropDownMenu
+              style={dropdownStyle.customWidth}
+              maxHeight={300}
+              value={this.state.s3Value}
+              onChange={this.handleS3Change}>
+              {this.state.s3Items !== undefined ? this.state.s3Items : []}
+            </DropDownMenu>
+          </div>
+          <div class="add-replay-item">
+            Replay Alias
+             <TextField
+                hintText="Type alias here"
+                onChange={this.handleAliasChange}
+              />
+          </div>
+          {this.state.showDBConnectFailure &&
+          <div class="error-message">
+            Database credentials are invalid, please check your input.
+          </div>}
+          <div class="add-replay-item">
+            Database Name
+             <TextField
+                hintText="Type name here"
+                onChange={this.handleDBNameChange}
+              />
+          </div>
+          <div class="add-replay-item">
+            Database Username
+             <TextField
+                hintText="Type username here"
+                onChange={this.handleDBUsernameChange}
+              />
+          </div>
+          <div class="add-replay-item">
+            Database Password
+             <TextField
+                hintText="Type password here"
+                onChange={this.handleDBPasswordChange}
+                type="password"
+              />
+          </div>
+          <div class="add-replay-item">
+             Fast Replay (Transactions run successively)
+             <Checkbox 
+                 label="Fast Replay" 
+                 checked={this.state.fastReplay}
+                 disabled={true}
+                 onCheck={() => this.setState({fastReplay: !this.state.fastReplay})}/>
+
+          </div>
+      </Dialog>
+    );
+  }
   render() {
     return (
       <div className="HomePage">
@@ -593,15 +870,11 @@ class HomePage extends Component {
       		onClick={this.showReplayCallout}
       		content="Add Replay"
       	/>
-      	{this.state.isReplayCalloutVisible &&
-      		<Callout class="add-replay-callout"
-      			isVisible={true}
-      			content={<AddReplayForm
-            			onDismiss = {this.hideReplayCallout}
-          			/>}
-      		/>
-      	}
+      	{this.renderReplayForm()}
       	<ReplayContainer
+          cards={this.state.replayCards}
+          showLoadingCard={this.state.showReplayLoadingCard}
+          showLoadingContent={this.state.loadingReplayContent}
         />
       </div>
     );

@@ -37,6 +37,38 @@
 	height: 40px !important;
 }
 
+.add-replay-content {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.8em;
+}
+
+.add-replay-content > .notif-message {
+	padding-top: 5px;
+	color: #00bcd4;
+}
+
+.add-replay-item {
+	display: flex;
+	flex-direction: column;
+	padding-top: 15px;
+}
+
+.add-replay-item > div {
+	font-size: 1em !important;
+	height: 40px !important;
+}
+
+.replay-row {
+	display: flex;
+	flex-direction: row;
+}
+
+.replay-row > div > div {
+	font-size: 1em !important;
+	height: 40px !important;
+}
+
 .error-message {
 	color: red;
 }

@@ -95,8 +95,12 @@ class CaptureReplayItem extends Component {
               <h4 class="capture-sub-item" >{this.props.alias}</h4>
               <h5 class="capture-sub-item" >RDS: {this.props.rds}</h5>
               <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
-              <h5>Time Remaining:</h5>
-              <h5>{this.getTimeLeft()}</h5>
+              {this.props.start ? 
+                <div>
+                <h5>Time Remaining:</h5>
+                <h5>{this.getTimeLeft()}</h5>
+                </div>
+                : ''}
             </div>
           </div>
         }
