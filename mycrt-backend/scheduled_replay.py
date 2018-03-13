@@ -2,6 +2,7 @@ import pymysql
 from pymysql import OperationalError, MySQLError
 from datetime import datetime
 from src.database.getRecords import getReplayFromId
+from src.metrics.metrics import save_metrics
 import _thread
 
 def main():
@@ -13,6 +14,8 @@ def main():
         while (True):
             cur_time = datetime.now().replace(microsecond=0).strftime(time_format)
             print(cur_time)
+            check_if_replay_started(connection)
+            check_if_replay_completed(connection)
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute("SELECT * FROM SCHEDULED_QUERY WHERE startTime = %s", (cur_time))
                 to_be_run = cursor.fetchall()
@@ -29,6 +32,25 @@ def main():
     finally:
         if connection is not None and connection.open:
             connection.close()
+
+def check_if_replay_started(connection):
+    with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+        # checking new queries added to the table and updating their replay status
+        cursor.execute("SELECT replayId FROM SCHEDULED_QUERY WHERE replayId IN (SELECT replayId FROM REPLAY WHERE replayStatus = 0)")
+        replays_to_be_started = cursor.fetchall()
+        for replayId in replays_to_be_started:
+            cursor.execute("UPDATE replay SET replayStatus = 1 WHERE replayId = $s", (replayId))
+        cursor.close()
+    connection.commit()
+
+def check_if_replay_completed(connection):
+    with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+        cursor.execute("SELECT replayId FROM replay WHERE replayStatus = 1 AND replayId NOT IN (SELECT replayId FROM SCHEDULED_QUERY)")
+        completed_replays = cursor.fetchall()
+        for replayId in completed_replays:
+            cursor.execute("UPDATE replay SET replayStatus = 2 WHERE replayId = $s", (replayId))
+        cursor.close()
+    connection.commit()
 
 def run_query(replayId, query):
     try:
