@@ -819,7 +819,6 @@ class ViewResults extends Component {
         <div>
           <h3>Freeable Memory</h3>
           <LineChart width={900} height={300} data={this.state.compareFreeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -832,7 +831,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>CPU Utilization</h3>
           <LineChart width={900} height={300} data={this.state.compareCpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -845,7 +843,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>Read IOPS</h3>
           <LineChart width={900} height={300} data={this.state.compareReadIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -858,7 +855,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>Write IOPS</h3>
           <LineChart width={900} height={300} data={this.state.compareWriteIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>

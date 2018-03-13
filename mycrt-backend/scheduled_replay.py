@@ -3,6 +3,7 @@ from pymysql import OperationalError, MySQLError
 from datetime import datetime
 from src.database.getRecords import getReplayFromId
 from src.metrics.metrics import save_metrics
+from src.user.user import User
 import _thread
 import time
 
@@ -24,7 +25,7 @@ def main():
                 for query in to_be_run:
                     _thread.start_new_thread(run_query, (query['replayId'], query['query'],))
                 cursor.execute(
-                    "DELETE FROM SCHEDULED_QUERY WHERE queryId IN (SELECT * FROM (SELECT queryId FROM SCHEDULED_QUERY WHERE startTime > %s) AS q)",
+                    "DELETE FROM SCHEDULED_QUERY WHERE queryId IN (SELECT * FROM (SELECT queryId FROM SCHEDULED_QUERY WHERE startTime = %s) AS q)",
                     (cur_time))
                 cursor.close()
             connection.commit()
@@ -39,11 +40,11 @@ def main():
 def check_if_replay_started(connection):
     with connection.cursor(pymysql.cursors.DictCursor) as cursor:
         # checking new queries added to the table and updating their replay status
-        cursor.execute("SELECT replayId FROM SCHEDULED_QUERY WHERE replayId IN (SELECT replayId FROM REPLAY WHERE replayStatus = 0)")
+        cursor.execute("SELECT DISTINCT replayId FROM SCHEDULED_QUERY WHERE replayId IN (SELECT replayId FROM REPLAY WHERE replayStatus = 0)")
         replays_to_be_started = cursor.fetchall()
 
         for replayId in replays_to_be_started:
-            print("Executing query")
+            print("Executing query - Updating Replay status of '%s' to '1'", replayId["replayId"])
             cursor.execute("UPDATE replay SET replayStatus = 1 WHERE replayId = %s", (replayId["replayId"]))
         cursor.close()
     connection.commit()
