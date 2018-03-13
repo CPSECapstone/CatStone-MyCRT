@@ -57,8 +57,8 @@ def get_times_and_transactions(replay_alias, bucket_name):
 
     return transactions
 
-def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_password, db_name, capture_alias, bucket_name, db_session):
-    transactions = get_transactions(capture_alias + ".log", bucket_name)
+def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_password, db_name, bucket_name, capture, db_session):
+    transactions = get_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])
     errList = []
 
     startTime = datetime.utcnow()
@@ -92,19 +92,24 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
 
     try:
         os.remove(replay_alias + ".metrics")
+        os.remove(capture['captureAlias'] + ".log")
     except:
         pass
 
 
 
-def prepare_scheduled_replay(replay, db_session):
-    transactions = get_times_and_transactions(replay['replayAlias'], replay['buckets3Bucket'])
-    capture = getCaptureFromId(replay['captureId'])
+def prepare_scheduled_replay(replay, capture, db_session):
+    transactions = get_times_and_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])
     time_format = '%Y-%m-%d %H:%M:%S'
 
-    time_delta = datetime.strptime(replay['startTime'], time_format) - datetime.strptime(capture['startTime'], time_format)
+    time_delta = replay['startTime'] - capture['startTime']
 
     for transaction in transactions:
         scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
         formatted_query = transaction[1].replace("\'", "\\\'")
         insertScheduledQuery(replay['replayId'], replay['userId'], str(scheduled_time.strftime(time_format)), formatted_query, db_session)
+
+    try:
+        os.remove(capture['captureAlias'] + ".log")
+    except:
+        pass
