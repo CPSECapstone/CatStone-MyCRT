@@ -38,7 +38,7 @@ class User(MyCrtDb.Base):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=3600):
         serializer = Serializer(SECRET_KEY, expires_in=expiration)
         return serializer.dumps({ 'id' : self.id })
 

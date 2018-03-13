@@ -5,6 +5,7 @@ from botocore.exceptions import NoRegionError, ClientError
 from src.database.updateRecords import updateReplay
 from src.database.addRecords import insertScheduledQuery
 from src.database.getRecords import getCaptureFromId
+from src.metrics.metrics import save_metrics
 from datetime import datetime
 from flask import g
 import pymysql
@@ -14,12 +15,12 @@ from pymysql import OperationalError, MySQLError
 REPLAY_STATUS_ERROR = 3
 REPLAY_STATUS_SUCCESS = 2
 
-def get_transactions(replay_alias, bucket_name):
+def get_transactions(capture_alias, bucket_name):
     s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
 
     try:
-        s3.Bucket(bucket_name).download_file(replay_alias, replay_alias)
+        s3.Bucket(bucket_name).download_file(capture_alias, capture_alias)
     except ClientError as e:
         if e.response['Error']['Code'] == "404":
             print("The object does not exist.")
@@ -28,7 +29,7 @@ def get_transactions(replay_alias, bucket_name):
 
     transactions = []
 
-    with open(replay_alias, "r") as f:
+    with open(capture_alias, "r") as f:
         query_reader = csv.reader(f)
         for row in query_reader:
             transactions.append(row[1])
@@ -56,11 +57,11 @@ def get_times_and_transactions(replay_alias, bucket_name):
 
     return transactions
 
-def replay(replay_id, rds_endpoint, region_name, db_user, db_password, db_name, alias, bucket_name, db_session):
-
-    transactions = get_transactions(alias, bucket_name)
+def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_password, db_name, capture_alias, bucket_name, db_session):
+    transactions = get_transactions(capture_alias + ".log", bucket_name)
     errList = []
 
+    startTime = datetime.utcnow()
     try:
         connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
 
@@ -76,12 +77,25 @@ def replay(replay_id, rds_endpoint, region_name, db_user, db_password, db_name, 
         errList.append(e)
         if connection.open:
             connection.close()
+    endTime = datetime.utcnow()
 
     if len(errList) > 0:
         updateReplay(replay_id, REPLAY_STATUS_ERROR, db_session)
         print(errList)
     else:
         updateReplay(replay_id, REPLAY_STATUS_SUCCESS, db_session)
+        
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "CPUUtilization", region_name)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "WriteIOPS", region_name)
+
+    try:
+        os.remove(replay_alias + ".metrics")
+    except:
+        pass
+
+
 
 def prepare_scheduled_replay(replay, db_session):
     transactions = get_times_and_transactions(replay['replayAlias'], replay['buckets3Bucket'])

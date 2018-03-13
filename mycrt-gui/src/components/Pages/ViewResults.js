@@ -43,6 +43,7 @@ class ViewResults extends Component {
     this.state = {
       formData: {},
       isLogOpen: false,
+      isReplayLogOpen: false,
       rowNumberSelected: undefined,
       isCompareOpen: false,
       captureDetails: undefined,
@@ -84,6 +85,7 @@ class ViewResults extends Component {
     this.getReplayData = this.getReplayData.bind(this);
     this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
+    this.onReplayLogClose = this.onReplayLogClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
@@ -429,6 +431,12 @@ class ViewResults extends Component {
     }));
   }
 
+  onReplayLogClose() {
+    this.setState(prevState => ({
+      isReplayLogOpen: false
+    }));
+  }
+
   onOpenCaptureDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
       isLogOpen: true,
@@ -440,7 +448,7 @@ class ViewResults extends Component {
 
   onOpenReplayDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
-      isLogOpen: true,
+      isReplayLogOpen: true,
       replayDetails: this.state.replays[rowIndex]
     }));
 
@@ -694,12 +702,12 @@ class ViewResults extends Component {
       <FlatButton
         label="Close"
         primary={true}
-        onClick={this.onLogClose}
+        onClick={this.onReplayLogClose}
       />,
       <FlatButton
         label="Download Log"
         primary={true}
-        onClick={this.onLogClose}
+        onClick={this.onReplayLogClose}
       />,
     ];
 
@@ -713,7 +721,7 @@ class ViewResults extends Component {
           width: '100%',
           maxWidth: 'none',
         }}
-        open={this.state.isLogOpen}
+        open={this.state.isReplayLogOpen}
       >
         <div>
           <h4>Status:

@@ -12,6 +12,7 @@ from flask_httpauth import HTTPBasicAuth
 from pymysql import OperationalError, MySQLError
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
+from .replay.replay import replay
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
@@ -61,7 +62,10 @@ def create_app(config={}):
         access_key = jsonData['access_key']
         secret_key = jsonData['secret_key']
         success = user_repository.register_user(username, password, email, access_key, secret_key)
-        return Response(status=201 if success else 400)
+        if (not success):
+            return jsonify(), 400
+        
+        return jsonify(), 201
 
     @app.route('/users/captures/<capture_id>', methods=['GET'])
     @auth.login_required
@@ -208,7 +212,14 @@ def create_app(config={}):
                                     jsonData['is_fast'],
                                     db.get_session())
 
-            return jsonify({'replayId': response[0]['replayId']}), 201
+            if (isinstance(response, int) and response is not -1):
+                capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
+                replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], capture['captureAlias'], jsonData['bucket_name'], db.get_session())
+
+                return jsonify({'replayId': response}), 201
+            else:
+                return jsonify({'error': response}), 400
+
         else:
             return jsonify({"error": "Generic Error."}), 400
 
@@ -313,6 +324,8 @@ def create_app(config={}):
         metrics = {}
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
+        print("----- WHAT IS THE RESPONSE RECEIVED -- -- -- ")
+        print(user_captures_replays)
         if (len(user_captures_replays) == 0):
             return jsonify(), 404
 

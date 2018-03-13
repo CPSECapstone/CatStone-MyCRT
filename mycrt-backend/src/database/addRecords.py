@@ -46,7 +46,7 @@ def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsern
 	except:
 		db_session.rollback()
 
-	return getReplayFromAlias(replayAlias, db_session)
+	return getReplayFromAlias(replayAlias, db_session)[0]["replayId"]
 
 '''Simple function to insert a capture metric
    Example: insertCaptureMetric("test-capture-2",

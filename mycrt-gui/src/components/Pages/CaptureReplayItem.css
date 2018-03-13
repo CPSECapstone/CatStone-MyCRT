@@ -15,12 +15,12 @@
     border-bottom-left-radius: 5px;
 }
 
-.capture-complete-bar {
-	background: #8be262;
+.capture-complete-bar { 
+    background: #5dd1e0;
 }
 
 .capture-in-progress-bar {
-	background: #5dd1e0;
+	background: #8be262;
 }
 
 .capture-error-bar {
@@ -36,11 +36,11 @@
 }
 
 .capture-complete {
-	color: #8be262;
+	color: #5dd1e0;
 }
 
 .capture-in-progress {
-	color: #5dd1e0;
+    color: #8be262;
 }
 
 .capture-error {
