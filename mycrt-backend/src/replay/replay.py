@@ -92,7 +92,7 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
 
     try:
         os.remove(replay_alias + ".metrics")
-        os.remove(capture_alias + ".log")
+        os.remove(capture['captureAlias'] + ".log")
     except:
         pass
 
