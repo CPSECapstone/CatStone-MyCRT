@@ -524,8 +524,10 @@ class HomePage extends Component {
       && this.state.dbUsernameValue !== undefined && this.state.dbPasswordValue !== undefined
       && this.state.dbNameValue !== undefined && this.state.rdsRegionValue !== undefined
       && this.state.rdsValue !== undefined && this.state.s3Value !== undefined
-      && this.replayStartDay.state.date !== undefined && this.replayStartTime.state.time !== undefined
-      && this.state.fastReplay !== undefined;
+      && (this.state.fastReplay || 
+         (!this.state.fastReplay 
+         && (this.replayStartDay && this.replayStartDay.state.date)
+         && (this.replayStartTime && this.replayStartTime.state.time)));
   }
 
   onCaptureButton() {
@@ -582,11 +584,17 @@ class HomePage extends Component {
   }
 
   onReplaySubmit() {
-    var startDay = this.replayStartDay.state.date;
-    var startTime = this.replayStartTime.state.time;
+    var startDay = this.replayStartDay && this.replayStartDay.state.date;
+    var startTime = this.replayStartTime && this.replayStartTime.state.time;
 
-    startDay.setHours(startTime.getHours());
-    startDay.setMinutes(startTime.getMinutes());
+    if (startDay) {
+      startDay.setHours(startTime.getHours());
+      startDay.setMinutes(startTime.getMinutes());
+    }
+    else {
+      startDay = new Date().getTime().toString();
+      console.log(startDay);
+    }
 
     var replay = {
       capture_id: this.state.selectedCaptureId,
@@ -859,26 +867,30 @@ class HomePage extends Component {
               />
           </div>
           <div class="add-replay-item">
-            Start Time
-            <div class="replay-row">
-              <DatePicker
-                hintText="Day"
-                ref={(input) => {this.replayStartDay = input;}}
-              />
-              <TimePicker
-                hintText="Time"
-                ref={(input) => {this.replayStartTime = input;}}
-              />
-            </div>
-          </div>
-          <div class="add-replay-item">
              Fast Replay (Transactions run successively)
              <Checkbox 
                  label="Fast Replay" 
                  checked={this.state.fastReplay}
-                 disabled={true}
+                 disabled={false}
                  onCheck={() => this.setState({fastReplay: !this.state.fastReplay})}/>
           </div>
+          {!this.state.fastReplay ? 
+            <div class="add-replay-item">
+              Start Time
+              <div class="replay-row">
+                <DatePicker
+                  hintText="Day"
+                  ref={(input) => {this.replayStartDay = input;}}
+                />
+                <TimePicker
+                  hintText="Time"
+                  ref={(input) => {this.replayStartTime = input;}}
+                />
+              </div>
+            </div>
+            :
+            ''
+          }
       </Dialog>
     );
   }

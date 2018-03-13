@@ -565,7 +565,7 @@ class ViewResults extends Component {
               <TableHeaderColumn tooltip="The Status">Status</TableHeaderColumn>
               <TableHeaderColumn tooltip="The RDS Instance Name">RDS Instance</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
-              <TableHeaderColumn tooltip="The End Time">End Time</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The End Time">Fast Replay</TableHeaderColumn>
               <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
             </TableRow>
           </TableHeader>
@@ -585,8 +585,8 @@ class ViewResults extends Component {
                     {(row.replayStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
                   </TableRowColumn>
                   <TableRowColumn>{row.rdsInstance}</TableRowColumn>
-                  <TableRowColumn>{row.startTime}</TableRowColumn>
-                  <TableRowColumn>{row.endTime}</TableRowColumn>
+                  <TableRowColumn>{row.isFast ? '-' : row.startTime}</TableRowColumn>
+                  <TableRowColumn>{row.isFast ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}</TableRowColumn>
                   <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
                 </TableRow>
                 );
@@ -736,12 +736,12 @@ class ViewResults extends Component {
           </h4>
           <h4>Start Time:
             <div>
-            <h5>{this.state.replayDetails.startTime}</h5>
+            <h5>{this.state.replayDetails.isFast ? '-' : this.state.replayDetails.startTime}</h5>
             </div>
           </h4>
-          <h4>End Time:
+          <h4>Fast Replay:
             <div>
-            <h5>{this.state.replayDetails.endTime}</h5>
+            <h5>{this.state.replayDetails.isFast}</h5>
             </div>
           </h4>
           <h3>Freeable Memory</h3>

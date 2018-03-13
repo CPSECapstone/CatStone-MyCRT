@@ -12,7 +12,7 @@ from flask_httpauth import HTTPBasicAuth
 from pymysql import OperationalError, MySQLError
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
-from .replay.replay import replay
+from .replay.replay import replay, prepare_scheduled_replay
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
@@ -214,7 +214,12 @@ def create_app(config={}):
 
             if (isinstance(response, int) and response is not -1):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
-                replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], capture['captureAlias'], jsonData['bucket_name'], db.get_session())
+
+                if (jsonData['is_fast']):
+                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session())
+                else: 
+                    newReplay = getReplayFromId(response, db.get_session())[0]
+                    prepare_scheduled_replay(newReplay, capture, db.get_session())
 
                 return jsonify({'replayId': response}), 201
             else:
