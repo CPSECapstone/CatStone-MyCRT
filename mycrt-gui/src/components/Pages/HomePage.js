@@ -527,7 +527,8 @@ class HomePage extends Component {
       && (this.state.fastReplay || 
          (!this.state.fastReplay 
          && (this.replayStartDay && this.replayStartDay.state.date)
-         && (this.replayStartTime && this.replayStartTime.state.time)));
+         && (this.replayStartTime && this.replayStartTime.state.time)))
+      && !this.state.isErrorVisible;
   }
 
   onCaptureButton() {
