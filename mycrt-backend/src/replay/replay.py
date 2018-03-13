@@ -102,11 +102,7 @@ def prepare_scheduled_replay(replay, capture, db_session):
     transactions = get_times_and_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])
     time_format = '%Y-%m-%d %H:%M:%S'
 
-    # time_delta = datetime.strptime(replay['startTime'], time_format) - datetime.strptime(capture['startTime'], time_format)
     time_delta = replay['startTime'] - capture['startTime']
-
-    print("Time delta of: -----------------------")
-    print(time_delta)
 
     for transaction in transactions:
         scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
