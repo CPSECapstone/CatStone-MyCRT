@@ -198,6 +198,7 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
+
     if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
       disabled = false;
     }
@@ -208,9 +209,14 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedCaptureIds = [];
+
+    
     for (var i = 0; i < selectedRows.length; i++) {
-      selectedCaptureIds.push(this.state.captures[selectedRows[i]].captureId);
-      relatedCaptureId = this.state.captures[selectedRows[i]].captureId;
+      var visibleCaptures = this.state.relatedCaptureId === -1 ? this.state.captures :
+         this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId);
+
+      selectedCaptureIds.push(visibleCaptures[selectedRows[i]].captureId);
+      relatedCaptureId = visibleCaptures[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
       selectedCaptureIds: selectedCaptureIds,
@@ -512,7 +518,7 @@ class ViewResults extends Component {
               let boundItemClick = this.onOpenCaptureDetailsClick.bind(this, index);
               if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
-                <TableRow key={index} selected={this.state.selectedCaptureRows.indexOf(index) !== -1} >
+                <TableRow key={row.captureId} selected={this.state.selectedCaptureIds.indexOf(row.captureId) !== -1} >
                   <TableRowColumn>{row.captureAlias}</TableRowColumn>
                   <TableRowColumn>
                     {(row.captureStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
@@ -813,7 +819,6 @@ class ViewResults extends Component {
         <div>
           <h3>Freeable Memory</h3>
           <LineChart width={900} height={300} data={this.state.compareFreeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -826,7 +831,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>CPU Utilization</h3>
           <LineChart width={900} height={300} data={this.state.compareCpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -839,7 +843,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>Read IOPS</h3>
           <LineChart width={900} height={300} data={this.state.compareReadIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -852,7 +855,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>Write IOPS</h3>
           <LineChart width={900} height={300} data={this.state.compareWriteIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>

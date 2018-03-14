@@ -347,7 +347,7 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'])
+            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'], g.user)
             if (type(response) is not dict):
                 metrics[metric] = response
             else:
