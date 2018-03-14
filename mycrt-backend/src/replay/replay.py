@@ -57,7 +57,7 @@ def get_times_and_transactions(replay_alias, bucket_name):
 
     return transactions
 
-def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_password, db_name, bucket_name, capture, db_session):
+def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_password, db_name, bucket_name, capture, db_session, user):
     transactions = get_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])
     errList = []
 
@@ -85,10 +85,10 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
     else:
         updateReplay(replay_id, REPLAY_STATUS_SUCCESS, db_session)
         
-        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "CPUUtilization", region_name)
-        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name)
-        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name)
-        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "WriteIOPS", region_name)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "CPUUtilization", region_name, user)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name, user)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name, user)
+        save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "WriteIOPS", region_name, user)
 
     try:
         os.remove(replay_alias + ".metrics")
