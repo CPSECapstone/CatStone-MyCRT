@@ -4,20 +4,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import HomePage from '../src/components/Pages/HomePage.js';
-/*import Button from '../src/components/Pages/Button.js';
-import CaptureContainer from '../src/components/Pages/CaptureContainer.js';
-import ReplayContainer from '../src/components/Pages/ReplayContainer.js';
-import AddReplayForm from '../src/components/Forms/AddReplayForm.js';
-import Callout from '../src/components/Pages/Callout.js';
-
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import DropDownMenu from 'material-ui/DropDownMenu';
-import MenuItem from 'material-ui/MenuItem';
-import TextField from 'material-ui/TextField';
-import Checkbox from 'material-ui/Checkbox';
-import TimePicker from 'material-ui/TimePicker';
-import DatePicker from 'material-ui/DatePicker';*/
 
 const homePageTest = shallow(<HomePage parentContext={this}/>);
 
