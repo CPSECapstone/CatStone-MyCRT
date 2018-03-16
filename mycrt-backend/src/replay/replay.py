@@ -22,38 +22,26 @@ def get_transactions(capture_alias, bucket_name):
     try:
         s3.Bucket(bucket_name).download_file(capture_alias, capture_alias)
     except ClientError as e:
-        if e.response['Error']['Code'] == "404":
-            print("The object does not exist.")
-        else:
-            raise
-
-    transactions = []
+        return e.response
 
     with open(capture_alias, "r") as f:
         query_reader = csv.reader(f)
-        for row in query_reader:
-            transactions.append(row[1])
+        transactions = [(row[0], row[1]) for row in query_reader]
 
     return transactions
 
-def get_times_and_transactions(replay_alias, bucket_name):
+def get_times_and_transactions(capture_alias, bucket_name):
     s3 = boto3.resource('s3', aws_access_key_id=g.user.access_key,
      aws_secret_access_key=g.user.secret_key)
 
     try:
-        s3.Bucket(bucket_name).download_file(replay_alias, replay_alias)
+        s3.Bucket(bucket_name).download_file(capture_alias, capture_alias)
     except ClientError as e:
-        if e.response['Error']['Code'] == "404":
-            print("The object does not exist.")
-        else:
-            raise
+        return e.response
 
-    transactions = []
-
-    with open(replay_alias, "r") as f:
+    with open(capture_alias, "r") as f:
         query_reader = csv.reader(f)
-        for row in query_reader:
-            transactions.append((row[0], row[1]))
+        transactions = [(row[0], row[1]) for row in query_reader]
 
     return transactions
 
@@ -73,18 +61,18 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
 
         if connection.open:
             connection.close()
+
     except MySQLError as e:
         errList.append(e)
         if connection.open:
             connection.close()
+
     endTime = datetime.utcnow()
 
     if len(errList) > 0:
         updateReplay(replay_id, REPLAY_STATUS_ERROR, db_session)
-        print(errList)
     else:
         updateReplay(replay_id, REPLAY_STATUS_SUCCESS, db_session)
-        
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "CPUUtilization", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name, user)
@@ -95,8 +83,6 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
         os.remove(capture['captureAlias'] + ".log")
     except:
         pass
-
-
 
 def prepare_scheduled_replay(replay, capture, db_session):
     transactions = get_times_and_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])

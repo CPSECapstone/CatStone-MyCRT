@@ -49,20 +49,20 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
+    finally:
+        os.remove(metric_file)
 
     return metric_data
 
 def get_metrics(metric_type, metric_alias, bucket_name, user):
     s3 = boto3.resource('s3', aws_access_key_id=user.access_key,
      aws_secret_access_key=user.secret_key)
+    metric_data = []
 
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
     except ClientError as e:
         return e.response
-
-
-    metric_data = []
 
     with open(metric_alias, "r") as f:
         for line in f:
@@ -78,4 +78,5 @@ def get_metrics(metric_type, metric_alias, bucket_name, user):
                 datapoint[metric_type] = round(float(datapoint[metric_type]), 2)
                 metric_data.append(datapoint)
 
+    os.remove(metric_alias)
     return metric_data
