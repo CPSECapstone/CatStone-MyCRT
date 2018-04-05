@@ -1,5 +1,5 @@
 from .user_repository import UserRepository
-from .models import Capture, Replay, Metric
+from .models import Capture, Replay, Metric, ScheduledQuery
 from .getRecords import getCaptureFromAlias, getReplayFromAlias
 
 '''Function used to insert a capture into the database
@@ -35,18 +35,18 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
                                 "test",
                                 "testPW",
                                 "testDB",
-                                "testRegion")
+                                "testRegion",
+                                true)
 '''
-def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, db_session):
-	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
+def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, db_session):
+	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast)
 	try:
 		db_session.add(replay)
 		db_session.commit()
 	except:
 		db_session.rollback()
 
-	return getReplayFromAlias(replayAlias, db_session)
-
+	return getReplayFromAlias(replayAlias, db_session)[0]["replayId"]
 
 '''Simple function to insert a capture metric
    Example: insertCaptureMetric("test-capture-2",
@@ -54,12 +54,12 @@ def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsern
                                 "test-capture-1.log")
 
 '''
-def insertCaptureMetric(capture, bucket, metricFile):
-	insertMetric(captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
+def insertCaptureMetric(db_session, capture, bucket, metricFile):
+	insertMetric(db_session, captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
 
 #Simple function to insert a replay metric
-def insertReplayMetric(replay, bucket, metricFile):
-	insertMetric(replayAlias=replay, s3Bucket=bucket, metricFileName=metricFile)
+def insertReplayMetric(db_session, replay, bucket, metricFile):
+	insertMetric(db_session, replayAlias=replay, s3Bucket=bucket, metricFileName=metricFile)
 
 #Function used to insert MetricFiles
 #Note: This should NOT be used anywhere else in the system.
@@ -86,3 +86,12 @@ def insertMetric(db_session,captureAlias=None, replayAlias=None, s3Bucket=None,
 def insertUser(userName, userPassword, email, accessKey, secretKey, db_session):
         user_repository = UserRepository(db_session)
         user_repository.register_user(username=userName, password=userPassword, email=email, access_key=accessKey, secret_key=secretKey)
+
+#Simple function to insert a scheduled query
+def insertScheduledQuery(replayId, userId, startTime, query, db_session):
+	scheduled_query = ScheduledQuery(replayId, userId, startTime, query)
+	try:
+		db_session.add(scheduled_query)
+		db_session.commit()
+	except:
+		db_session.rollback()

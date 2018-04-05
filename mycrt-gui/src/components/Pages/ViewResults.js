@@ -43,6 +43,7 @@ class ViewResults extends Component {
     this.state = {
       formData: {},
       isLogOpen: false,
+      isReplayLogOpen: false,
       rowNumberSelected: undefined,
       isCompareOpen: false,
       captureDetails: undefined,
@@ -65,6 +66,7 @@ class ViewResults extends Component {
       readIOPS:[],
       writeIOPS: [],
       comparisonAliases: [],
+      relatedCaptureId: -1,
       showCaptureResultsLoading: true,
       showReplayResultsLoading: true
     };
@@ -83,12 +85,15 @@ class ViewResults extends Component {
     this.getReplayData = this.getReplayData.bind(this);
     this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
+    this.onReplayLogClose = this.onReplayLogClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
     this.renderCaptureDetails = this.renderCaptureDetails.bind(this);
     this.renderReplayDetails = this.renderReplayDetails.bind(this);
     this.renderCompare = this.renderCompare.bind(this);
+
+    this.isRelatedReplayOrCapture = this.isRelatedReplayOrCapture.bind(this);
   }
 
   componentDidMount() {
@@ -173,6 +178,7 @@ class ViewResults extends Component {
     // check if compare button should be disabled or enabled
     var disabled = true;
     var selectedRows = [];
+    var relatedCaptureId = -1;
 
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
@@ -184,12 +190,14 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
-        selectedCaptureRows: selectedRows
+        selectedCaptureRows: selectedRows,
+        relatedCaptureId: relatedCaptureId
       }));
       return;
     } else {
       selectedRows = rows;
     }
+
 
     if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
       disabled = false;
@@ -201,11 +209,18 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedCaptureIds = [];
+
+    
     for (var i = 0; i < selectedRows.length; i++) {
-      selectedCaptureIds.push(this.state.captures[selectedRows[i]].captureId);
+      var visibleCaptures = this.state.relatedCaptureId === -1 ? this.state.captures :
+         this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId);
+
+      selectedCaptureIds.push(visibleCaptures[selectedRows[i]].captureId);
+      relatedCaptureId = visibleCaptures[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
-      selectedCaptureIds: selectedCaptureIds
+      selectedCaptureIds: selectedCaptureIds,
+      relatedCaptureId: relatedCaptureId 
     }));
   }
 
@@ -213,6 +228,7 @@ class ViewResults extends Component {
     // check if compare button should be disabled or enabled
     var disabled = true;
     var selectedRows = [];
+    var relatedCaptureId = -1;
 
     if (rows === "all") {
       for (var i = 0; i < this.state.replays.length; i++) {
@@ -224,7 +240,8 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
-        selectedReplayRows: selectedRows
+        selectedReplayRows: selectedRows,
+        relatedCaptureId: relatedCaptureId        
       }));
       return;
     } else {
@@ -243,9 +260,11 @@ class ViewResults extends Component {
     var selectedReplayIds = [];
     for (var i = 0; i < selectedRows.length; i++) {
       selectedReplayIds.push(this.state.replays[selectedRows[i]].replayId);
+      relatedCaptureId = this.state.replays[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
-      selectedReplayIds: selectedReplayIds
+      selectedReplayIds: selectedReplayIds,
+      relatedCaptureId: relatedCaptureId   
     }));
   }
 
@@ -261,7 +280,7 @@ class ViewResults extends Component {
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
-          captures: json["userCaptures"],
+          captures: json["userCaptures"].filter(capture => capture.captureStatus > IN_PROGRESS),
           showCaptureResultsLoading: false
         }));
       }.bind(this),
@@ -283,7 +302,7 @@ class ViewResults extends Component {
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
-          replays: json["userReplays"].filter(replay => replay.replayStatus >= 1),
+          replays: json["userReplays"].filter(replay => replay.replayStatus > IN_PROGRESS),
           showReplayResultsLoading: false
         }));
       }.bind(this),
@@ -418,6 +437,12 @@ class ViewResults extends Component {
     }));
   }
 
+  onReplayLogClose() {
+    this.setState(prevState => ({
+      isReplayLogOpen: false
+    }));
+  }
+
   onOpenCaptureDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
       isLogOpen: true,
@@ -429,7 +454,7 @@ class ViewResults extends Component {
 
   onOpenReplayDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
-      isLogOpen: true,
+      isReplayLogOpen: true,
       replayDetails: this.state.replays[rowIndex]
     }));
 
@@ -451,7 +476,14 @@ class ViewResults extends Component {
     });
   }
 
+  isRelatedReplayOrCapture(captureId) {
+    return (this.state.selectedCaptureRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
+      (this.state.selectedReplayRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
+      (this.state.relatedCaptureId === -1);
+  }
+
   renderCaptureTable() {
+    var that = this;
     return (
       <div>
       <h3>Capture Results</h3>
@@ -465,7 +497,7 @@ class ViewResults extends Component {
           <TableHeader
             displaySelectAll={true}
             adjustForCheckbox={true}
-            enableSelectAll={true}
+            enableSelectAll={false}
           >
             <TableRow >
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
@@ -484,9 +516,9 @@ class ViewResults extends Component {
           >
             {this.state.captures.map( (row, index) => {
               let boundItemClick = this.onOpenCaptureDetailsClick.bind(this, index);
-              if (row.captureStatus === COMPLETED || row.captureStatus === ERROR) {
+              if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
-                <TableRow key={index} selected={this.state.selectedCaptureRows.indexOf(index) !== -1} >
+                <TableRow key={row.captureId} selected={this.state.selectedCaptureIds.indexOf(row.captureId) !== -1} >
                   <TableRowColumn>{row.captureAlias}</TableRowColumn>
                   <TableRowColumn>
                     {(row.captureStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
@@ -518,6 +550,7 @@ class ViewResults extends Component {
 
   renderReplayTable() {
     //TODO: add Replay table
+    var that = this;
     return (
       <div>
       <h3>Replay Results</h3>
@@ -538,7 +571,7 @@ class ViewResults extends Component {
               <TableHeaderColumn tooltip="The Status">Status</TableHeaderColumn>
               <TableHeaderColumn tooltip="The RDS Instance Name">RDS Instance</TableHeaderColumn>
               <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
-              <TableHeaderColumn tooltip="The End Time">End Time</TableHeaderColumn>
+              <TableHeaderColumn tooltip="The End Time">Fast Replay</TableHeaderColumn>
               <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
             </TableRow>
           </TableHeader>
@@ -550,7 +583,7 @@ class ViewResults extends Component {
           >
             {this.state.replays.map( (row, index) => {
               let boundItemClick = this.onOpenReplayDetailsClick.bind(this, index);
-              if (row.replayStatus === COMPLETED || row.replayStatus === ERROR) {
+              if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
                 <TableRow key={index} selected={this.state.selectedReplayRows.indexOf(index) !== -1} >
                   <TableRowColumn>{row.replayAlias}</TableRowColumn>
@@ -558,8 +591,8 @@ class ViewResults extends Component {
                     {(row.replayStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
                   </TableRowColumn>
                   <TableRowColumn>{row.rdsInstance}</TableRowColumn>
-                  <TableRowColumn>{row.startTime}</TableRowColumn>
-                  <TableRowColumn>{row.endTime}</TableRowColumn>
+                  <TableRowColumn>{row.isFast ? '-' : row.startTime}</TableRowColumn>
+                  <TableRowColumn>{row.isFast ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}</TableRowColumn>
                   <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
                 </TableRow>
                 );
@@ -675,12 +708,12 @@ class ViewResults extends Component {
       <FlatButton
         label="Close"
         primary={true}
-        onClick={this.onLogClose}
+        onClick={this.onReplayLogClose}
       />,
       <FlatButton
         label="Download Log"
         primary={true}
-        onClick={this.onLogClose}
+        onClick={this.onReplayLogClose}
       />,
     ];
 
@@ -694,7 +727,7 @@ class ViewResults extends Component {
           width: '100%',
           maxWidth: 'none',
         }}
-        open={this.state.isLogOpen}
+        open={this.state.isReplayLogOpen}
       >
         <div>
           <h4>Status:
@@ -709,12 +742,12 @@ class ViewResults extends Component {
           </h4>
           <h4>Start Time:
             <div>
-            <h5>{this.state.replayDetails.startTime}</h5>
+            <h5>{this.state.replayDetails.isFast ? '-' : this.state.replayDetails.startTime}</h5>
             </div>
           </h4>
-          <h4>End Time:
+          <h4>Fast Replay:
             <div>
-            <h5>{this.state.replayDetails.endTime}</h5>
+            <h5>{this.state.replayDetails.isFast}</h5>
             </div>
           </h4>
           <h3>Freeable Memory</h3>
@@ -786,7 +819,6 @@ class ViewResults extends Component {
         <div>
           <h3>Freeable Memory</h3>
           <LineChart width={900} height={300} data={this.state.compareFreeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -799,7 +831,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>CPU Utilization</h3>
           <LineChart width={900} height={300} data={this.state.compareCpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -812,7 +843,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>Read IOPS</h3>
           <LineChart width={900} height={300} data={this.state.compareReadIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>
@@ -825,7 +855,6 @@ class ViewResults extends Component {
           </LineChart>
           <h3>Write IOPS</h3>
           <LineChart width={900} height={300} data={this.state.compareWriteIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
              <Tooltip/>

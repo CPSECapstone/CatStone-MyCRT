@@ -53,6 +53,8 @@ class HomePage extends Component {
       dbPasswordValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
+      replayStartDay: undefined,
+      replayStartTime: undefined,
       selectedCapture: "Select your capture",
       availableCaptures: undefined,
       fastReplay: true,
@@ -109,6 +111,7 @@ class HomePage extends Component {
     this.sendReplayData = this.sendReplayData.bind(this);
     this.getReplayData = this.getReplayData.bind(this);
     this.checkReplayLoadingCard = this.checkReplayLoadingCard.bind(this);
+    this.isReplayFieldsFilled = this.isReplayFieldsFilled.bind(this);
   }
 
   componentDidMount() {
@@ -516,6 +519,18 @@ class HomePage extends Component {
       && !this.state.isErrorVisible;
   }
 
+  isReplayFieldsFilled() {
+    return this.state.selectedCaptureId !== undefined && this.state.aliasValue !== undefined
+      && this.state.dbUsernameValue !== undefined && this.state.dbPasswordValue !== undefined
+      && this.state.dbNameValue !== undefined && this.state.rdsRegionValue !== undefined
+      && this.state.rdsValue !== undefined && this.state.s3Value !== undefined
+      && (this.state.fastReplay || 
+         (!this.state.fastReplay 
+         && (this.replayStartDay && this.replayStartDay.state.date)
+         && (this.replayStartTime && this.replayStartTime.state.time)))
+      && !this.state.isErrorVisible;
+  }
+
   onCaptureButton() {
     this.setState(prevState => ({
       s3Value: undefined,
@@ -570,6 +585,18 @@ class HomePage extends Component {
   }
 
   onReplaySubmit() {
+    var startDay = this.replayStartDay && this.replayStartDay.state.date;
+    var startTime = this.replayStartTime && this.replayStartTime.state.time;
+
+    if (startDay) {
+      startDay.setHours(startTime.getHours());
+      startDay.setMinutes(startTime.getMinutes());
+    }
+    else {
+      startDay = new Date().getTime().toString();
+      console.log(startDay);
+    }
+
     var replay = {
       capture_id: this.state.selectedCaptureId,
       replay_alias: this.state.aliasValue,
@@ -579,6 +606,7 @@ class HomePage extends Component {
       region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
+      start_time: startDay,
       is_fast: this.state.fastReplay
     }
 
@@ -589,6 +617,7 @@ class HomePage extends Component {
       rdsInstance: this.state.rdsValue,
       s3Bucket: this.state.s3Value,
       replayStatus: LOADING,
+      startTime: startDay,
       is_fast: this.state.fastReplay
     }
 
@@ -747,7 +776,7 @@ class HomePage extends Component {
       <FlatButton
         label="Submit"
         primary={true}
-        disabled={false}
+        disabled={!this.isReplayFieldsFilled()}
         onClick={this.onReplaySubmit}
       />
     ];
@@ -843,10 +872,26 @@ class HomePage extends Component {
              <Checkbox 
                  label="Fast Replay" 
                  checked={this.state.fastReplay}
-                 disabled={true}
+                 disabled={false}
                  onCheck={() => this.setState({fastReplay: !this.state.fastReplay})}/>
-
           </div>
+          {!this.state.fastReplay ? 
+            <div class="add-replay-item">
+              Start Time
+              <div class="replay-row">
+                <DatePicker
+                  hintText="Day"
+                  ref={(input) => {this.replayStartDay = input;}}
+                />
+                <TimePicker
+                  hintText="Time"
+                  ref={(input) => {this.replayStartTime = input;}}
+                />
+              </div>
+            </div>
+            :
+            ''
+          }
       </Dialog>
     );
   }

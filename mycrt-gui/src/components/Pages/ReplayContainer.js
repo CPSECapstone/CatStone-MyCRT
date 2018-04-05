@@ -40,7 +40,7 @@ class ReplayContainer extends Component {
             </div>
           }
           {!this.props.showLoadingContent &&
-            <div class = "no-replays">
+            <div>
               <h5>There are no current replays.</h5>
             </div>
           }

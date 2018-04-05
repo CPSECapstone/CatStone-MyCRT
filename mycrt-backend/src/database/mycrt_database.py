@@ -11,7 +11,7 @@ class MyCrtDb:
             autoflush=False, bind=engine))
 
         MyCrtDb. Base.query = self.db_session.query_property()
-        from src.database.models import User, Notification, Capture, Replay, Metric
+        from src.database.models import User, Notification, Capture, Replay, ScheduledQuery, Metric
         self.Base.metadata.create_all(bind=engine)
 
     def get_session(self):

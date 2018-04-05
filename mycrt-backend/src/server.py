@@ -1,4 +1,6 @@
 import pymysql
+import os
+
 from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
@@ -10,6 +12,7 @@ from flask_httpauth import HTTPBasicAuth
 from pymysql import OperationalError, MySQLError
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
+from .replay.replay import replay, prepare_scheduled_replay
 
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
@@ -59,7 +62,10 @@ def create_app(config={}):
         access_key = jsonData['access_key']
         secret_key = jsonData['secret_key']
         success = user_repository.register_user(username, password, email, access_key, secret_key)
-        return Response(status=201 if success else 400)
+        if (not success):
+            return jsonify(), 400
+
+        return jsonify(), 201
 
     @app.route('/users/captures/<capture_id>', methods=['GET'])
     @auth.login_required
@@ -136,8 +142,16 @@ def create_app(config={}):
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
     def get_users_replays():
+        isFast = request.args.get('isFast')
 
-        userReplays = getUsersReplays(g.user.get_id() , db.get_session())
+        if (isinstance(isFast, str) and isFast.lower() == 'true'):
+            isFast = 1
+        elif (isinstance(isFast, str) and isFast.lower() == 'false'):
+            isFast = 0
+        else:
+            isFast = None
+
+        userReplays = getUsersReplays(g.user.get_id(), isFast, db.get_session())
 
         return jsonify({"count": len(userReplays), "userReplays": userReplays}), 200
 
@@ -167,7 +181,9 @@ def create_app(config={}):
                 'db_user' not in jsonData or
                 'db_password' not in jsonData or
                 'db_name' not in jsonData or
-                'bucket_name' not in jsonData):
+                'bucket_name' not in jsonData or
+                'start_time' not in jsonData or
+                'is_fast' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
 
             if (len(getReplayFromAlias(jsonData['replay_alias'], db.get_session())) != 0 or
@@ -192,9 +208,23 @@ def create_app(config={}):
                                     jsonData['db_password'],
                                     jsonData['db_name'],
                                     jsonData['region_name'],
+                                    jsonData['start_time'].split('.', 1)[0].replace('T', ' '),
+                                    jsonData['is_fast'],
                                     db.get_session())
 
-            return jsonify({'replayId': response[0]['replayId']}), 201
+            if (isinstance(response, int) and response is not -1):
+                capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
+
+                if (jsonData['is_fast']):
+                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
+                else:
+                    newReplay = getReplayFromId(response, db.get_session())[0]
+                    prepare_scheduled_replay(newReplay, capture, db.get_session())
+
+                return jsonify({'replayId': response}), 201
+            else:
+                return jsonify({'error': response}), 400
+
         else:
             return jsonify({"error": "Generic Error."}), 400
 
@@ -240,7 +270,7 @@ def create_app(config={}):
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 's3Instances': response}), 200
 
-        return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
+        return jsonify({'error': response['Error']['Code']}), response['ResponseMetadata']['HTTPStatusCode']
 
     @app.route('/users/rdsInstances/<region_name>', methods=['GET'])
     @auth.login_required
@@ -250,7 +280,7 @@ def create_app(config={}):
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 'rdsInstances': response}), 200
 
-        return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
+        return jsonify({'error': response['Error']['Code']}), response['ResponseMetadata']['HTTPStatusCode']
 
     @app.route('/users/captures/<capture_id>/metrics', methods=["GET"])
     @auth.login_required
@@ -315,11 +345,13 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'])
+            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'], g.user)
             if (type(response) is not dict):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
+
+        os.remove(alias + ".metrics")
 
         return jsonify(metrics), 200
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
@@ -38,7 +38,7 @@ class User(MyCrtDb.Base):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password)
 
-    def generate_auth_token(self, expiration=600):
+    def generate_auth_token(self, expiration=3600):
         serializer = Serializer(SECRET_KEY, expires_in=expiration)
         return serializer.dumps({ 'id' : self.id })
 
@@ -140,9 +140,11 @@ class Replay(MyCrtDb.Base):
     rdsPassword = Column(String(64))
     rdsDatabase = Column(String(64))
     regionName = Column(String(64))
+    startTime = Column(DateTime(timezone=True))
+    isFast = Column(Boolean())
     replayStatus = Column(Integer(), default=0)
 
-    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, replayStatus=0):
+    def __init__(self, userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, replayStatus=0):
         self.userId = userId
         self.captureId = captureId
         self.replayAlias = replayAlias
@@ -152,10 +154,12 @@ class Replay(MyCrtDb.Base):
         self.rdsPassword = rdsPassword
         self.rdsDatabase = rdsDatabase
         self.regionName = regionName
+        self.startTime = startTime
+        self.isFast = isFast
         self.replayStatus = replayStatus
 
     def __repr__(self):
-        return '<Replay %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName, self.replayStatus)
+        return '<Replay %r %r %r %r %r %r %r %r %r %r %r' % (self.userId, self.captureId, self.replayAlias, self.s3Bucket, self.rdsInstance, self.rdsUsername, self.rdsPassword, self.rdsDatabase, self.regionName, self.startTime, self.isFast, self.replayStatus)
 
     def convertToDict(replays):
         allDicts = []
@@ -171,13 +175,30 @@ class Replay(MyCrtDb.Base):
                        'rdsPassword': replay[7],
                        'rdsDatabase': replay[8],
                        'regionName': replay[9],
-                       'replayStatus': replay[10]}
+                       'startTime': replay[10],
+                       'isFast': replay[11],
+                       'replayStatus': replay[12]}
             allDicts.append(newDict)
 
         return allDicts
 
 	#user = relationship('User', foreign_keys='Replay.id')
     capture = relationship('Capture', foreign_keys='Replay.captureId')
+
+class ScheduledQuery(MyCrtDb.Base):
+    __tablename__ = 'scheduled_query'
+    queryId = Column(Integer(), primary_key=True, autoincrement=True)
+    replayId = Column(Integer(), ForeignKey(Replay.replayId))
+    userId = Column(Integer(), ForeignKey(User.id))
+    startTime = Column(DateTime(timezone=True))
+    query = Column(String(16384), nullable=False)
+
+    def __init__(self, replayId, userId, startTime, query):
+        self.replayId = replayId
+        self.userId = userId
+        self.startTime = startTime
+        self.query = query
+
 
 class Metric(MyCrtDb.Base):
     __tablename__ = 'metric'
