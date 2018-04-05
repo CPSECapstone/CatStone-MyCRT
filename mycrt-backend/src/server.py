@@ -64,7 +64,7 @@ def create_app(config={}):
         success = user_repository.register_user(username, password, email, access_key, secret_key)
         if (not success):
             return jsonify(), 400
-        
+
         return jsonify(), 201
 
     @app.route('/users/captures/<capture_id>', methods=['GET'])
@@ -217,7 +217,7 @@ def create_app(config={}):
 
                 if (jsonData['is_fast']):
                     replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
-                else: 
+                else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
                     prepare_scheduled_replay(newReplay, capture, db.get_session())
 
@@ -270,7 +270,7 @@ def create_app(config={}):
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 's3Instances': response}), 200
 
-        return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
+        return jsonify({'error': response['Error']['Code']}), response['ResponseMetadata']['HTTPStatusCode']
 
     @app.route('/users/rdsInstances/<region_name>', methods=['GET'])
     @auth.login_required
@@ -280,7 +280,7 @@ def create_app(config={}):
         if (isinstance(response, list)):
             return jsonify({'count': len(response), 'rdsInstances': response}), 200
 
-        return jsonify({'error': response['Error']['Code']}), response['ResponseMetaData']['HTTPStatusCode']
+        return jsonify({'error': response['Error']['Code']}), response['ResponseMetadata']['HTTPStatusCode']
 
     @app.route('/users/captures/<capture_id>/metrics', methods=["GET"])
     @auth.login_required
@@ -329,8 +329,6 @@ def create_app(config={}):
         metrics = {}
         availableMetrics = ['FreeableMemory', 'CPUUtilization', 'ReadIOPS', 'WriteIOPS']
 
-        print("----- WHAT IS THE RESPONSE RECEIVED -- -- -- ")
-        print(user_captures_replays)
         if (len(user_captures_replays) == 0):
             return jsonify(), 404
 
