@@ -53,8 +53,6 @@ def create_app(config={}):
                 return jsonify({"error": "Missing field in request."}), 400
         if (getUserFromUsername(jsonData['username'], db.get_session())):
             return jsonify({"error": "User already exists."}), 400
-        if (getUserFromEmail(jsonData['email'], db.get_session())):
-            return jsonify({"error": "An account with this email already exists."}), 400
 
         username = jsonData['username']
         password = jsonData['password']
