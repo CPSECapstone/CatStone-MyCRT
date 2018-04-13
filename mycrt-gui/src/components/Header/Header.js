@@ -65,7 +65,17 @@ class Header extends Component {
             Logout
             <div class="glyphicon glyphicon-log-out" />
           </div>
-	        <div class="glyphiconstyle glyphicon glyphicon-question-sign" />
+          <IconMenu
+            iconButtonElement={
+              <IconButton touch={true}>
+                <div class="glyphiconstyle glyphicon glyphicon-question-sign" />
+              </IconButton>
+            }
+          >
+            <MenuItem>
+            <a href="https://noizrnel3.wixsite.com/catstone/external-contact-page" target="_blank"><div>Contact Us</div></a>
+            </MenuItem>
+          </IconMenu>
 	        <div class="glyphiconstyle glyphicon glyphicon-cog" />
 	        <IconMenu
             iconButtonElement={
