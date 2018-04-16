@@ -1,14 +1,15 @@
 # CatStone-MyCRT [![Build Status](https://travis-ci.org/CPSECapstone/CatStone-MyCRT.svg?branch=master)](https://travis-ci.org/CPSECapstone/CatStone-MyCRT)
 The MySQL Capture and Replay Tool(MyCRT) allows users to capture transactions on a database and replay them in a different environment to see the effect on their systems.
 
-#Installation and running MyCRT locally
-Requirements:
+---
+<h3>Installation and running MyCRT locally</h3>
+<h4>Requirements:</h4>
 1. Python3 >=3.5.2 
 2. pip
 3. npm >=5.8.0
 4. mysql >=5.6
 
-Instructions:
+<h4>Instructions:</h4>
 1. Clone repository
 2. Set up a database in mysql, keep the database name, username, and password.
 3. Install front end:  
