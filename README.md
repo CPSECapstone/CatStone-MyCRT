@@ -3,13 +3,16 @@ The MySQL Capture and Replay Tool(MyCRT) allows users to capture transactions on
 
 ---
 <h3>Installation and running MyCRT locally</h3>
+
 <h4>Requirements:</h4>  
+
 1. Python3 >=3.5.2 
 2. pip
 3. npm >=5.8.0
 4. mysql >=5.6
 
 <h4>Instructions:</h4>  
+
 1. Clone repository
 2. Set up a database in mysql, keep the database name, username, and password.
 3. Install front end:  
