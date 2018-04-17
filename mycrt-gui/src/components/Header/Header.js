@@ -85,6 +85,7 @@ class Header extends Component {
             }
           >
             <MenuItem primaryText="Notifications (2 new)" disabled={true} />
+            <div class="alpha-note">ALPHA RELEASE NOTE: This feature is not ready yet. Placeholder notifications below.</div>
             <div class="notif-menu-card">
             <MenuItem> 
               <div class="notif-menu-card-content">Capture 23 completed. Click to view capture results.</div>
