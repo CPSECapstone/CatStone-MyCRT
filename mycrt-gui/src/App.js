@@ -24,13 +24,14 @@ var navLinks = [
     href: "results",
     idx: 1,
     icon: "glyphicon-th-list"
-  },
+  }]
+  /*,
   {
     name: "Compare",
     href: "compare",
     idx: 2,
     icon: "glyphicon-eye-open"
-  }]
+  }]*/
 
 class App extends Component {
   constructor(props) {
