@@ -24,7 +24,9 @@ class LogIn extends Component {
       emailValue: undefined,
       awsKeyValue: undefined,
       secretKeyValue: undefined,
-      showLogInError: false
+      showLogInError: false,
+      showRegisterError: false,
+      registerErrorMessage: ""
       };
 
     this.onUsernameChange = this.onUsernameChange.bind(this);
@@ -85,6 +87,10 @@ class LogIn extends Component {
         this.onRegisterDismiss();
       }.bind(this),
       error: function(xhr, status, err) {
+        this.setState(prevState => ({
+          showRegisterError: true,
+          registerErrorMessage: xhr.responseJSON.error
+        }));
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
@@ -122,7 +128,9 @@ class LogIn extends Component {
 
   onRegisterDismiss() {
     this.setState(prevState => ({
-      isRegisterCalloutVisible: false
+      isRegisterCalloutVisible: false,
+      showRegisterError: false,
+      registerErrorMessage: ""
     }));
   }
 
@@ -283,6 +291,7 @@ class LogIn extends Component {
                <TextField
                   hintText="Type aws key here"
                   onChange={this.onAWSKeyChange}
+                  type="password"
                 />
             </div>
             <div class="register-item">
@@ -290,7 +299,15 @@ class LogIn extends Component {
                <TextField
                   hintText="Type secret key here"
                   onChange={this.onSecretKeyChange}
+                  type="password"
                 />
+            </div>
+            <div class="register-item">
+              {this.state.showRegisterError &&
+              <div class="log-in-error">
+                {this.state.registerErrorMessage}
+              </div>
+              }
             </div>
           </div>
         </Dialog>
