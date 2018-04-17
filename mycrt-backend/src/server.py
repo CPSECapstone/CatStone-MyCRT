@@ -349,8 +349,6 @@ def create_app(config={}):
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
 
-        os.remove(alias + ".metrics")
-
         return jsonify(metrics), 200
 
     @app.teardown_appcontext
