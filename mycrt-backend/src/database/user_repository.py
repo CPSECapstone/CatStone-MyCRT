@@ -6,8 +6,7 @@ class UserRepository:
         self.db_session = db_session
 
     def register_user(self, username, password, email, access_key, secret_key):
-        if User.query.filter(User.username==username).first() == None and \
-            User.query.filter(User.email==email).first() == None:
+        if User.query.filter(User.username==username).first() == None:
             user = User(username=username,
                     email=email, access_key=access_key, secret_key=secret_key)
             user.hash_password(password)
