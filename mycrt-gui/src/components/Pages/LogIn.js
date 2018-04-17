@@ -283,6 +283,7 @@ class LogIn extends Component {
                <TextField
                   hintText="Type aws key here"
                   onChange={this.onAWSKeyChange}
+                  type="password"
                 />
             </div>
             <div class="register-item">
@@ -290,6 +291,7 @@ class LogIn extends Component {
                <TextField
                   hintText="Type secret key here"
                   onChange={this.onSecretKeyChange}
+                  type="password"
                 />
             </div>
           </div>

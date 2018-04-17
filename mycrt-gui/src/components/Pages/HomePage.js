@@ -145,6 +145,7 @@ class HomePage extends Component {
 
   componentWillUnmount() {
     clearInterval(this.state.intervalGetAllCaptures);
+    clearInterval(this.state.intervalGetAllReplays);
   }
 
   checkLoadingCard() {
