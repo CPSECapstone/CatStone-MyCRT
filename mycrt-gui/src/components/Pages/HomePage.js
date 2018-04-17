@@ -210,7 +210,7 @@ class HomePage extends Component {
         this.onReplayClose();    
       }.bind(this),
       error: function(xhr, status, err) {
-        if (xhr.responseText.includes("Failed to connect")) {
+        if (xhr.responseText && xhr.responseText.includes("Failed to connect")) {
           this.setState({showDBConnectFailure: true});
         }
         console.error(this.props.url, status, err.toString(), xhr.responseText);
@@ -589,7 +589,7 @@ class HomePage extends Component {
       startDay.setMinutes(startTime.getMinutes());
     }
     else {
-      startDay = new Date().getTime().toString();
+      startDay = new Date().toISOString();
       console.log(startDay);
     }
 
