@@ -97,7 +97,6 @@ class HomePage extends Component {
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this);
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this);
     this.handleDBNameChange = this.handleDBNameChange.bind(this);
-    this.handleErrorMessageChange = this.handleErrorMessageChange.bind(this);
     this.handleCaptureSelection = this.handleCaptureSelection.bind(this);
 
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
@@ -145,6 +144,7 @@ class HomePage extends Component {
 
   componentWillUnmount() {
     clearInterval(this.state.intervalGetAllCaptures);
+    clearInterval(this.state.intervalGetAllReplays);
   }
 
   checkLoadingCard() {
@@ -210,7 +210,7 @@ class HomePage extends Component {
         this.onReplayClose();    
       }.bind(this),
       error: function(xhr, status, err) {
-        if (xhr.responseText.includes("Failed to connect")) {
+        if (xhr.responseText && xhr.responseText.includes("Failed to connect")) {
           this.setState({showDBConnectFailure: true});
         }
         console.error(this.props.url, status, err.toString(), xhr.responseText);
@@ -379,11 +379,6 @@ class HomePage extends Component {
     }))
   }
 
-  handleErrorMessageChange() {
-    this.setState(prevState => {
-      showDBConnectFailure: !prevState.showDBConnectFailure;
-    });
-  }
   hideReplayCallout() {
     this.setState(prevState => ({
       isReplayCalloutVisible: false
@@ -537,7 +532,8 @@ class HomePage extends Component {
       rdsValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
-      isErrorVisible: false
+      isErrorVisible: false,
+      showDBConnectFailure: false
     }));
     this.hideCaptureCallout();
   }
@@ -593,7 +589,7 @@ class HomePage extends Component {
       startDay.setMinutes(startTime.getMinutes());
     }
     else {
-      startDay = new Date().getTime().toString();
+      startDay = new Date().toISOString();
       console.log(startDay);
     }
 

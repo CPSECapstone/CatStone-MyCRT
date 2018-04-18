@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import './NavPage.css';
 import HomePage from './HomePage.js';
 import ViewResults from './ViewResults.js';
-import ComparePage from './ComparePage.js';
 
 class NavPage extends Component {
   constructor(props) {
@@ -24,7 +23,7 @@ class NavPage extends Component {
       case 1:
         return (<ViewResults parentContext={parentContext}/>);
       default:
-        return (<ComparePage/>);
+        return (<HomePage parentContext={parentContext}/>);
       }
     }
     return (

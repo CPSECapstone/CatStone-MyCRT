@@ -12,7 +12,7 @@ class User(MyCrtDb.Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(128), unique=True, nullable=False)
     password = Column(String(512), nullable=False)
-    email = Column(String(128), unique=True)
+    email = Column(String(128))
     access_key= Column(String(128), nullable=False)
     secret_key = Column(String(128), nullable=False)
     notificationLife = Column(Integer())
