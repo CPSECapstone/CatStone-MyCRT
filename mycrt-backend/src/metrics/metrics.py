@@ -13,7 +13,6 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
      aws_secret_access_key=user.secret_key, region_name=region_name)
 
     identifier = db_identifier.split('.')[0]
-
     metrics = client.get_metric_statistics(
         Namespace='AWS/RDS',
         MetricName=metric_type,
@@ -25,7 +24,7 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         ],
         StartTime=start_time,
         EndTime=end_time,
-        Period=360,
+        Period=calculate_period(start_time, end_time),
         Statistics=['Average']
     )
 
@@ -49,10 +48,22 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
         response = s3.upload_file(metric_file, bucket_name, metric_file)
     except ClientError as e:
         return e
-    finally:
-        os.remove(metric_file)
 
     return metric_data
+
+def calculate_period(start_time, end_time):
+    time_delta_seconds = (end_time - start_time).total_seconds()
+    period = int(time_delta_seconds / 100)
+    if period >= 60:
+        return int(round(period/60.0) * 60.0)
+    elif period <= 1:
+        return 1
+    elif period <= 5:
+        return 5
+    elif period <= 10:
+        return 10
+    elif period <= 30:
+        return 30
 
 def get_metrics(metric_type, metric_alias, bucket_name, user):
     s3 = boto3.resource('s3', aws_access_key_id=user.access_key,
