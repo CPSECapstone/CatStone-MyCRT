@@ -184,6 +184,7 @@ class ViewResults extends Component {
     var selectedRows = [];
     var relatedCaptureId = -1;
 
+
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(i);
@@ -226,6 +227,10 @@ class ViewResults extends Component {
       selectedCaptureIds: selectedCaptureIds,
       relatedCaptureId: relatedCaptureId 
     }));
+
+    if (rows.length === 0) {
+      this.setState({selectedReplayIds: [], selectedReplayRows: [], isCompareDisabled: true})
+    }
   }
 
   onReplayRowSelection(rows) {
@@ -238,14 +243,14 @@ class ViewResults extends Component {
       for (var i = 0; i < this.state.replays.length; i++) {
         selectedRows.push(i);
       }
-    } else if (rows === "none") {
+    } else if (rows === "none" || rows.length === 0) {
       for (var i = 0; i < this.state.replays.length; i++) {
         selectedRows.push(-1);
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
         selectedReplayRows: selectedRows,
-        relatedCaptureId: relatedCaptureId        
+        relatedCaptureId: this.state.relatedCaptureId        
       }));
       return;
     } else {
@@ -439,13 +444,21 @@ class ViewResults extends Component {
 
   onLogClose() {
     this.setState(prevState => ({
-      isLogOpen: false
+      isLogOpen: false,
+      freeableMemory: [],
+      cpuUtilization: [],
+      readIOPS:[],
+      writeIOPS: []
     }));
   }
 
   onReplayLogClose() {
     this.setState(prevState => ({
-      isReplayLogOpen: false
+      isReplayLogOpen: false,
+      freeableMemory: [],
+      cpuUtilization: [],
+      readIOPS:[],
+      writeIOPS: [],
     }));
   }
 
@@ -572,7 +585,7 @@ class ViewResults extends Component {
           <TableHeader
             displaySelectAll={true}
             adjustForCheckbox={true}
-            enableSelectAll={true}
+            enableSelectAll={false}
           >
             <TableRow >
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
@@ -994,13 +1007,15 @@ class ViewResults extends Component {
           </div>
         {this.renderCaptureTable()}
         {this.renderReplayTable()}
-        {this.state.captureDetails &&
+        {this.state.captureDetails && this.state.isLogOpen &&
           <div>{this.renderCaptureDetails()}</div>
         }
-        {this.state.replayDetails &&
+        {this.state.replayDetails && this.state.isReplayLogOpen &&
           <div>{this.renderReplayDetails()}</div>
         }
-        {this.renderCompare()}
+        {this.state.isCompareOpen && 
+          <div>{this.renderCompare()}</div>
+        }
       </div>
       );
   }
