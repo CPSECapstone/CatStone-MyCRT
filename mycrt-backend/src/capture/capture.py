@@ -12,37 +12,12 @@ from src.database.updateRecords import updateCapture
 from src.metrics.metrics import save_metrics
 from src.email.email_server import sendEmail
 
-db_query = """Select event_time, argument from mysql.general_log where
-user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\'
-and user_host NOT LIKE \'[%%\'
-and argument NOT LIKE \'%%_schema.%%\'
-and argument NOT LIKE \'%%use %%\'
-and argument NOT LIKE \'%%testcatstonedb%%\'
-and argument NOT LIKE \'%%mysql%%\'
-and argument NOT LIKE \'SELECT %%()%%\'
-and argument NOT LIKE \'%%general_log%%\'
-and argument NOT LIKE \'SET AUTOCOMMIT%%\'
-and argument NOT LIKE \'Access denied%%\'
-and argument NOT LIKE \'set %% utf8%%\'
-and argument NOT LIKE \'set sql_safe_updates%%\'
-and argument NOT LIKE \'SHOW %%\'
-and argument NOT LIKE \'SET SESSION %% READ\'
-and LENGTH(argument) > 0
-ORDER BY
-EXTRACT(YEAR_MONTH FROM event_time),
-EXTRACT(DAY FROM event_time),
-EXTRACT(HOUR FROM event_time),
-EXTRACT(MINUTE FROM event_time),
-EXTRACT(SECOND FROM event_time)"""
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session):
     try:
-        sql = db_query
-
         connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
-        queries = []
 
         if connection.open:
             connection.close()
@@ -72,7 +47,7 @@ def completeCapture(capture, user, db_session):
 
     with open(fileName, 'w', newline='') as f:
         try:
-            sql = db_query
+            sql = get_db_query(currentCapture['rdsDatabase'])
 
             connection = pymysql.connect(currentCapture['rdsInstance'],
                                          user=currentCapture['rdsUsername'],
@@ -136,3 +111,33 @@ def completeCapture(capture, user, db_session):
         os.remove(fileName)
     except:
         pass
+
+def get_db_query(db_name):
+    db_query = """Select event_time, argument from mysql.general_log where
+    user_host NOT LIKE \'%%rdsadmin%%\' and user_host NOT LIKE \'%%root%%\'
+    and user_host NOT LIKE \'[%%\'
+    and argument NOT LIKE \'%%_schema.%%\'
+    and argument NOT LIKE \'%%use %%\'
+    and argument NOT LIKE \'%%"""
+
+    db_query += db_name
+
+    db_query += """%%\'
+    and argument NOT LIKE \'%%mysql%%\'
+    and argument NOT LIKE \'SELECT %%()%%\'
+    and argument NOT LIKE \'%%general_log%%\'
+    and argument NOT LIKE \'SET AUTOCOMMIT%%\'
+    and argument NOT LIKE \'Access denied%%\'
+    and argument NOT LIKE \'set %% utf8%%\'
+    and argument NOT LIKE \'set sql_safe_updates%%\'
+    and argument NOT LIKE \'SHOW %%\'
+    and argument NOT LIKE \'SET SESSION %% READ\'
+    and LENGTH(argument) > 0
+    ORDER BY
+    EXTRACT(YEAR_MONTH FROM event_time),
+    EXTRACT(DAY FROM event_time),
+    EXTRACT(HOUR FROM event_time),
+    EXTRACT(MINUTE FROM event_time),
+    EXTRACT(SECOND FROM event_time)"""
+
+    return db_query
