@@ -65,7 +65,17 @@ class Header extends Component {
             Logout
             <div class="glyphicon glyphicon-log-out" />
           </div>
-	        <div class="glyphiconstyle glyphicon glyphicon-question-sign" />
+          <IconMenu
+            iconButtonElement={
+              <IconButton touch={true}>
+                <div class="glyphiconstyle glyphicon glyphicon-question-sign" />
+              </IconButton>
+            }
+          >
+            <MenuItem>
+            <a href="https://noizrnel3.wixsite.com/catstone/external-contact-page" target="_blank"><div>Contact Us</div></a>
+            </MenuItem>
+          </IconMenu>
 	        <div class="glyphiconstyle glyphicon glyphicon-cog" />
 	        <IconMenu
             iconButtonElement={
@@ -75,6 +85,7 @@ class Header extends Component {
             }
           >
             <MenuItem primaryText="Notifications (2 new)" disabled={true} />
+            <div class="alpha-note">ALPHA RELEASE NOTE: This feature is not ready yet. Placeholder notifications below.</div>
             <div class="notif-menu-card">
             <MenuItem> 
               <div class="notif-menu-card-content">Capture 23 completed. Click to view capture results.</div>
