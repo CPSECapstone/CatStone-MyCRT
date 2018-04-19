@@ -117,8 +117,6 @@ def completeCapture(capture, user, db_session):
             response = s3.upload_file(fileName, currentCapture['s3Bucket'], fileName)
     except ClientError as e:
         errList.append(e)
-    finally:
-        os.remove(fileName)
 
     if len(errList) > 0:
         updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
@@ -135,5 +133,6 @@ def completeCapture(capture, user, db_session):
 
     try:
         os.remove(currentCapture['captureAlias'] + ".metrics")
+        os.remove(fileName)
     except:
         pass
