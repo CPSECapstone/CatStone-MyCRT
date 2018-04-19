@@ -44,7 +44,7 @@ class HomePage extends Component {
     this.state = {
       isCaptureCalloutVisible: false,
       isReplayCalloutVisible: false,
-      rdsRegionValue: "Select your region",
+      rdsRegionValue: undefined,
       rdsValue: undefined,
       s3Value: undefined,
       aliasValue: undefined,
@@ -69,7 +69,8 @@ class HomePage extends Component {
       showReplayLoadingCard: true,
       pauseReplayPolling: false,
       loadingReplayContent: true,
-      showDBConnectFailure: false
+      showDBConnectFailure: false,
+      showAliasFailure: false
     };
 
 
@@ -181,7 +182,15 @@ class HomePage extends Component {
       }.bind(this),
       error: function(xhr, status, err) {
         if (xhr.responseText.includes("Failed to connect")) {
-          this.setState({showDBConnectFailure: true});
+          this.setState({
+            showDBConnectFailure: true,
+            showAliasFailure: false
+          });
+        } else if (xhr.responseText.includes("Alias is unavailable")) {
+          this.setState({
+            showAliasFailure: true,
+            showDBConnectFailure: false
+          });
         }
         console.error(this.props.url, status, err.toString(), xhr.responseText);
       }.bind(this)
@@ -210,8 +219,16 @@ class HomePage extends Component {
         this.onReplayClose();    
       }.bind(this),
       error: function(xhr, status, err) {
-        if (xhr.responseText && xhr.responseText.includes("Failed to connect")) {
-          this.setState({showDBConnectFailure: true});
+        if (xhr.responseText.includes("Failed to connect")) {
+          this.setState({
+            showDBConnectFailure: true,
+            showAliasFailure: false
+          });
+        } else if (xhr.responseText.includes("Alias is unavailable")) {
+          this.setState({
+            showAliasFailure: true,
+            showDBConnectFailure: false
+          });
         }
         console.error(this.props.url, status, err.toString(), xhr.responseText);
       }.bind(this)
@@ -530,10 +547,12 @@ class HomePage extends Component {
     this.setState(prevState => ({
       s3Value: undefined,
       rdsValue: undefined,
+      rdsRegionValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
       isErrorVisible: false,
-      showDBConnectFailure: false
+      showDBConnectFailure: false,
+      showAliasFailure: false
     }));
     this.hideCaptureCallout();
   }
@@ -542,9 +561,12 @@ class HomePage extends Component {
     this.setState(prevState => ({
       s3Value: undefined,
       rdsValue: undefined,
+      rdsRegionValue: undefined,
       captureStartDay: undefined,
       captureEndDay: undefined,
-      isErrorVisible: false
+      isErrorVisible: false,
+      showDBConnectFailure: false,
+      showAliasFailure: false
     }));
 
     this.hideReplayCallout();
@@ -555,7 +577,7 @@ class HomePage extends Component {
       alias: this.state.aliasValue,
       db_user: this.state.dbUsernameValue,
       db_password: this.state.dbPasswordValue,
-      db_name: this.state.dbNameValue,
+      db_name: this.state.dbNameValue, 
       region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
@@ -696,9 +718,9 @@ class HomePage extends Component {
                 onChange={this.handleAliasChange}
               />
           </div>
-          {this.state.showDBConnectFailure &&
+          {this.state.showAliasFailure &&
           <div class="error-message">
-            Database credentials are invalid, please check your input.
+            Alias already in use, please provide an unique alias.
           </div>}
           <div class="add-capture-item">
             Database Name
@@ -707,6 +729,10 @@ class HomePage extends Component {
                 onChange={this.handleDBNameChange}
               />
           </div>
+          {this.state.showDBConnectFailure &&
+          <div class="error-message">
+            Database credentials are invalid, please check your input.
+          </div>}
           <div class="add-capture-item">
             Database Username
              <TextField
@@ -837,10 +863,6 @@ class HomePage extends Component {
                 onChange={this.handleAliasChange}
               />
           </div>
-          {this.state.showDBConnectFailure &&
-          <div class="error-message">
-            Database credentials are invalid, please check your input.
-          </div>}
           <div class="add-replay-item">
             Database Name
              <TextField
@@ -848,6 +870,10 @@ class HomePage extends Component {
                 onChange={this.handleDBNameChange}
               />
           </div>
+          {this.state.showDBConnectFailure &&
+          <div class="error-message">
+            Database credentials are invalid, please check your input.
+          </div>}
           <div class="add-replay-item">
             Database Username
              <TextField
