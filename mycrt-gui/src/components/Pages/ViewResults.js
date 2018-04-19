@@ -250,6 +250,7 @@ class ViewResults extends Component {
       this.setState(prevState => ({
         isCompareDisabled: true,
         selectedReplayRows: selectedRows,
+        selectedReplayIds: [],
         relatedCaptureId: this.state.relatedCaptureId        
       }));
       return;
@@ -267,9 +268,13 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedReplayIds = [];
+    var visibleReplays = this.state.relatedCaptureId === -1 ? 
+     this.state.replays : 
+     this.state.replays.filter(r => r.captureId === this.state.relatedCaptureId);
+
     for (var i = 0; i < selectedRows.length; i++) {
-      selectedReplayIds.push(this.state.replays[selectedRows[i]].replayId);
-      relatedCaptureId = this.state.replays[selectedRows[i]].captureId;
+      selectedReplayIds.push(visibleReplays[selectedRows[i]].replayId);
+      relatedCaptureId = visibleReplays[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
       selectedReplayIds: selectedReplayIds,
@@ -606,7 +611,7 @@ class ViewResults extends Component {
               let boundItemClick = this.onOpenReplayDetailsClick.bind(this, index);
               if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
-                <TableRow key={index} selected={this.state.selectedReplayRows.indexOf(index) !== -1} >
+                <TableRow key={index} selected={this.state.selectedReplayIds.indexOf(row.replayId) !== -1} >
                   <TableRowColumn>{row.replayAlias}</TableRowColumn>
                   <TableRowColumn>
                     {(row.replayStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
