@@ -12,6 +12,10 @@ def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric
     client = boto3.client('cloudwatch', aws_access_key_id=user.access_key,
      aws_secret_access_key=user.secret_key, region_name=region_name)
 
+    if start_time.replace(microsecond=0,second=0) == end_time.replace(microsecond=0,second=0):
+        start_time = start_time - timedelta(minutes=4)
+        end_time = end_time + timedelta(minutes=4)
+
     identifier = db_identifier.split('.')[0]
     metrics = client.get_metric_statistics(
         Namespace='AWS/RDS',
@@ -56,10 +60,8 @@ def calculate_period(start_time, end_time):
     period = int(time_delta_seconds / 100)
     if period >= 60:
         return int(round(period/60.0) * 60.0)
-    elif period <= 1:
-        return 1
     elif period <= 5:
-        return 5
+        return 1
     elif period <= 10:
         return 10
     elif period <= 30:
