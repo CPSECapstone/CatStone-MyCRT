@@ -20,6 +20,8 @@ from .capture.captureScheduler import checkAllRDSInstances
 from .database.getRecords import *
 from .database.addRecords import insertReplay
 
+from multiprocessing import Process
+
 def create_app(config={}):
     # app configuration
     app = Flask(__name__, static_url_path='')
@@ -35,6 +37,7 @@ def create_app(config={}):
     # flask-restful
     api = Api(app)
     auth = HTTPBasicAuth()
+
 
     @app.route('/test', methods=['GET'])
     @auth.login_required
@@ -214,7 +217,9 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
-                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
+                    p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
+                    p.daemon = True
+                    p.start()
                 else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
                     prepare_scheduled_replay(newReplay, capture, db.get_session())
