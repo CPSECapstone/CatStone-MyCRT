@@ -61,7 +61,7 @@ def create_app(config={}):
         secret_key = jsonData['secret_key']
         success = user_repository.register_user(username, password, email, access_key, secret_key)
         if (not success):
-            return jsonify(), 400
+            return jsonify({"error": "Could not add record to database."}), 400
 
         return jsonify(), 201
 
@@ -348,8 +348,6 @@ def create_app(config={}):
                 metrics[metric] = response
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
-
-        os.remove(alias + ".metrics")
 
         return jsonify(metrics), 200
 

@@ -611,7 +611,7 @@ class HomePage extends Component {
       startDay.setMinutes(startTime.getMinutes());
     }
     else {
-      startDay = new Date().getTime().toString();
+      startDay = new Date().toISOString();
       console.log(startDay);
     }
 
