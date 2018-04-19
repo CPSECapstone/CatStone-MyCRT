@@ -80,7 +80,8 @@ class mockBoto:
             'Owner': {
                 'DisplayName': 'agupta09', 'ID': 'fb58bd8602028b21eb564ccb2743c44481d96f9f999bc480ed1854dd977236f0'},
                 'Buckets': [{'CreationDate': datetime.datetime(2017, 11, 27, 4, 53, tzinfo=tzutc()), 'Name': 'testBucket1'}],
-                'ResponseMetadata': {'RequestId': '173A70D1BF9097D9', 'RetryAttempts': 0,
+                'ResponseMetadata': {'RequestId': '173A70D1BF9097D9', ''
+                                                                      'RetryAttempts': 0,
                 'HTTPHeaders': {'server': 'AmazonS3', 'x-amz-request-id': '173A70D1BF9097D9', 'transfer-encoding': 'chunked', 'content-type': 'application/xml', 'x-amz-id-2': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'date': 'Tue, 23 Jan 2018 02:52:17 GMT'}, 'HostId': 'wmqbidko+5fBcotqbVhY+mNcCGE/9z+QoU5xMs4Y/tpzI6BX8trQi+72jgkBqavHVQNN61Cpooc=', 'HTTPStatusCode': 200}
             }
             return exampleResponse
@@ -101,6 +102,14 @@ class mockBoto:
         def list_buckets(self):
             raise ClientError({'Error': {'Code': '400', 'Message': 'Generic Error'}}, 'list_buckets')
 
+    class mockS34:
+        class Bucket:
+            def __init__(self, name='test_name'):
+                self.name=name
+
+            def download_file(self, alias1, alias2):
+                raise ClientError({'Error': {'Code': '400', 'Message': 'Generic Error'}}, 'list_buckets')
+
     def client(self, awsApplication, **kwargs):
         if (awsApplication == 'rds'):
             if (self.testNum == 0):
@@ -120,3 +129,8 @@ class mockBoto:
                 return self.mockS32()
             elif (self.testNum == 3):
                 return self.mockS33()
+
+    def resource(self, awsApplication, **kwargs):
+        if (awsApplication == 's3'):
+            if (self.testNum == 0):
+                return self.mockS34()
