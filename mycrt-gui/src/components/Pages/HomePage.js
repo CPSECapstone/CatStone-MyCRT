@@ -864,6 +864,10 @@ class HomePage extends Component {
                 onChange={this.handleAliasChange}
               />
           </div>
+          {this.state.showAliasFailure &&
+          <div class="error-message">
+            Alias already in use, please provide an unique alias.
+          </div>}
           <div class="add-replay-item">
             Database Name
              <TextField
