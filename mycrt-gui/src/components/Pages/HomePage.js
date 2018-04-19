@@ -252,7 +252,6 @@ class HomePage extends Component {
             showAliasFailure: false
           });
         } else if (xhr.responseText.includes("Alias is unavailable")) {
-          console.log("REPLAY ALIAS FAILURE")
           this.setState({
             showAliasFailure: true,
             showDBConnectFailure: false
