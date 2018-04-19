@@ -48,6 +48,8 @@ class ViewResults extends Component {
       isCompareOpen: false,
       captureDetails: undefined,
       replayDetails: undefined,
+      captureDetailsLoading: true,
+      replayDetailsLoading: true,
       selectedCaptureRows: [],
       selectedReplayRows: [],
       isComparisonChartLoaded: true,
@@ -131,11 +133,13 @@ class ViewResults extends Component {
       }
       //handling different lengths of metrics
       for (var l = upperBound - 1; l < metric.length; l++) {
-        newComparisonArray.push(
-        {
-          'Timestamp': metric[l]['Timestamp']
-        });
-        newComparisonArray[l][newMetricName] = metric[l][metricName];
+        if (metric[l] !== undefined) {
+          newComparisonArray.push(
+          {
+            'Timestamp': metric[l]['Timestamp']
+          });
+          newComparisonArray[l][newMetricName] = metric[l][metricName];
+        }
       }
     }
     return newComparisonArray;
@@ -246,6 +250,7 @@ class ViewResults extends Component {
       this.setState(prevState => ({
         isCompareDisabled: true,
         selectedReplayRows: selectedRows,
+        selectedReplayIds: [],
         relatedCaptureId: this.state.relatedCaptureId        
       }));
       return;
@@ -263,9 +268,13 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedReplayIds = [];
+    var visibleReplays = this.state.relatedCaptureId === -1 ? 
+     this.state.replays : 
+     this.state.replays.filter(r => r.captureId === this.state.relatedCaptureId);
+
     for (var i = 0; i < selectedRows.length; i++) {
-      selectedReplayIds.push(this.state.replays[selectedRows[i]].replayId);
-      relatedCaptureId = this.state.replays[selectedRows[i]].captureId;
+      selectedReplayIds.push(visibleReplays[selectedRows[i]].replayId);
+      relatedCaptureId = visibleReplays[selectedRows[i]].captureId;
     }
     this.setState(prevState => ({
       selectedReplayIds: selectedReplayIds,
@@ -371,6 +380,7 @@ class ViewResults extends Component {
             }));
           }
         }
+        this.setState({captureDetailsLoading: false});
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -429,6 +439,7 @@ class ViewResults extends Component {
             }));
           }
         }
+        this.setState({replayDetailsLoading: false});
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -459,6 +470,7 @@ class ViewResults extends Component {
   onOpenCaptureDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
       isLogOpen: true,
+      captureDetailsLoading: true,
       captureDetails: this.state.captures[rowIndex]
     }));
 
@@ -468,6 +480,7 @@ class ViewResults extends Component {
   onOpenReplayDetailsClick(rowIndex, e) {
     this.setState(prevState => ({
       isReplayLogOpen: true,
+      replayDetailsLoading: true,
       replayDetails: this.state.replays[rowIndex]
     }));
 
@@ -577,7 +590,7 @@ class ViewResults extends Component {
           <TableHeader
             displaySelectAll={true}
             adjustForCheckbox={true}
-            enableSelectAll={true}
+            enableSelectAll={false}
           >
             <TableRow >
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
@@ -598,7 +611,7 @@ class ViewResults extends Component {
               let boundItemClick = this.onOpenReplayDetailsClick.bind(this, index);
               if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
                 return(
-                <TableRow key={index} selected={this.state.selectedReplayRows.indexOf(index) !== -1} >
+                <TableRow key={index} selected={this.state.selectedReplayIds.indexOf(row.replayId) !== -1} >
                   <TableRowColumn>{row.replayAlias}</TableRowColumn>
                   <TableRowColumn>
                     {(row.replayStatus === COMPLETED) ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}
@@ -675,42 +688,76 @@ class ViewResults extends Component {
             <h5>{this.state.captureDetails.endTime}</h5>
             </div>
           </h4>
-          <h3>Freeable Memory</h3>
-          <LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
-          <h3>CPU Utilization</h3>
-          <LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
-          <h3>Read IOPS</h3>
-          <LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
-          <h3>Write IOPS</h3>
-          <LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
+          {this.state.captureDetailsLoading &&
+            <div>
+              <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                  <h5>Loading Graphs...</h5>
+            </div>
+          }
+          {!this.state.captureDetailsLoading &&
+            <div>
+            <h3>Freeable Memory</h3>
+            {this.state.freeableMemory.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+            }
+            <h3>CPU Utilization</h3>
+            {this.state.cpuUtilization.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+            }
+            <h3>Read IOPS</h3>
+            {this.state.readIOPS.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+            }
+            <h3>Write IOPS</h3>
+            {this.state.writeIOPS.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+          }
+          </div>
+        }
         </div>
       </Dialog>
       );
@@ -763,42 +810,77 @@ class ViewResults extends Component {
             <h5>{this.state.replayDetails.isFast}</h5>
             </div>
           </h4>
-          <h3>Freeable Memory</h3>
-          <LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
-          <h3>CPU Utilization</h3>
-          <LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
-          <h3>Read IOPS</h3>
-          <LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
-          <h3>Write IOPS</h3>
-          <LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
-             <XAxis dataKey="Timestamp"/>
-             <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
-             <CartesianGrid strokeDasharray="3 3"/>
-             <Tooltip/>
-             <Legend />
-             <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
-          </LineChart>
+
+          {this.state.replayDetailsLoading &&
+            <div>
+              <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                  <h5>Loading Graphs...</h5>
+            </div>
+          }
+          {!this.state.replayDetailsLoading &&
+            <div>
+            <h3>Freeable Memory</h3>
+            {this.state.freeableMemory.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.freeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="FreeableMemory" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+            }
+            <h3>CPU Utilization</h3>
+            {this.state.cpuUtilization.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.cpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="CPUUtilization" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+            }
+            <h3>Read IOPS</h3>
+            {this.state.readIOPS.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.readIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="ReadIOPS" stroke="#00bcd4" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+            }
+            <h3>Write IOPS</h3>
+            {this.state.writeIOPS.length == 0 ?
+              (<div class="metric-error">
+                Not enough data points to draw graph.
+              </div>)
+            :
+            (<LineChart width={900} height={300} data={this.state.writeIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
+               <XAxis dataKey="Timestamp"/>
+               <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
+               <CartesianGrid strokeDasharray="3 3"/>
+               <Tooltip/>
+               <Legend />
+               <Line type="monotone" dataKey="WriteIOPS" stroke="#8884d8" dot={false} activeDot={{r: 8}}/>
+            </LineChart>)
+          }
+          </div>
+        }
         </div>
       </Dialog>
       );
@@ -831,6 +913,13 @@ class ViewResults extends Component {
       {this.state.isComparisonChartLoaded &&
         <div>
           <h3>Freeable Memory</h3>
+          {(this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length >
+            (this.state.compareFreeableMemory.length && (Object.keys(this.state.compareFreeableMemory[0]).length - 1))) &&
+            <div class="metric-error">
+            {this.state.compareFreeableMemory.length}
+            Some datapoints may be missing as metrics are unavailable for a series in this graph.
+            </div>
+          }
           <LineChart width={900} height={300} data={this.state.compareFreeableMemory} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
              <YAxis label={{ value: "Megabytes", angle: -90, position: 'left' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
@@ -843,6 +932,12 @@ class ViewResults extends Component {
              }
           </LineChart>
           <h3>CPU Utilization</h3>
+          {(this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length >
+            (this.state.compareCpuUtilization.length > 0 && Object.keys(this.state.compareCpuUtilization[0]).length - 1)) &&
+            <div class="metric-error">
+            Some datapoints may be missing as metrics are unavailable for a series in this graph.
+            </div>
+          }
           <LineChart width={900} height={300} data={this.state.compareCpuUtilization} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
              <YAxis label={{ value: "Percentage", angle: -90, position: 'insideLeft' }} domain={[0, 100]}/>
              <CartesianGrid strokeDasharray="3 3"/>
@@ -855,6 +950,12 @@ class ViewResults extends Component {
              }
           </LineChart>
           <h3>Read IOPS</h3>
+          {(this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length >
+            (this.state.compareReadIOPS.length > 0 && Object.keys(this.state.compareReadIOPS[0]).length - 1)) &&
+            <div class="metric-error">
+            Some datapoints may be missing as metrics are unavailable for a series in this graph.
+            </div>
+          }
           <LineChart width={900} height={300} data={this.state.compareReadIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
@@ -867,6 +968,12 @@ class ViewResults extends Component {
              }
           </LineChart>
           <h3>Write IOPS</h3>
+          {(this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length >
+            (this.state.compareWriteIOPS.length > 0 && Object.keys(this.state.compareWriteIOPS[0]).length - 1)) &&
+            <div class="metric-error">
+            Some datapoints may be missing as metrics are unavailable for a series in this graph.
+            </div>
+          }
           <LineChart width={900} height={300} data={this.state.compareWriteIOPS} margin={{top: 5, right: 60, left: 60, bottom: 5}}>
              <YAxis label={{ value: "Count/Second", angle: -90, position: 'insideLeft' }} domain={['dataMin', 'dataMax']}/>
              <CartesianGrid strokeDasharray="3 3"/>
@@ -905,13 +1012,15 @@ class ViewResults extends Component {
           </div>
         {this.renderCaptureTable()}
         {this.renderReplayTable()}
-        {this.state.captureDetails &&
+        {this.state.captureDetails && this.state.isLogOpen &&
           <div>{this.renderCaptureDetails()}</div>
         }
-        {this.state.replayDetails &&
+        {this.state.replayDetails && this.state.isReplayLogOpen &&
           <div>{this.renderReplayDetails()}</div>
         }
-        {this.renderCompare()}
+        {this.state.isCompareOpen && 
+          <div>{this.renderCompare()}</div>
+        }
       </div>
       );
   }
