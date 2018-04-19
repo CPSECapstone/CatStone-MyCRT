@@ -23,7 +23,7 @@ MAIL_PASSWORD='password'
 MAIL_USE_TLS=True
 DEFAULT_MAIL_SENDER='me'
 
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:newpass@localhost/catdb'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root@localhost:3306/catdb'
 SQLALCHEMY_TRACK_MODIFICATIONS=True
 SQLALCHEMY_POOL_RECYCLE = 3600
 

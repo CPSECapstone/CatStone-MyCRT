@@ -25,7 +25,7 @@ const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
 "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
 "sa-east-1"];
 
-var SERVER_PATH = "http://localhost:5000";
+var SERVER_PATH = "http://ec2-54-193-69-197.us-west-1.compute.amazonaws.com:8080";
 var NOT_STARTED = 0;
 var IN_PROGRESS = 1;
 var COMPLETED = 2;

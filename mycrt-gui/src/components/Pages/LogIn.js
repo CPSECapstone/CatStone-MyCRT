@@ -9,7 +9,7 @@ import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 
-var SERVER_PATH = "http://localhost:5000";
+var SERVER_PATH = "http://ec2-54-193-69-197.us-west-1.compute.amazonaws.com:8080";
 
 class LogIn extends Component {
   constructor(props) {

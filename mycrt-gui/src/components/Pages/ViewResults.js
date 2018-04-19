@@ -20,7 +20,7 @@ import Toggle from 'material-ui/Toggle';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-const SERVER_PATH = "http://localhost:5000";
+const SERVER_PATH = "http://ec2-54-193-69-197.us-west-1.compute.amazonaws.com:8080";
 var NOT_STARTED = 0;
 var IN_PROGRESS = 1;
 var COMPLETED = 2;

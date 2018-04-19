@@ -37,9 +37,9 @@ def create_app(config={}):
     auth = HTTPBasicAuth()
 
     @app.route('/test', methods=['GET'])
-    @auth.login_required
+#    @auth.login_required
     def get_test():
-        return jsonify({'test': g.user.username})
+        return jsonify({'test': 'test'})
 
     @app.route('/users', methods=['POST'])
     def register_user():
