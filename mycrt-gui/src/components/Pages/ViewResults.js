@@ -131,11 +131,13 @@ class ViewResults extends Component {
       }
       //handling different lengths of metrics
       for (var l = upperBound - 1; l < metric.length; l++) {
-        newComparisonArray.push(
-        {
-          'Timestamp': metric[l]['Timestamp']
-        });
-        newComparisonArray[l][newMetricName] = metric[l][metricName];
+        if (metric[l] !== undefined) {
+          newComparisonArray.push(
+          {
+            'Timestamp': metric[l]['Timestamp']
+          });
+          newComparisonArray[l][newMetricName] = metric[l][metricName];
+        }
       }
     }
     return newComparisonArray;
