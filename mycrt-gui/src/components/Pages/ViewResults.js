@@ -564,7 +564,7 @@ class ViewResults extends Component {
           <TableHeader
             displaySelectAll={true}
             adjustForCheckbox={true}
-            enableSelectAll={true}
+            enableSelectAll={false}
           >
             <TableRow >
               <TableHeaderColumn tooltip="The Alias">Alias</TableHeaderColumn>
@@ -892,13 +892,15 @@ class ViewResults extends Component {
           </div>
         {this.renderCaptureTable()}
         {this.renderReplayTable()}
-        {this.state.captureDetails &&
+        {this.state.captureDetails && this.state.isLogOpen &&
           <div>{this.renderCaptureDetails()}</div>
         }
-        {this.state.replayDetails &&
+        {this.state.replayDetails && this.state.isReplayLogOpen &&
           <div>{this.renderReplayDetails()}</div>
         }
-        {this.renderCompare()}
+        {this.state.isCompareOpen && 
+          <div>{this.renderCompare()}</div>
+        }
       </div>
       );
   }
