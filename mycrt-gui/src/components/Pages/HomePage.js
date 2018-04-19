@@ -178,6 +178,19 @@ class HomePage extends Component {
         this.setState({
           pausePolling: false
         });
+        var formattedCard = {
+          captureAlias: this.state.aliasValue,
+          rdsInstance: this.state.rdsValue,
+          s3Bucket: this.state.s3Value,
+          endTime: this.state.captureEndDay,
+          startTime: this.state.captureStartDay,
+          captureStatus: LOADING
+        };
+        var newCards = this.state.captureCards;
+        newCards.push(formattedCard);
+        this.setState(prevState => ({
+          captureCards: newCards
+        }))
         this.onCaptureButton();    
       }.bind(this),
       error: function(xhr, status, err) {
@@ -601,23 +614,6 @@ class HomePage extends Component {
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
-
-    if (!this.state.showAliasFailure && !this.state.showDBConnectFailure) {
-      var formattedCard = {
-        captureAlias: this.state.aliasValue,
-        rdsInstance: this.state.rdsValue,
-        s3Bucket: this.state.s3Value,
-        endTime: this.state.captureEndDay,
-        startTime: this.state.captureStartDay,
-        captureStatus: LOADING
-      };
-      var newCards = this.state.captureCards;
-      newCards.push(formattedCard);
-      this.setState(prevState => ({
-        captureCards: newCards
-      }))
-    }
-
     this.setState(prevState => ({
       isErrorVisible: false
     }))
@@ -650,26 +646,6 @@ class HomePage extends Component {
     }
 
     this.sendReplayData(replay, startDay);
-/*
-    if (!this.state.showAliasFailure && !this.state.showDBConnectFailure) {
-      console.log("ADD REPLAY CARD")
-      var formattedCard = {
-        replayAlias: this.state.aliasValue,
-        rdsInstance: this.state.rdsValue,
-        s3Bucket: this.state.s3Value,
-        replayStatus: LOADING,
-        startTime: startDay,
-        is_fast: this.state.fastReplay
-      }
-
-      var newCards = this.state.replayCards;
-      newCards.push(formattedCard);
-      this.setState({
-        replayCards: newCards
-      })
-    }
-*/
-
     this.setState({
       isErrorVisible: false
     })
