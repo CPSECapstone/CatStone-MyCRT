@@ -197,7 +197,7 @@ class HomePage extends Component {
     });
   }
 
-  sendReplayData(formDataValues) {
+  sendReplayData(formDataValues, startDay) {
     var parentContextState = this.props.parentContext.state;
 
     this.setState({
@@ -216,6 +216,20 @@ class HomePage extends Component {
         this.setState({
           pauseReplayPolling: false
         });
+        var formattedCard = {
+          replayAlias: this.state.aliasValue,
+          rdsInstance: this.state.rdsValue,
+          s3Bucket: this.state.s3Value,
+          replayStatus: LOADING,
+          startTime: startDay,
+          is_fast: this.state.fastReplay
+        }
+
+        var newCards = this.state.replayCards;
+        newCards.push(formattedCard);
+        this.setState({
+          replayCards: newCards
+        })
         this.onReplayClose();    
       }.bind(this),
       error: function(xhr, status, err) {
@@ -225,6 +239,7 @@ class HomePage extends Component {
             showAliasFailure: false
           });
         } else if (xhr.responseText.includes("Alias is unavailable")) {
+          console.log("REPLAY ALIAS FAILURE")
           this.setState({
             showAliasFailure: true,
             showDBConnectFailure: false
@@ -634,8 +649,8 @@ class HomePage extends Component {
       is_fast: this.state.fastReplay
     }
 
-    this.sendReplayData(replay);
-
+    this.sendReplayData(replay, startDay);
+/*
     if (!this.state.showAliasFailure && !this.state.showDBConnectFailure) {
       console.log("ADD REPLAY CARD")
       var formattedCard = {
@@ -653,6 +668,7 @@ class HomePage extends Component {
         replayCards: newCards
       })
     }
+*/
 
     this.setState({
       isErrorVisible: false
