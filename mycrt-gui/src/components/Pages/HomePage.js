@@ -566,7 +566,8 @@ class HomePage extends Component {
       captureEndDay: undefined,
       isErrorVisible: false,
       showDBConnectFailure: false,
-      showAliasFailure: false
+      showAliasFailure: false,
+      selectedCapture: undefined
     }));
 
     this.hideReplayCallout();
