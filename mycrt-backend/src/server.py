@@ -5,6 +5,7 @@ from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
 from .database.user_repository import UserRepository
+from datetime import datetime
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -13,14 +14,17 @@ from pymysql import OperationalError, MySQLError
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 from .replay.replay import replay, prepare_scheduled_replay
-
+from .metrics.metrics import save_metrics
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
 from .database.getRecords import *
+from .database.updateRecords import *
 from .database.addRecords import insertReplay
 
 from multiprocessing import Process
+import rpyc
+rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
 def create_app(config={}):
     # app configuration
@@ -42,6 +46,7 @@ def create_app(config={}):
     @app.route('/test', methods=['GET'])
     @auth.login_required
     def get_test():
+        print(g.user)
         return jsonify({'test': g.user.username})
 
     @app.route('/users', methods=['POST'])
@@ -217,12 +222,12 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
-                    p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
-                    p.daemon = True
-                    p.start()
+                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'],
+                           jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'],
+                           capture, db.get_session(), g.user)
                 else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
-                    prepare_scheduled_replay(newReplay, capture, db.get_session())
+                    prepare_scheduled_replay(newReplay, capture, db.get_session(), g.user)
 
                 return jsonify({'replayId': response}), 201
             else:
@@ -361,3 +366,55 @@ def create_app(config={}):
         db.get_session().remove()
 
     return app
+
+def run_query(replay, query):
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('config')
+
+    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
+
+    ########
+    print('query is: ')
+    print(query)
+    replay_status = getReplayStatus(replay['replayId'], db.get_session())
+    if replay_status == 0:
+        updateReplay(replay['replayId'], 1, db.get_session())
+
+    inner_conn = None
+    try:
+        inner_conn = pymysql.connect(host=replay['rdsInstance'], user=replay['rdsUsername'],
+                                     passwd=replay['rdsPassword'], db=replay['rdsDatabase'], connect_timeout=5)
+
+        with inner_conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            cursor.close()
+        inner_conn.commit()
+
+    except MySQLError as e:
+        print('MYSQL ERROR')
+        print(e)
+    finally:
+        if inner_conn is not None and inner_conn.open:
+            inner_conn.close()
+        print('done executing query')
+
+    replay_completed = True
+    conn = rpyc.connect('localhost', 12345)
+
+    if conn.root.get_replay_completed(replay['replayId']):
+        print('we doneeee')
+        time_format = "%Y-%m-%d %H:%M:%S"
+        end_time = datetime.utcnow().replace(microsecond=0).strftime(time_format)
+        save_replay_metrics(replay, end_time, g.user)
+        updateReplay(replay['replayId'], 2, db.get_session())
+        print('done updatingggg')
+
+    print()
+    print()
+
+def save_replay_metrics(replay, end_time, user):
+    print('saving now aaaay')
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "FreeableMemory", replay['regionName'], user)
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
