@@ -15,12 +15,12 @@ def sendCaptureEmail(captureId, userEmail, db_session):
 
    userCapture = getCaptureFromId(captureId, db_session)[0]
 
-   if (userCapture['captureStatus']):
+   if (userCapture['captureStatus'] == 2):
       body =  ("Capture '" + userCapture['captureAlias'] + "' on RDS instance '" +
                 userCapture['rdsInstance'] + "' has succeeded. Please refer to your '" +
                 userCapture['s3Bucket'] + "' S3 bucket to view the relevant log and metric files")
       subject = "Success: Capture " + userCapture['captureAlias']
-   else:
+   elif (userCapture['captureStatus'] == 3):
       body = ("Capture '" + userCapture['captureAlias'] + "' on RDS instance '" +
                 userCapture['rdsInstance'] + "' has failed. Please refer to your '" +
                 userCapture['s3Bucket'] + "' S3 bucket to view the relevant log and metric files")
