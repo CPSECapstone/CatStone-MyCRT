@@ -44,6 +44,8 @@ class HomePage extends Component {
     this.state = {
       isCaptureCalloutVisible: false,
       isReplayCalloutVisible: false,
+      rdsLoading: true,
+      regionSelected: false,
       rdsRegionValue: undefined,
       rdsValue: undefined,
       s3Value: undefined,
@@ -341,6 +343,11 @@ class HomePage extends Component {
       rdsItems: []
     }));
 
+    this.setState({
+      regionSelected:true,
+      rdsLoading:true
+    });
+
     $.ajax({
       url: SERVER_PATH + "/users/rdsInstances/" + value,
       dataType: 'json',
@@ -355,7 +362,8 @@ class HomePage extends Component {
             newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
           }
           this.setState(prevState => ({
-            rdsItems: newRdsItems
+            rdsItems: newRdsItems,
+            rdsLoading: false
           }));
         }
       }.bind(this),
@@ -548,6 +556,8 @@ class HomePage extends Component {
       s3Value: undefined,
       rdsValue: undefined,
       rdsRegionValue: undefined,
+      rdsLoading: true,
+      regionSelected: false,
       captureStartDay: undefined,
       captureEndDay: undefined,
       isErrorVisible: false,
@@ -694,10 +704,14 @@ class HomePage extends Component {
             </DropDownMenu>
           </div>
           <div class="add-capture-item">
-            RDS Instance
+              RDS Instance
+              <div style={{display:"inline-block"}}>
+                <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+              </div>
             <DropDownMenu
               style={dropdownStyle.customWidth}
               value={this.state.rdsValue}
+              disabled={this.state.rdsLoading}
               onChange={this.handleRdsChange}>
               {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
             </DropDownMenu>
