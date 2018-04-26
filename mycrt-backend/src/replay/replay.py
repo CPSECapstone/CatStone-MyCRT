@@ -103,11 +103,8 @@ def prepare_scheduled_replay(replay, capture, db_session, user):
     for transaction in transactions:
         scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
         scheduled_time = scheduled_time.replace(tzinfo=utc)
-        print(replay)
         formatted_query = transaction[1].replace("\'", "\\\'")
-        conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user)
-
-    print('jobs added aaaaah')
+        conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys())
 
     try:
         os.remove(capture['captureAlias'] + ".log")

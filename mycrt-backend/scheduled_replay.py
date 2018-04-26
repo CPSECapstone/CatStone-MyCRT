@@ -1,15 +1,14 @@
-from pymysql import OperationalError, MySQLError, connect
+from pymysql import OperationalError, MySQLError
+import pymysql
 from rpyc.utils.server import ThreadedServer
 from src.metrics.metrics import save_metrics
 from src.database.getRecords import getReplayStatus
 from src.database.updateRecords import updateReplay
-from src.server import run_query
+from flask import Flask, request, g, Response
+from src.database.mycrt_database import MyCrtDb
+
 import rpyc
-import os
-import sys
-import time
 from datetime import datetime, timedelta
-from pytz import utc, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -33,24 +32,63 @@ scheduler = BackgroundScheduler(
     job_defaults=job_defaults
 )
 
+def run_query(replay, query, user):
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('config')
+
+    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
+
+    ########
+    replay_status = getReplayStatus(replay['replayId'], db.get_session())
+    if replay_status == 0:
+        print('starting replay')
+        updateReplay(replay['replayId'], 1, db.get_session())
+
+    inner_conn = None
+    try:
+        inner_conn = pymysql.connect(host=replay['rdsInstance'], user=replay['rdsUsername'],
+                                     passwd=replay['rdsPassword'], db=replay['rdsDatabase'], connect_timeout=5)
+
+        with inner_conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            cursor.close()
+        inner_conn.commit()
+
+    except MySQLError as e:
+        print(e)
+    finally:
+        if inner_conn is not None and inner_conn.open:
+            inner_conn.close()
+
+
+    pending_jobs = scheduler.get_jobs()
+    replay_completed = True
+
+    for job in pending_jobs:
+        if job.name == str(replay['replayId']):
+            replay_completed = False
+            break
+
+    if replay_completed:
+        end_time = datetime.utcnow()
+        save_replay_metrics(replay, end_time, user)
+        updateReplay(replay['replayId'], 2, db.get_session())
+
+def save_replay_metrics(replay, end_time, user):
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "FreeableMemory", replay['regionName'], user)
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
+    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
+
 def the_job(oid):
     print('Run job: object.id={}, datetime={}'.format(oid, datetime.now()))
-
-
-def print_text(text):
-    print(text)
-
 
 class SchedulerService(rpyc.Service):
 
     def exposed_add_scheduled_replay(self, replay, query, scheduled_time, db_session, user):
-        print('fuuuuck')
         trigger = DateTrigger(run_date=scheduled_time)
-        print('after trigger')
-        print(replay['replayId'])
         replay_id = str(replay['replayId'])
-        print(replay_id)
-        scheduler.add_job(func=run_query, args=[replay, query],
+        scheduler.add_job(func=run_query, args=[replay, query, user],
                           trigger=trigger,
                           coalesce=True,
                           name=replay_id,
@@ -58,18 +96,6 @@ class SchedulerService(rpyc.Service):
                           jobstore='default',
                           executor='default')
         print('added job lmao')
-
-    def exposed_add_job_merp(self, oid):
-        trigger = DateTrigger(run_date=datetime.now() + timedelta(seconds=oid))
-        print('adding job!')
-        scheduler.add_job(func=the_job, args=[oid],
-                          trigger=trigger,
-                          id='task-{}'.format(oid),
-                          name='Task({})'.format(oid),
-                          coalesce=True,
-                          max_instances=1,
-                          jobstore='default',
-                          executor='default')
 
     def exposed_add_job(self, func, *args, **kwargs):
         return scheduler.add_job(func, *args, **kwargs)

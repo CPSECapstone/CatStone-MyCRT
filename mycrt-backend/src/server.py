@@ -46,7 +46,7 @@ def create_app(config={}):
     @app.route('/test', methods=['GET'])
     @auth.login_required
     def get_test():
-        print(g.user)
+        print(db.get_session())
         return jsonify({'test': g.user.username})
 
     @app.route('/users', methods=['POST'])
@@ -366,55 +366,3 @@ def create_app(config={}):
         db.get_session().remove()
 
     return app
-
-def run_query(replay, query):
-    app = Flask(__name__, static_url_path='')
-    app.config.from_object('config')
-
-    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
-
-    ########
-    print('query is: ')
-    print(query)
-    replay_status = getReplayStatus(replay['replayId'], db.get_session())
-    if replay_status == 0:
-        updateReplay(replay['replayId'], 1, db.get_session())
-
-    inner_conn = None
-    try:
-        inner_conn = pymysql.connect(host=replay['rdsInstance'], user=replay['rdsUsername'],
-                                     passwd=replay['rdsPassword'], db=replay['rdsDatabase'], connect_timeout=5)
-
-        with inner_conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(query)
-            cursor.close()
-        inner_conn.commit()
-
-    except MySQLError as e:
-        print('MYSQL ERROR')
-        print(e)
-    finally:
-        if inner_conn is not None and inner_conn.open:
-            inner_conn.close()
-        print('done executing query')
-
-    replay_completed = True
-    conn = rpyc.connect('localhost', 12345)
-
-    if conn.root.get_replay_completed(replay['replayId']):
-        print('we doneeee')
-        time_format = "%Y-%m-%d %H:%M:%S"
-        end_time = datetime.utcnow().replace(microsecond=0).strftime(time_format)
-        save_replay_metrics(replay, end_time, g.user)
-        updateReplay(replay['replayId'], 2, db.get_session())
-        print('done updatingggg')
-
-    print()
-    print()
-
-def save_replay_metrics(replay, end_time, user):
-    print('saving now aaaay')
-    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
-    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "FreeableMemory", replay['regionName'], user)
-    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
-    save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
