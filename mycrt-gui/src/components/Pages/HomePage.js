@@ -811,8 +811,8 @@ class HomePage extends Component {
       },
     };
 
-    var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c => 
-      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureId + ":" + c.captureAlias}`}/>) 
+    var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c =>
+      <MenuItem value={c.captureAlias} key={c.captureId} primaryText={`${c.captureAlias}`}/>) 
       : [];
 
     return (
