@@ -45,7 +45,6 @@ def sendReplayEmail(replayId, userEmail, db_session):
     s = smtplib.SMTP('smtp.gmail.com', port=587)
 
     userReplay = getReplayFromId(replayId, db_session)[0]
-    print(userReplay['replayStatus']);
 
     if (userReplay['replayStatus'] == 2):
        body =  ("Replay '" + userReplay['replayAlias'] + "' on RDS instance '" +
