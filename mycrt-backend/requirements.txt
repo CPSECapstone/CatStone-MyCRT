@@ -11,3 +11,4 @@ bcrypt==3.1.4
 passlib==1.7.1
 Flask-HTTPAuth==3.2.3
 sqlalchemy-utils==0.33.2
+cryptography==2.2.2
