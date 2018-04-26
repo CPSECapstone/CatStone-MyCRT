@@ -14,9 +14,9 @@ def main():
         print('Field missing, connection string not set.')
         return
 
-    for line in fileinput.input("config2.py", inplace=True):
+    for line in fileinput.input("config.py", inplace=True):
         if "SQLALCHEMY_DATABASE_URI = " in line:
-            print(f"SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{username}:{password}@{hostname}/{dbname}")
+            print(f"SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{username}:{password}@{hostname}/{dbname}'")
         else:
             print(line, end='')
 
