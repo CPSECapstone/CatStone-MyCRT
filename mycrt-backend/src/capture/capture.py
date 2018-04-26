@@ -10,7 +10,7 @@ from src.database.addRecords import insertCapture
 from src.database.getRecords import getCaptureFromId
 from src.database.updateRecords import updateCapture
 from src.metrics.metrics import save_metrics
-from src.email.email_server import sendEmail
+from src.email.email_server import sendCaptureEmail
 
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
@@ -95,16 +95,15 @@ def completeCapture(capture, user, db_session):
 
     if len(errList) > 0:
         updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
-        sendEmail(capture['captureId'], user.email, db_session)
         print(errList)
     else:
         updateCapture(capture['captureId'], CAPTURE_STATUS_SUCCESS, db_session)
-        sendEmail(capture['captureId'], user.email, db_session)
 
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", currentCapture['regionName'], user)
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "FreeableMemory", currentCapture['regionName'], user)
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "ReadIOPS", currentCapture['regionName'], user)
     save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "WriteIOPS", currentCapture['regionName'], user)
+    sendCaptureEmail(capture['captureId'], user.email, db_session)
 
     try:
         os.remove(currentCapture['captureAlias'] + ".metrics")

@@ -10,7 +10,7 @@ from src.database.getRecords import getCaptureFromId
 EMAIL = "mycrtNotifications@gmail.com"
 PASS = "myCRTTool"
 
-def sendEmail(captureId, userEmail, db_session):
+def sendCaptureEmail(captureId, userEmail, db_session):
    s = smtplib.SMTP('smtp.gmail.com', port=587)
 
    userCapture = getCaptureFromId(captureId, db_session)[0]
