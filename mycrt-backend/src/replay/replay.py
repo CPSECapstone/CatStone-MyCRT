@@ -81,7 +81,6 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
         updateReplay(replay_id, REPLAY_STATUS_ERROR, db_session)
     else:
         updateReplay(replay_id, REPLAY_STATUS_SUCCESS, db_session)
-        print("gonna save metrics")
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "CPUUtilization", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name, user)
@@ -104,7 +103,11 @@ def prepare_scheduled_replay(replay, capture, db_session, user):
         scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
         scheduled_time = scheduled_time.replace(tzinfo=utc)
         formatted_query = transaction[1].replace("\'", "\\\'")
-        conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys())
+
+        if transaction is transactions[-1]:
+            conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys(), is_last_transaction=True)
+        else:
+            conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys())
 
     try:
         os.remove(capture['captureAlias'] + ".log")

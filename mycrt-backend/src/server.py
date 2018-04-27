@@ -1,6 +1,4 @@
 import pymysql
-import os
-
 from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
@@ -19,10 +17,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
 
 from .database.getRecords import *
-from .database.updateRecords import *
 from .database.addRecords import insertReplay
-
-from multiprocessing import Process
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 

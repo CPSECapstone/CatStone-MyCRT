@@ -18,7 +18,7 @@ from apscheduler.triggers.date import DateTrigger
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
 jobstores = {
-    'default': SQLAlchemyJobStore(url='mysql+pymysql://root@localhost/cat_sched_replay'),
+    'default': SQLAlchemyJobStore(url='mysql+pymysql://db_username:db_password@localhost/sched_replay_db_name'),
 }
 executors = {
     'default': ThreadPoolExecutor(20),
@@ -32,16 +32,14 @@ scheduler = BackgroundScheduler(
     job_defaults=job_defaults
 )
 
-def run_query(replay, query, user):
+def run_query(replay, query, user, is_last_transaction):
     app = Flask(__name__, static_url_path='')
     app.config.from_object('config')
 
     db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
 
-    ########
     replay_status = getReplayStatus(replay['replayId'], db.get_session())
-    if replay_status == 0:
-        print('starting replay')
+    if replay_status[0][1] == 0:
         updateReplay(replay['replayId'], 1, db.get_session())
 
     inner_conn = None
@@ -60,16 +58,7 @@ def run_query(replay, query, user):
         if inner_conn is not None and inner_conn.open:
             inner_conn.close()
 
-
-    pending_jobs = scheduler.get_jobs()
-    replay_completed = True
-
-    for job in pending_jobs:
-        if job.name == str(replay['replayId']):
-            replay_completed = False
-            break
-
-    if replay_completed:
+    if is_last_transaction:
         end_time = datetime.utcnow()
         save_replay_metrics(replay, end_time, user)
         updateReplay(replay['replayId'], 2, db.get_session())
@@ -80,22 +69,19 @@ def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
 
-def the_job(oid):
-    print('Run job: object.id={}, datetime={}'.format(oid, datetime.now()))
 
 class SchedulerService(rpyc.Service):
 
-    def exposed_add_scheduled_replay(self, replay, query, scheduled_time, db_session, user):
+    def exposed_add_scheduled_replay(self, replay, query, scheduled_time, db_session, user, is_last_transaction=False):
         trigger = DateTrigger(run_date=scheduled_time)
         replay_id = str(replay['replayId'])
-        scheduler.add_job(func=run_query, args=[replay, query, user],
+        scheduler.add_job(func=run_query, args=[replay, query, user, is_last_transaction],
                           trigger=trigger,
                           coalesce=True,
                           name=replay_id,
                           max_instances=1,
                           jobstore='default',
                           executor='default')
-        print('added job lmao')
 
     def exposed_add_job(self, func, *args, **kwargs):
         return scheduler.add_job(func, *args, **kwargs)
@@ -127,7 +113,6 @@ class SchedulerService(rpyc.Service):
             if job.id is replay_id:
                 return False
         return True
-
 
     def exposed_print_all_jobs(self):
         print(scheduler.print_jobs())
