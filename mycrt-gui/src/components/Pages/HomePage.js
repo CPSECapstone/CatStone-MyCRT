@@ -178,6 +178,19 @@ class HomePage extends Component {
         this.setState({
           pausePolling: false
         });
+        var formattedCard = {
+          captureAlias: this.state.aliasValue,
+          rdsInstance: this.state.rdsValue,
+          s3Bucket: this.state.s3Value,
+          endTime: this.state.captureEndDay,
+          startTime: this.state.captureStartDay,
+          captureStatus: LOADING
+        };
+        var newCards = this.state.captureCards;
+        newCards.push(formattedCard);
+        this.setState(prevState => ({
+          captureCards: newCards
+        }))
         this.onCaptureButton();    
       }.bind(this),
       error: function(xhr, status, err) {
@@ -197,7 +210,7 @@ class HomePage extends Component {
     });
   }
 
-  sendReplayData(formDataValues) {
+  sendReplayData(formDataValues, startDay) {
     var parentContextState = this.props.parentContext.state;
 
     this.setState({
@@ -216,6 +229,20 @@ class HomePage extends Component {
         this.setState({
           pauseReplayPolling: false
         });
+        var formattedCard = {
+          replayAlias: this.state.aliasValue,
+          rdsInstance: this.state.rdsValue,
+          s3Bucket: this.state.s3Value,
+          replayStatus: LOADING,
+          startTime: startDay,
+          is_fast: this.state.fastReplay
+        }
+
+        var newCards = this.state.replayCards;
+        newCards.push(formattedCard);
+        this.setState({
+          replayCards: newCards
+        })
         this.onReplayClose();    
       }.bind(this),
       error: function(xhr, status, err) {
@@ -586,19 +613,7 @@ class HomePage extends Component {
       start_time: this.state.captureStartDay
     };
     this.sendCaptureData(card);
-
-    var formattedCard = {
-      captureAlias: this.state.aliasValue,
-      rdsInstance: this.state.rdsValue,
-      s3Bucket: this.state.s3Value,
-      endTime: this.state.captureEndDay,
-      startTime: this.state.captureStartDay,
-      captureStatus: LOADING
-    };
-    var newCards = this.state.captureCards;
-    newCards.push(formattedCard);
     this.setState(prevState => ({
-      captureCards: newCards,
       isErrorVisible: false
     }))
   }
@@ -629,22 +644,8 @@ class HomePage extends Component {
       is_fast: this.state.fastReplay
     }
 
-    this.sendReplayData(replay);
-
-    var formattedCard = {
-      replayAlias: this.state.aliasValue,
-      rdsInstance: this.state.rdsValue,
-      s3Bucket: this.state.s3Value,
-      replayStatus: LOADING,
-      startTime: startDay,
-      is_fast: this.state.fastReplay
-    }
-
-    var newCards = this.state.replayCards;
-    newCards.push(formattedCard);
-
+    this.sendReplayData(replay, startDay);
     this.setState({
-      replayCards: newCards,
       isErrorVisible: false
     })
 
@@ -810,8 +811,8 @@ class HomePage extends Component {
       },
     };
 
-    var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c => 
-      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureId + ":" + c.captureAlias}`}/>) 
+    var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c =>
+      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureAlias}`}/>) 
       : [];
 
     return (
@@ -864,6 +865,10 @@ class HomePage extends Component {
                 onChange={this.handleAliasChange}
               />
           </div>
+          {this.state.showAliasFailure &&
+          <div class="error-message">
+            Alias already in use, please provide an unique alias.
+          </div>}
           <div class="add-replay-item">
             Database Name
              <TextField
