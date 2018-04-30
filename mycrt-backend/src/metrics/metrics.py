@@ -7,10 +7,16 @@ from botocore.exceptions import ClientError
 
 def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type, region_name, user):
     metric_file = alias + ".metrics"
-    s3 = boto3.client('s3', aws_access_key_id=user.access_key,
-     aws_secret_access_key=user.secret_key)
-    client = boto3.client('cloudwatch', aws_access_key_id=user.access_key,
-     aws_secret_access_key=user.secret_key, region_name=region_name)
+    if (type(user)) is dict:
+        s3 = boto3.client('s3', aws_access_key_id=user['access_key'],
+                          aws_secret_access_key=user['secret_key'])
+        client = boto3.client('cloudwatch', aws_access_key_id=user['access_key'],
+                              aws_secret_access_key=user['secret_key'], region_name=region_name)
+    else:
+        s3 = boto3.client('s3', aws_access_key_id=user.access_key,
+         aws_secret_access_key=user.secret_key)
+        client = boto3.client('cloudwatch', aws_access_key_id=user.access_key,
+         aws_secret_access_key=user.secret_key, region_name=region_name)
 
     if start_time.replace(microsecond=0,second=0) == end_time.replace(microsecond=0,second=0):
         start_time = start_time - timedelta(minutes=4)
