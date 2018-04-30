@@ -15,7 +15,7 @@ from .replay.replay import replay, prepare_scheduled_replay
 from .metrics.metrics import save_metrics
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
-
+from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
 import rpyc
@@ -41,7 +41,6 @@ def create_app(config={}):
     @app.route('/test', methods=['GET'])
     @auth.login_required
     def get_test():
-        print(db.get_session())
         return jsonify({'test': g.user.username})
 
     @app.route('/users', methods=['POST'])
@@ -217,9 +216,9 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
-                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'],
-                           jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'],
-                           capture, db.get_session(), g.user)
+                    p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
+                    p.daemon = True
+                    p.start()
                 else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
                     prepare_scheduled_replay(newReplay, capture, db.get_session(), g.user)
