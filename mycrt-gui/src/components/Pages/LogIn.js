@@ -17,7 +17,6 @@ class LogIn extends Component {
     this.state = {
       usernameValue: undefined,
       passwordValue: undefined,
-      isSubmitDisabled: true,
       isRegisterCalloutVisible: false,
       regUsernameValue: undefined,
       regPasswordValue: undefined,
@@ -44,6 +43,8 @@ class LogIn extends Component {
 
     this.logInUser = this.logInUser.bind(this);
     this.onRegisterSubmit = this.onRegisterSubmit.bind(this);
+
+    this.keyPress = this.keyPress.bind(this);
   }
 
   logInUser() {
@@ -135,7 +136,7 @@ class LogIn extends Component {
   }
 
   isSubmitDisabled() {
-    return (this.state.passwordValue != undefined && this.state.usernameValue != undefined);
+    return (this.state.passwordValue === undefined || this.state.usernameValue === undefined);
   }
 
   isRegisterFieldsFilled() {
@@ -204,6 +205,12 @@ class LogIn extends Component {
     }
   }
 
+  keyPress(e) {
+    if(e.keyCode == 13 && !this.isSubmitDisabled()){
+       this.logInUser();
+    }
+  }
+
   render() {
     const actions = [
       <FlatButton
@@ -234,6 +241,7 @@ class LogIn extends Component {
             <h5>Username</h5>
              <TextField
                 hintText="Type username here"
+                onKeyDown={this.keyPress}
                 onChange={this.onUsernameChange}
               />
           </div>
@@ -241,6 +249,7 @@ class LogIn extends Component {
             <h5>Password</h5>
              <TextField
                 hintText="Type password here"
+                onKeyDown={this.keyPress}
                 onChange={this.onPasswordChange}
                 type="password"
               />
@@ -249,7 +258,7 @@ class LogIn extends Component {
             <Button 
               onClick={this.logInUser}
               content="Log In"
-              isDisabled={!this.isSubmitDisabled()}
+              isDisabled={this.isSubmitDisabled()}
             />
           </div>
         </div>
