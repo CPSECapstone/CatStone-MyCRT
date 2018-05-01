@@ -1,0 +1,42 @@
+.App {
+  text-align: center;
+  height: 100%;
+  overflow: hidden;
+  background: #f7f7f7;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: row;
+  flex: 0 1 auto;
+  padding-top: 40px;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+body {
+  background-color: #f7f7f7;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
