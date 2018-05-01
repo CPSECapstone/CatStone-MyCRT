@@ -15,7 +15,7 @@ from src.email.email_server import sendEmail
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
 
-def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session):
+def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture):
     try:
         connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
 

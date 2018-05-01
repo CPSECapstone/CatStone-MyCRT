@@ -60,7 +60,6 @@ class TestServer(unittest.TestCase):
         result = self.app.get('/authenticate',
                 headers = {
                     'Authorization': 'Basic %s' % b64encode(bytes(username + ":" +  password, 'utf-8')).decode("ascii")})
-        print(result.data)
         jsonData = json.loads(result.data)
         token = jsonData['token']
         assert b'Unauthorized' not in result.data
