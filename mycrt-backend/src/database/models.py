@@ -42,6 +42,11 @@ class User(MyCrtDb.Base):
         serializer = Serializer(SECRET_KEY, expires_in=expiration)
         return serializer.dumps({ 'id' : self.id })
 
+    def get_keys(self):
+        newDict = {'access_key': self.access_key,
+                   'secret_key': self.secret_key}
+        return newDict
+
     @staticmethod
     def verify_auth_token(token):
         serializer = Serializer(SECRET_KEY)
