@@ -1,10 +1,9 @@
 import pymysql
-import os
-
 from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
 from .database.user_repository import UserRepository
+from datetime import datetime
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -13,14 +12,14 @@ from pymysql import OperationalError, MySQLError
 from .metrics.metrics import get_metrics
 from .capture.capture import capture
 from .replay.replay import replay, prepare_scheduled_replay
-
+from .metrics.metrics import save_metrics
 from .capture.captureHelper import getS3Instances, getRDSInstances
 from .capture.captureScheduler import checkAllRDSInstances
-
+from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
-
-from multiprocessing import Process
+import rpyc
+rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
 def create_app(config={}):
     # app configuration
@@ -222,7 +221,7 @@ def create_app(config={}):
                     p.start()
                 else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
-                    prepare_scheduled_replay(newReplay, capture, db.get_session())
+                    prepare_scheduled_replay(newReplay, capture, db.get_session(), g.user)
 
                 return jsonify({'replayId': response}), 201
             else:

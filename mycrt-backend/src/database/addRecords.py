@@ -38,8 +38,8 @@ def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileNam
                                 "testRegion",
                                 true)
 '''
-def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, db_session):
-	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast)
+def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, db_session, status=0):
+	replay = Replay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, status)
 	try:
 		db_session.add(replay)
 		db_session.commit()

@@ -1,66 +1,67 @@
-import pymysql
 from pymysql import OperationalError, MySQLError
-from datetime import datetime
-from src.database.getRecords import getReplayFromId
+import pymysql
+from rpyc.utils.server import ThreadedServer
 from src.metrics.metrics import save_metrics
-from src.user.user import User
-import _thread
-import time
+from src.database.getRecords import getReplayStatus
+from src.database.updateRecords import updateReplay
+from flask import Flask, request, g, Response
+from src.database.mycrt_database import MyCrtDb
 
-time_format = "%Y-%m-%d %H:%M:%S"
+import rpyc
+from datetime import datetime, timedelta
 
-def main():
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.executors.pool import ThreadPoolExecutor
+from apscheduler.triggers.date import DateTrigger
+
+rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
+
+jobstores = {
+    'default': SQLAlchemyJobStore(url='mysql+pymysql://db_username:db_password@localhost/sched_replay_db_name'),
+}
+executors = {
+    'default': ThreadPoolExecutor(20),
+}
+job_defaults = {
+    'coalesce': False,
+    'max_instances': 1
+}
+scheduler = BackgroundScheduler(
+    jobstores=jobstores, executors=executors,
+    job_defaults=job_defaults
+)
+
+def run_query(replay, query, user, is_last_transaction):
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('config')
+
+    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
+
+    replay_status = getReplayStatus(replay['replayId'], db.get_session())
+    if replay_status[0][1] == 0:
+        updateReplay(replay['replayId'], 1, db.get_session())
+
+    inner_conn = None
     try:
-        #DATABASE INFO HERE
-        connection = pymysql.connect(host='localhost', user="root", port=3306, db="catdb", connect_timeout=5)
+        inner_conn = pymysql.connect(host=replay['rdsInstance'], user=replay['rdsUsername'],
+                                     passwd=replay['rdsPassword'], db=replay['rdsDatabase'], connect_timeout=5)
 
-        while (True):
-            cur_time = datetime.utcnow().replace(microsecond=0).strftime(time_format)
-            print(cur_time)
-            check_if_replay_started(connection)
-            check_if_replay_completed(connection)
-            with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-                cursor.execute("SELECT * FROM SCHEDULED_QUERY WHERE startTime = %s", (cur_time))
-                to_be_run = cursor.fetchall()
-                for query in to_be_run:
-                    _thread.start_new_thread(run_query, (query['replayId'], query['query'],))
-                cursor.execute(
-                    "DELETE FROM SCHEDULED_QUERY WHERE queryId IN (SELECT * FROM (SELECT queryId FROM SCHEDULED_QUERY WHERE startTime = %s) AS q)",
-                    (cur_time))
-                cursor.close()
-            connection.commit()
-            time.sleep(1)
+        with inner_conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            cursor.close()
+        inner_conn.commit()
 
     except MySQLError as e:
         print(e)
     finally:
-        if connection is not None and connection.open:
-            connection.close()
+        if inner_conn is not None and inner_conn.open:
+            inner_conn.close()
 
-def check_if_replay_started(connection):
-    with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-        # checking new queries added to the table and updating their replay status
-        cursor.execute("SELECT DISTINCT replayId FROM SCHEDULED_QUERY WHERE replayId IN (SELECT replayId FROM REPLAY WHERE replayStatus = 0)")
-        replays_to_be_started = cursor.fetchall()
-
-        for replayId in replays_to_be_started:
-            print("Executing query - Updating Replay status of '%s' to '1'", replayId["replayId"])
-            cursor.execute("UPDATE replay SET replayStatus = 1 WHERE replayId = %s", (replayId["replayId"]))
-        cursor.close()
-    connection.commit()
-
-def check_if_replay_completed(connection):
-    with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-        cursor.execute("SELECT * FROM replay WHERE replayStatus = 1 AND replayId NOT IN (SELECT replayId FROM SCHEDULED_QUERY)")
-        completed_replays = cursor.fetchall()
-        for replay in completed_replays:
-            end_time = datetime.utcnow().replace(microsecond=0).strftime(time_format)
-            cursor.execute("UPDATE replay SET replayStatus = 2 WHERE replayId = %s", (replay['replayId']))
-            cursor.execute("SELECT * FROM user JOIN replay ON replay.userId = user.id WHERE replayId = %s", (replay["replayId"]))
-            user = User(cursor.fetchone())
-            save_replay_metrics(replay, end_time, user)
-        cursor.close()
-    connection.commit()
+    if is_last_transaction:
+        end_time = datetime.utcnow()
+        save_replay_metrics(replay, end_time, user)
+        updateReplay(replay['replayId'], 2, db.get_session())
 
 def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
@@ -68,40 +69,67 @@ def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
 
-def run_query(replayId, query):
+
+class SchedulerService(rpyc.Service):
+
+    def exposed_add_scheduled_replay(self, replay, query, scheduled_time, db_session, user, is_last_transaction=False):
+        trigger = DateTrigger(run_date=scheduled_time)
+        replay_id = str(replay['replayId'])
+        scheduler.add_job(func=run_query, args=[replay, query, user, is_last_transaction],
+                          trigger=trigger,
+                          coalesce=True,
+                          name=replay_id,
+                          max_instances=1,
+                          jobstore='default',
+                          executor='default')
+
+    def exposed_add_job(self, func, *args, **kwargs):
+        return scheduler.add_job(func, *args, **kwargs)
+
+    def exposed_modify_job(self, job_id, jobstore=None, **changes):
+        return scheduler.modify_job(job_id, jobstore, **changes)
+
+    def exposed_reschedule_job(self, job_id, jobstore=None, trigger=None, **trigger_args):
+        return scheduler.reschedule_job(job_id, jobstore, trigger, **trigger_args)
+
+    def exposed_pause_job(self, job_id, jobstore=None):
+        return scheduler.pause_job(job_id, jobstore)
+
+    def exposed_resume_job(self, job_id, jobstore=None):
+        return scheduler.resume_job(job_id, jobstore)
+
+    def exposed_remove_job(self, job_id, jobstore=None):
+        scheduler.remove_job(job_id, jobstore)
+
+    def exposed_get_job(self, job_id):
+        return scheduler.get_job(job_id)
+
+    def exposed_get_jobs(self, jobstore=None):
+        return scheduler.get_jobs(jobstore)
+
+    def exposed_get_replay_completed(self, replay_id):
+        pending_jobs = scheduler.get_jobs()
+        for job in pending_jobs:
+            if job.id is replay_id:
+                return False
+        return True
+
+    def exposed_print_all_jobs(self):
+        print(scheduler.print_jobs())
+
+
+def main():
+    scheduler.start()
+
+    protocol_config = {'allow_public_attrs': True}
+    server = ThreadedServer(SchedulerService, port=12345, protocol_config=protocol_config)
     try:
-        #DATABASE INFO HERE
-        connection = pymysql.connect(host='localhost', user="root", port=3306, db="catdb", connect_timeout=5)
-        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("SELECT * FROM REPLAY WHERE replayId = %s", (replayId))
-            replay = cursor.fetchone()
-            ########
-            inner_conn = None
-            try:
-                inner_conn = pymysql.connect(host=replay['rdsInstance'], user=replay['rdsUsername'],
-                                             passwd=replay['rdsPassword'], db=replay['rdsDatabase'], connect_timeout=5)
-
-                with inner_conn.cursor(pymysql.cursors.DictCursor) as cursor:
-                    cursor.execute(query)
-                    cursor.close()
-                inner_conn.commit()
-                print("done committing")
-
-            except MySQLError as e:
-                print(e)
-            finally:
-                if inner_conn is not None and inner_conn.open:
-                    inner_conn.close()
-            ########
-            cursor.close()
-        connection.commit()
-
-    except MySQLError as e:
-        print(e)
+        server.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
     finally:
-        if connection is not None and connection.open:
-            connection.close()
+        scheduler.shutdown()
 
 
 if __name__ == '__main__':
-    main()
+    main() 
