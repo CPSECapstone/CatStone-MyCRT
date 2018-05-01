@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
-//import './App.css';
 
 import Header from './components/Header/Header.js';
 import NavPage from './components/Pages/NavPage.js';
@@ -16,7 +15,7 @@ import { withRouter } from 'react-router-dom';
 import * as actionCreators from './actions/actionCreators';
 import Main from './components/Main/Main';
 
-// These are the properties we'll automatically pass to Main
+// Properties to pass to Main
 function mapStateToProps(state) {
    console.log("State is " + JSON.stringify(state));
    //returning reducers

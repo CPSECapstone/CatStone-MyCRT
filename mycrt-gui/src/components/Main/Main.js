@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import logo from '../../logo.svg';
-import './App.css';
+import './Main.css';
 
 import Header from '../Header/Header.js';
 import NavPage from '../Pages/NavPage.js';
@@ -75,26 +75,6 @@ class Main extends Component {
 
   render() {
     console.log("Im in App " + this.state.selected);
-    /*
-    return (
-      <MuiThemeProvider>
-      <div class="App">
-      {this.state.loggedIn &&
-        <div>
-        <Header onLogOut={this.onLogOut}/>
-        <div class="app-content">
-          <NavBar navLinks={navLinks} switchTab={this.switchTab}/>
-          <NavPage selected={this.state.selected} parentContext={this}/>
-        </div>
-        </div>
-      }
-      {!this.state.loggedIn &&
-        <LogIn
-          onLogIn={this.onLogIn}
-          parentContext={this}
-        />
-      }
-      </div>*/
       return (
       <MuiThemeProvider>
       <div class="App">

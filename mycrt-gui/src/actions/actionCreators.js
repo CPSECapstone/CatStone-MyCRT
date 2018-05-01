@@ -1,15 +1,7 @@
-//TODO: remove api and signIn function, replace with other actions
-//import * as api from '../api';
+//TODO: remove template function, replace with other actions
 
-/*export function signIn(credentials, cb) {
-    console.log("Sign In Action Creator");
-
+/*export function exampleAction(credentials, cb) {
     return (dispatch, prevState) => {
-        api.signIn(credentials)
-         .then((userInfo) => dispatch({user: userInfo, type: "SIGN_IN"}))
-         .then(() => {if (cb) cb();})
-         .catch((error) => {
-             console.log('We had an error of ' + error);
-         });
+        
     };
 }*/
