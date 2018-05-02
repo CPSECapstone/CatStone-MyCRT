@@ -27,6 +27,17 @@
 	height: 40px !important;
 }
 
+.rds-instance-item {
+  display: flex;
+	flex-direction: column;
+	padding-top: 15px;
+}
+
+.override-dropdown-width {
+  font-size: 1em !important;
+	height: 40px !important;
+}
+
 .capture-row {
 	display: flex;
 	flex-direction: row;
@@ -35,6 +46,15 @@
 .capture-row > div > div {
 	font-size: 1em !important;
 	height: 40px !important;
+}
+
+.rds-instance-row {
+	display: flex;
+	flex-direction: row;
+}
+
+.rds-instance-row > div {
+  padding-right: 5px;
 }
 
 .add-replay-content {
@@ -71,4 +91,9 @@
 
 .error-message {
 	color: red;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
 }

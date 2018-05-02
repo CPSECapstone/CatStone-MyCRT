@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Unicode
 from sqlalchemy.orm import relationship
+from sqlalchemy_utils import EncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                             as Serializer, BadSignature, SignatureExpired)
@@ -13,8 +15,8 @@ class User(MyCrtDb.Base):
     username = Column(String(128), unique=True, nullable=False)
     password = Column(String(512), nullable=False)
     email = Column(String(128))
-    access_key= Column(String(128), nullable=False)
-    secret_key = Column(String(128), nullable=False)
+    access_key= Column(EncryptedType(String, SECRET_KEY, AesEngine), nullable=False)
+    secret_key = Column(EncryptedType(String, SECRET_KEY, AesEngine), nullable=False)
     notificationLife = Column(Integer())
 
     def __repr__(self):
