@@ -83,11 +83,12 @@ class Main extends Component {
             console.log("render " + this.state.selected)
             if (this.state.loggedIn) {
               return (
-                <div>
-                  <Redirect to={"/" + navLinks[this.state.selected].href}/>
-                </div>
+                <Redirect to={"/" + navLinks[this.state.selected].href}/>
               );
             }
+            return (
+              <Redirect to="/login"/>
+            );
           }}/>
           <Route path='/dashboard' 
            render={() => (
