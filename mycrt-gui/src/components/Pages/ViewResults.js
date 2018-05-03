@@ -85,7 +85,6 @@ class ViewResults extends Component {
     this.getReplayMetricData = this.getReplayMetricData.bind(this);
     this.getCaptureData = this.getCaptureData.bind(this);
     this.getReplayData = this.getReplayData.bind(this);
-    this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
     this.onReplayLogClose = this.onReplayLogClose.bind(this);
 
@@ -485,21 +484,6 @@ class ViewResults extends Component {
     }));
 
     this.getReplayMetricData(this.state.replays[rowIndex].replayId);
-  }
-
-  sendData(formDataValues) {
-    console.log(formDataValues);
-    $.ajax({
-      url: 'http://localhost:5000/metrics',
-      dataType: 'json',
-      type: 'GET',
-      success: function(data) {
-        this.setState({formData: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
   }
 
   isRelatedReplayOrCapture(captureId) {
