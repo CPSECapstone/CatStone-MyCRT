@@ -32,7 +32,7 @@ var COMPLETED = 2;
 var ERROR = 3;
 var LOADING = 4;
 
-var rdsRegionItems = [];    
+var rdsRegionItems = [];
 
 for (var i = 0; i < rdsRegions.length; i++) {
   rdsRegionItems.push(<MenuItem value={rdsRegions[i]} key={rdsRegions[i]} primaryText={`${rdsRegions[i]}`} />)
@@ -44,6 +44,8 @@ class HomePage extends Component {
     this.state = {
       isCaptureCalloutVisible: false,
       isReplayCalloutVisible: false,
+      rdsLoading: false,
+      regionSelected: false,
       rdsRegionValue: undefined,
       rdsValue: undefined,
       s3Value: undefined,
@@ -191,7 +193,7 @@ class HomePage extends Component {
         this.setState(prevState => ({
           captureCards: newCards
         }))
-        this.onCaptureButton();    
+        this.onCaptureButton();
       }.bind(this),
       error: function(xhr, status, err) {
         if (xhr.responseText.includes("Failed to connect")) {
@@ -243,7 +245,7 @@ class HomePage extends Component {
         this.setState({
           replayCards: newCards
         })
-        this.onReplayClose();    
+        this.onReplayClose();
       }.bind(this),
       error: function(xhr, status, err) {
         if (xhr.responseText.includes("Failed to connect")) {
@@ -365,7 +367,8 @@ class HomePage extends Component {
     var parentContextState = this.props.parentContext.state;
 
     this.setState(prevState =>({
-      rdsItems: []
+      rdsItems: [],
+      rdsLoading:true
     }));
 
     $.ajax({
@@ -382,7 +385,9 @@ class HomePage extends Component {
             newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
           }
           this.setState(prevState => ({
-            rdsItems: newRdsItems
+            rdsItems: newRdsItems,
+            regionSelected:true,
+            rdsLoading: false
           }));
         }
       }.bind(this),
@@ -432,7 +437,7 @@ class HomePage extends Component {
   handleRegionChange(event, index, value) {
     this.getRdsData(value);
     this.getS3Data();
-    
+
     this.setState(prevState => ({
       rdsRegionValue: value
     }));
@@ -563,8 +568,8 @@ class HomePage extends Component {
       && this.state.dbUsernameValue !== undefined && this.state.dbPasswordValue !== undefined
       && this.state.dbNameValue !== undefined && this.state.rdsRegionValue !== undefined
       && this.state.rdsValue !== undefined && this.state.s3Value !== undefined
-      && (this.state.fastReplay || 
-         (!this.state.fastReplay 
+      && (this.state.fastReplay ||
+         (!this.state.fastReplay
          && (this.replayStartDay && this.replayStartDay.state.date)
          && (this.replayStartTime && this.replayStartTime.state.time)))
       && !this.state.isErrorVisible;
@@ -575,6 +580,8 @@ class HomePage extends Component {
       s3Value: undefined,
       rdsValue: undefined,
       rdsRegionValue: undefined,
+      rdsLoading: false,
+      regionSelected: false,
       captureStartDay: undefined,
       captureEndDay: undefined,
       isErrorVisible: false,
@@ -599,13 +606,13 @@ class HomePage extends Component {
 
     this.hideReplayCallout();
   }
-  
+
   onCaptureSubmit() {
     var card = {
       alias: this.state.aliasValue,
       db_user: this.state.dbUsernameValue,
       db_password: this.state.dbPasswordValue,
-      db_name: this.state.dbNameValue, 
+      db_name: this.state.dbNameValue,
       region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
@@ -694,14 +701,28 @@ class HomePage extends Component {
               {rdsRegionItems !== undefined ? rdsRegionItems : []}
             </DropDownMenu>
           </div>
-          <div class="add-capture-item">
-            RDS Instance
-            <DropDownMenu
-              style={dropdownStyle.customWidth}
-              value={this.state.rdsValue}
-              onChange={this.handleRdsChange}>
-              {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
-            </DropDownMenu>
+          <div class="rds-instance-item">
+            <div>
+              <div class="rds-instance-row">
+                <div>
+                  RDS Instance
+                </div>
+                {this.state.rdsLoading &&
+                  <div>
+                    <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                  </div>
+                }
+              </div>
+              <div class="override-dropdown-width">
+                <DropDownMenu
+                  style={dropdownStyle.customWidth}
+                  value={this.state.rdsValue}
+                  disabled={this.state.rdsLoading || !this.state.regionSelected}
+                  onChange={this.handleRdsChange}>
+                  {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
+                </DropDownMenu>
+              </div>
+            </div>
           </div>
           <div class="add-capture-item">
              S3 Bucket
@@ -812,7 +833,7 @@ class HomePage extends Component {
     };
 
     var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c =>
-      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureAlias}`}/>) 
+      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureAlias}`}/>)
       : [];
 
     return (
@@ -839,14 +860,28 @@ class HomePage extends Component {
               {rdsRegionItems !== undefined ? rdsRegionItems : []}
             </DropDownMenu>
           </div>
-          <div class="add-replay-item">
-            RDS Instance
-            <DropDownMenu
-              style={dropdownStyle.customWidth}
-              value={this.state.rdsValue}
-              onChange={this.handleRdsChange}>
-              {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
-            </DropDownMenu>
+          <div class="rds-instance-item">
+            <div>
+              <div class="rds-instance-row">
+                <div>
+                  RDS Instance
+                </div>
+                {this.state.rdsLoading &&
+                  <div>
+                    <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                  </div>
+                }
+              </div>
+              <div class="override-dropdown-width">
+                <DropDownMenu
+                  style={dropdownStyle.customWidth}
+                  value={this.state.rdsValue}
+                  disabled={this.state.rdsLoading || !this.state.regionSelected}
+                  onChange={this.handleRdsChange}>
+                  {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
+                </DropDownMenu>
+              </div>
+            </div>
           </div>
           <div class="add-replay-item">
              S3 Bucket
@@ -897,13 +932,13 @@ class HomePage extends Component {
           </div>
           <div class="add-replay-item">
              Fast Replay (Transactions run successively)
-             <Checkbox 
-                 label="Fast Replay" 
+             <Checkbox
+                 label="Fast Replay"
                  checked={this.state.fastReplay}
                  disabled={false}
                  onCheck={() => this.setState({fastReplay: !this.state.fastReplay})}/>
           </div>
-          {!this.state.fastReplay ? 
+          {!this.state.fastReplay ?
             <div class="add-replay-item">
               Start Time
               <div class="replay-row">
