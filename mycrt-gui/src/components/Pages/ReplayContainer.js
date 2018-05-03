@@ -39,9 +39,14 @@ class ReplayContainer extends Component {
               <h5>Loading...</h5>
             </div>
           }
-          {!this.props.showLoadingContent &&
+          {!this.props.showLoadingContent && !this.props.errorFound &&
             <div>
               <h5>There are no current replays.</h5>
+            </div>
+          }
+          {!this.props.showLoadingContent && this.props.errorFound &&
+            <div>
+              <h5>Encountered an error loading replays.</h5>
             </div>
           }
           </div>

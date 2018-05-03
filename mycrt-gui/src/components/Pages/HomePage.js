@@ -67,8 +67,10 @@ class HomePage extends Component {
       s3Items: [],
       showLoadingCard: true,
       pausePolling: false,
+      captureContentErrorFound: false,
       loadingCaptureContent: true,
       showReplayLoadingCard: true,
+      replayContentErrorFound: false,
       pauseReplayPolling: false,
       loadingReplayContent: true,
       showDBConnectFailure: false,
@@ -275,16 +277,20 @@ class HomePage extends Component {
                 'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
       type: 'GET',
       success: function(json) {
-        component.setState(prevState => ({captureCards: json["userCaptures"]}));
+        this.setState(prevState =>({
+          captureCards: json["userCaptures"],
+          loadingCaptureContent: false,
+          captureContentErrorFound: false
+        }));
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
+        this.setState(prevState =>({ 
+          loadingCaptureContent: false,
+          captureContentErrorFound: true 
+        }));
       }.bind(this)
     });
-
-    this.setState(prevState =>({
-      loadingCaptureContent: false
-    }));
   }
 
   getReplayData() {
@@ -299,15 +305,20 @@ class HomePage extends Component {
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({replayCards: json["userReplays"]}));
+        this.setState(prevState =>({
+          replayCards: json["userReplays"],
+          loadingReplayContent: false,
+          replayContentErrorFound: false
+        }));
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
+        this.setState(prevState =>({ 
+          loadingReplayContent: false,
+          replayContentErrorFound: true 
+        }));
       }.bind(this)
     });
-
-    this.setState(prevState =>({
-      loadingReplayContent: false
-    }));
   }
 
   getSuccessfulCaptures() {
@@ -972,6 +983,7 @@ class HomePage extends Component {
           cards={this.state.captureCards}
           showLoadingCard={this.state.showLoadingCard}
           showLoadingContent={this.state.loadingCaptureContent}
+          errorFound={this.state.captureContentErrorFound}
         />
       	<h3>Replays</h3>
       	<Button
@@ -983,6 +995,7 @@ class HomePage extends Component {
           cards={this.state.replayCards}
           showLoadingCard={this.state.showReplayLoadingCard}
           showLoadingContent={this.state.loadingReplayContent}
+          errorFound={this.state.replayContentErrorFound}
         />
       </div>
     );
