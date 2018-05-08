@@ -48,53 +48,26 @@ class LogIn extends Component {
   }
 
   logInUser() {
-    $.ajax({
-      url: SERVER_PATH + "/authenticate",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(this.state.usernameValue + ":" + this.state.passwordValue)},
-      type: 'GET',
-      success: function(data) {
-        console.log("Successful Login");
-        console.log(data.token);
-        this.setState(prevState => ({
-          showLogInError: false
-        }));
-        this.props.onLogIn(data.token);
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-        this.setState(prevState => ({
-          showLogInError: true
-        }));
-      }.bind(this)
-  });
+    this.props.logIn(this.state.usernameValue, this.state.passwordValue,
+      () => this.props.history.push("/dashboard"),
+      () => {this.setState(prevState => ({showLogInError: true})); console.log(this.props.history)}
+    );
 }
 
   onRegisterSubmit() {
-    $.ajax({
-      url: SERVER_PATH + "/users",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json'},
-      type: 'POST',
-      data: JSON.stringify({username: this.state.regUsernameValue, 
+    this.props.register(
+      {username: this.state.regUsernameValue, 
         password: this.state.regPasswordValue,
         email: this.state.emailValue,
         access_key: this.state.awsKeyValue,
-        secret_key: this.state.secretKeyValue}),
-      success: function(data) {
-        console.log("Successful Register");
-        console.log(data);
-        this.onRegisterDismiss();
-      }.bind(this),
-      error: function(xhr, status, err) {
+        secret_key: this.state.secretKeyValue}, 
+      this.onRegisterDismiss, 
+      (errMsg) => {
         this.setState(prevState => ({
           showRegisterError: true,
-          registerErrorMessage: xhr.responseJSON.error
-        }));
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+          registerErrorMessage: errMsg
+        }))
+      });
   }
 
   onUsernameChange(event, value) {

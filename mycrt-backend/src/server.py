@@ -302,7 +302,8 @@ def create_app(config={}):
         if not user:
             user = user_repository.find_user_by_username(username_or_token)
             if not user or not user.verify_password(password):
-                return False
+                g.user = None
+                return True
 
         g.user = user
         return True
@@ -310,6 +311,9 @@ def create_app(config={}):
     @app.route('/authenticate', methods=['GET'])
     @auth.login_required
     def login():
+        if (g.user is None):
+            return jsonify(), 401
+
         token = g.user.generate_auth_token()
         return jsonify({ "token" : token.decode('ascii') })
 
@@ -359,4 +363,16 @@ def create_app(config={}):
     def shutdown_session(exception=None):
         db.get_session().remove()
 
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+        return response
+
     return app
+
+
+
+

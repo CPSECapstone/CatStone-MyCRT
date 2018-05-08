@@ -4,7 +4,7 @@
  */
 const baseURL = "http://localhost:5000/";
 const headers = new Headers();
-var cookie;
+var token;
 
 headers.set('Content-Type', 'application/json');
 
@@ -14,6 +14,24 @@ var reqConf = {
 };
 
 var smartFetch = (url, body) => fetch(url, body).catch(serverConnectError);
+
+export function serverConnectError() {
+    return Promise.reject(["Server Connect Error"]);
+}
+
+function createErrorPromise(response, body) {
+    console.log("CREATING ERROR PROMISE **********");
+    console.log(response.status);
+    console.log(response);
+    if (response.status === 400)
+       return Promise.reject(response.json())
+    else if (response.status === 500)
+       return Promise.reject(["Server Connect Error"]);
+    else if (response.status === 401)
+       return Promise.reject(["Unauthorized Error"]);
+    else
+       return Promise.reject(["Unknown error"]);
+}
 // Helper functions for the common request types
 
 /**
@@ -68,10 +86,51 @@ export function del(endpoint) {
     })
 }
 
-//export function logIn
+/**
+ * 
+ * @param {string} username 
+ * @param {string} password 
+ */
+export function logIn(username, password) {
+    headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
+
+    return get("authenticate")
+      .then((response) => {
+        if (response.ok) {
+            return response.json();
+        }
+
+        console.log("Ran into error here");
+        return createErrorPromise(response);
+      })
+      .then(json => {
+        token = json.token;
+      })
+}
+
+export function logOut() {
+    headers.set('Authorization', '');
+    token = undefined;
+}
+
+export function register(userInfo) {
+    return post("users", userInfo)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => {
+          json;
+      })
+}
+
 /*
-export function logOut
-export function register
+export function login ---- DONE ----
+export function logOut ---- DONE ----
+export function register ---- DONE ----
 export function getCaptureData
 export function getReplayData
 export function getCaptureMetricData
@@ -322,4 +381,4 @@ function createErrorPromise(response, body) {
      .then(json => {
          return json["message"];
      })
-}
+}*/
