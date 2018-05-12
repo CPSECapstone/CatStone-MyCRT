@@ -106,6 +106,7 @@ export function logIn(username, password) {
       })
       .then(json => {
         token = json.token;
+        return token;
       })
 }
 
@@ -222,9 +223,9 @@ export function getCaptureMetricData
 export function getReplayMetricData
 export function postCaptureData ---- DONE ----
 export function postReplayData ---- DONE ----
-export function getSuccessfulCaptures
-export function getS3Data
-export function getRdsData
+export function getSuccessfulCaptures ---- DONE ----
+export function getS3Data ---- DONE ----
+export function getRdsData ---- DONE ----
 */
 
 //TEMPLATE/OLD API FUNCTIONS PLEASE DELETE

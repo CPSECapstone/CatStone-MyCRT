@@ -10,7 +10,7 @@ import * as api from '../api';
 export function logIn(username, password, cb, errCb) {
     return (dispatch, prevState) => {
         api.logIn(username, password)
-          .then(result => console.log("User logged in successfully"))
+          .then(token => dispatch({token: token, type: "LOG_IN"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
               if (errCb) errCb();

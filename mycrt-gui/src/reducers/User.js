@@ -3,8 +3,8 @@
 function User(state = {}, action) {
     console.log("Prss reducing action " + action.type);
     switch(action.type) {
-    case 'SIGN_IN':
-       return action.user;
+    case 'LOG_IN':
+       return {token: action.token};
     case 'SIGN_OUT':
        return {}; // Clear user state
     default:
