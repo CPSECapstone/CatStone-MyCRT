@@ -23,8 +23,9 @@ function createErrorPromise(response, body) {
     console.log("CREATING ERROR PROMISE **********");
     console.log(response.status);
     console.log(response);
-    if (response.status === 400)
+    if (response.status === 400) {
        return Promise.reject(response.json())
+    }
     else if (response.status === 500)
        return Promise.reject(["Server Connect Error"]);
     else if (response.status === 401)
@@ -127,16 +128,100 @@ export function register(userInfo) {
       })
 }
 
+export function getAllCaptures() {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return get("users/captures")
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json["userCaptures"])
+}
+
+export function getAllReplays() {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return get("users/replays")
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json["userReplays"])
+}
+
+export function getS3Buckets() {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return get("users/s3Buckets")
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json["s3Instances"])
+}
+
+export function getRDSInstances(region) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return get("users/rdsInstances/" + region)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json["rdsInstances"])
+}
+
+export function postCapture(capture) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return post("users/captures", capture)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
+export function postReplay(replay) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return post("users/replays", replay)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
 /*
 export function login ---- DONE ----
 export function logOut ---- DONE ----
 export function register ---- DONE ----
-export function getCaptureData
-export function getReplayData
+export function getCaptureData ---- DONE ----
+export function getReplayData ---- DONE ----
 export function getCaptureMetricData
 export function getReplayMetricData
-export function postCaptureData
-export function postReplayData
+export function postCaptureData ---- DONE ----
+export function postReplayData ---- DONE ----
 export function getSuccessfulCaptures
 export function getS3Data
 export function getRdsData

@@ -41,6 +41,7 @@ class Main extends Component {
     document.body.style.background = "#333b44";
   }
 
+  
   switchTab(idx) {
     // e.preventDefault();
     this.setState(prevState => ({

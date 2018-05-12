@@ -19,11 +19,11 @@ import DatePicker from 'material-ui/DatePicker';
 import $ from 'jquery';
 
 const rdsRegions = ["us-east-2", "us-east-1", "us-west-1", "us-west-2",
-"ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
-"ca-central-1",
-"cn-north-1",
-"eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
-"sa-east-1"];
+  "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+  "ca-central-1",
+  "cn-north-1",
+  "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
+  "sa-east-1"];
 
 var SERVER_PATH = "http://localhost:5000";
 var NOT_STARTED = 0;
@@ -39,7 +39,7 @@ for (var i = 0; i < rdsRegions.length; i++) {
 }
 
 class HomePage extends Component {
-	constructor(props) {
+  constructor(props) {
     super(props);
     this.state = {
       isCaptureCalloutVisible: false,
@@ -154,13 +154,13 @@ class HomePage extends Component {
 
   checkLoadingCard() {
     this.setState({
-      showLoadingCard: this.state.captureCards.length <= 0
+      showLoadingCard: this.props.Capture.length <= 0
     });
   }
 
   checkReplayLoadingCard() {
     this.setState({
-      showReplayLoadingCard: this.state.replayCards.length <= 0
+      showReplayLoadingCard: this.props.Replays.length <= 0
     })
   }
 
@@ -170,48 +170,29 @@ class HomePage extends Component {
       pausePolling: true
     });
 
-    $.ajax({
-      url: SERVER_PATH + "/users/captures",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'POST',
-      data: JSON.stringify(formDataValues),
-      success: function(data) {
-        console.log("SUCCESS capture form");
+    this.props.postCapture(formDataValues,
+      () => {
         this.setState({
           pausePolling: false
         });
-        var formattedCard = {
-          captureAlias: this.state.aliasValue,
-          rdsInstance: this.state.rdsValue,
-          s3Bucket: this.state.s3Value,
-          endTime: this.state.captureEndDay,
-          startTime: this.state.captureStartDay,
-          captureStatus: LOADING
-        };
-        var newCards = this.state.captureCards;
-        newCards.push(formattedCard);
-        this.setState(prevState => ({
-          captureCards: newCards
-        }))
         this.onCaptureButton();
-      }.bind(this),
-      error: function(xhr, status, err) {
-        if (xhr.responseText.includes("Failed to connect")) {
+      },
+      (err) => {
+        console.log("--------- Error Sending capture ----------")
+        console.log(err);
+        if (err.includes("Failed to connect")) {
           this.setState({
             showDBConnectFailure: true,
             showAliasFailure: false
           });
-        } else if (xhr.responseText.includes("Alias is unavailable")) {
+        } else if (err.includes("Alias is unavailable")) {
           this.setState({
             showAliasFailure: true,
             showDBConnectFailure: false
           });
         }
-        console.error(this.props.url, status, err.toString(), xhr.responseText);
-      }.bind(this)
-    });
+      }
+    );
   }
 
   sendReplayData(formDataValues, startDay) {
@@ -221,193 +202,147 @@ class HomePage extends Component {
       pauseReplayPolling: true
     });
 
-    $.ajax({
-      url: SERVER_PATH + "/users/replays",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'POST',
-      data: JSON.stringify(formDataValues),
-      success: function(data) {
-        console.log("SUCCESS Replay form");
+    this.props.postReplay(formDataValues,
+      () => {
         this.setState({
           pauseReplayPolling: false
         });
-        var formattedCard = {
-          replayAlias: this.state.aliasValue,
-          rdsInstance: this.state.rdsValue,
-          s3Bucket: this.state.s3Value,
-          replayStatus: LOADING,
-          startTime: startDay,
-          is_fast: this.state.fastReplay
-        }
-
-        var newCards = this.state.replayCards;
-        newCards.push(formattedCard);
-        this.setState({
-          replayCards: newCards
-        })
         this.onReplayClose();
-      }.bind(this),
-      error: function(xhr, status, err) {
-        if (xhr.responseText.includes("Failed to connect")) {
+      },
+      (err) => {
+        if (err.includes("Failed to connect")) {
           this.setState({
             showDBConnectFailure: true,
             showAliasFailure: false
           });
-        } else if (xhr.responseText.includes("Alias is unavailable")) {
+        } else if (err.includes("Alias is unavailable")) {
           this.setState({
             showAliasFailure: true,
             showDBConnectFailure: false
           });
-        }
-        console.error(this.props.url, status, err.toString(), xhr.responseText);
-      }.bind(this)
-    });
+      }}
+    );
+
+    // $.ajax({
+    //   url: SERVER_PATH + "/users/replays",
+    //   dataType: 'json',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': 'Basic ' + btoa(parentContextState.token + ":")
+    //   },
+    //   type: 'POST',
+    //   data: JSON.stringify(formDataValues),
+    //   success: function (data) {
+    //     console.log("SUCCESS Replay form");
+
+    //     var formattedCard = {
+    //       replayAlias: this.state.aliasValue,
+    //       rdsInstance: this.state.rdsValue,
+    //       s3Bucket: this.state.s3Value,
+    //       replayStatus: LOADING,
+    //       startTime: startDay,
+    //       is_fast: this.state.fastReplay
+    //     }
+
+    //     var newCards = this.props.Replays;
+    //     newCards.push(formattedCard);
+    //     this.setState({
+    //       replayCards: newCards
+    //     })
+    //   }.bind(this),
+    //   error: function (xhr, status, err) {
+    //     if (xhr.responseText.includes("Failed to connect")) {
+    //       this.setState({
+    //         showDBConnectFailure: true,
+    //         showAliasFailure: false
+    //       });
+    //     } else if (xhr.responseText.includes("Alias is unavailable")) {
+    //       this.setState({
+    //         showAliasFailure: true,
+    //         showDBConnectFailure: false
+    //       });
+    //     }
+    //     console.error(this.props.url, status, err.toString(), xhr.responseText);
+    //   }.bind(this)
+    // });
   }
 
   getCaptureData() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/captures",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        this.setState(prevState =>({
-          captureCards: json["userCaptures"],
-          loadingCaptureContent: false,
-          captureContentErrorFound: false
-        }));
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-        this.setState(prevState =>({ 
-          loadingCaptureContent: false,
-          captureContentErrorFound: true 
-        }));
-      }.bind(this)
-    });
+    this.props.getAllCaptures(
+      () => this.setState(prevState => ({
+        loadingCaptureContent: false,
+        captureContentErrorFound: false
+      })),
+      () => this.setState(prevState => ({
+        loadingCaptureContent: false,
+        captureContentErrorFound: true
+      }))
+    );
   }
 
   getReplayData() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/replays",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        component.setState(prevState => ({replayCards: json["userReplays"]}));
-        this.setState(prevState =>({
-          replayCards: json["userReplays"],
-          loadingReplayContent: false,
-          replayContentErrorFound: false
-        }));
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-        this.setState(prevState =>({ 
-          loadingReplayContent: false,
-          replayContentErrorFound: true 
-        }));
-      }.bind(this)
-    });
+    this.props.getAllReplays(
+      () => this.setState(prevState => ({
+        loadingReplayContent: false,
+        replayContentErrorFound: false
+      })),
+      () => this.setState(prevState => ({
+        loadingReplayContent: false,
+        replayContentErrorFound: true
+      }))
+    );
   }
 
   getSuccessfulCaptures() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/captures",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        component.setState({successfulCaptures: json["userCaptures"].filter(capture => capture.captureStatus === 2)});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+    this.setState({successfulCaptures: this.props.Capture.filter(capture => capture.captureStatus === 2)})
   }
 
   getS3Data() {
-    var parentContextState = this.props.parentContext.state;
+    var that = this;
+    this.props.getS3Buckets(
+      () => {
+        var s3MenuItems = [];
+        var s3Buckets = this.props.S3Buckets;
 
-    this.setState(prevState =>({
-      s3Items: []
-    }));
-
-    $.ajax({
-      url: SERVER_PATH + "/users/s3Buckets",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(data) {
-        if (data.s3Instances != undefined) {
-          var s3Arr = data.s3Instances;
-          var newS3Items = [];
-          for (let i = 0; i < s3Arr.length; i++ ) {
-            newS3Items.push(<MenuItem value={s3Arr[i]} key={i} primaryText={`${s3Arr[i]}`} />);
-          }
-          this.setState(prevState => ({
-            s3Items: newS3Items
-          }));
+        for (let i = 0; i < s3Buckets.length; i++) {
+          s3MenuItems.push(<MenuItem value={s3Buckets[i]} key={i} primaryText={`${s3Buckets[i]}`} />);
         }
-      }.bind(this),
-      error: function(xhr, status, err) {
-        var err = status + ", " + err;
-        console.log("Request Failed: " + err);
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
 
+        that.setState(prevState => ({
+          s3Items: s3MenuItems
+        }))
+      },
+      () => console.log("Request failed...")
+    )
   }
 
   getRdsData(value) {
-    var parentContextState = this.props.parentContext.state;
+    var that = this;
 
-    this.setState(prevState =>({
+    this.setState(prevState => ({
       rdsItems: [],
-      rdsLoading:true
+      rdsLoading: true
     }));
 
-    $.ajax({
-      url: SERVER_PATH + "/users/rdsInstances/" + value,
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(data) {
-        if (data.rdsInstances != undefined) {
-          var rdsArr = data.rdsInstances;
-          var newRdsItems = [];
-          for (let i = 0; i < rdsArr.length; i++ ) {
-            newRdsItems.push(<MenuItem value={rdsArr[i]} key={i} primaryText={`${rdsArr[i]}`} />);
-          }
-          this.setState(prevState => ({
-            rdsItems: newRdsItems,
-            regionSelected:true,
-            rdsLoading: false
-          }));
+    this.props.getRDSInstances(value,
+      () => {
+        var rdsMenuItems = [];
+        var instances = this.props.RDSInstances;
+
+        for (let i = 0; i < instances.length; i++) {
+          rdsMenuItems.push(<MenuItem value={instances[i]} key={i} primaryText={`${instances[i]}`} />);
         }
-      }.bind(this),
-      error: function(xhr, status, err) {
-        var err = status + ", " + err;
-        console.log( "Request Failed: " + err );
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+
+        that.setState(prevState => ({
+          rdsItems: rdsMenuItems,
+          regionSelected: true,
+          rdsLoading: false
+        }));
+      },
+      () => {
+        console.log("Error getting the rds instances");
+      }
+    )
   }
 
   showCaptureCallout() {
@@ -580,9 +515,9 @@ class HomePage extends Component {
       && this.state.dbNameValue !== undefined && this.state.rdsRegionValue !== undefined
       && this.state.rdsValue !== undefined && this.state.s3Value !== undefined
       && (this.state.fastReplay ||
-         (!this.state.fastReplay
-         && (this.replayStartDay && this.replayStartDay.state.date)
-         && (this.replayStartTime && this.replayStartTime.state.time)))
+        (!this.state.fastReplay
+          && (this.replayStartDay && this.replayStartDay.state.date)
+          && (this.replayStartTime && this.replayStartTime.state.time)))
       && !this.state.isErrorVisible;
   }
 
@@ -627,8 +562,8 @@ class HomePage extends Component {
       region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
-      end_time: this.state.captureEndDay,
-      start_time: this.state.captureStartDay
+      end_time: this.state.captureEndDay.toISOString(),
+      start_time: this.state.captureStartDay.toISOString()
     };
     this.sendCaptureData(card);
     this.setState(prevState => ({
@@ -736,7 +671,7 @@ class HomePage extends Component {
             </div>
           </div>
           <div class="add-capture-item">
-             S3 Bucket
+            S3 Bucket
             <DropDownMenu
               style={dropdownStyle.customWidth}
               maxHeight={300}
@@ -748,39 +683,39 @@ class HomePage extends Component {
           <div class="add-capture-item">
             Capture Alias
              <TextField
-                hintText="Type alias here"
-                onChange={this.handleAliasChange}
-              />
+              hintText="Type alias here"
+              onChange={this.handleAliasChange}
+            />
           </div>
           {this.state.showAliasFailure &&
-          <div class="error-message">
-            Alias already in use, please provide an unique alias.
+            <div class="error-message">
+              Alias already in use, please provide an unique alias.
           </div>}
           <div class="add-capture-item">
             Database Name
              <TextField
-                hintText="Type name here"
-                onChange={this.handleDBNameChange}
-              />
+              hintText="Type name here"
+              onChange={this.handleDBNameChange}
+            />
           </div>
           {this.state.showDBConnectFailure &&
-          <div class="error-message">
-            Database credentials are invalid, please check your input.
+            <div class="error-message">
+              Database credentials are invalid, please check your input.
           </div>}
           <div class="add-capture-item">
             Database Username
              <TextField
-                hintText="Type username here"
-                onChange={this.handleDBUsernameChange}
-              />
+              hintText="Type username here"
+              onChange={this.handleDBUsernameChange}
+            />
           </div>
           <div class="add-capture-item">
             Database Password
              <TextField
-                hintText="Type password here"
-                onChange={this.handleDBPasswordChange}
-                type="password"
-              />
+              hintText="Type password here"
+              onChange={this.handleDBPasswordChange}
+              type="password"
+            />
           </div>
           <div class="add-capture-item">
             Start Time
@@ -844,155 +779,155 @@ class HomePage extends Component {
     };
 
     var captureItems = this.state.successfulCaptures ? this.state.successfulCaptures.map(c =>
-      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureAlias}`}/>)
+      <MenuItem value={c.captureId + ":" + c.captureAlias} key={c.captureId} primaryText={`${c.captureAlias}`} />)
       : [];
 
     return (
       <Dialog title="Add Replay"
-       actions={actions}
-       modal={true}
-       open={this.state.isReplayCalloutVisible}
-       autoScrollBodyContent={true}>
-         <div class="add-replay-item">
-            Related Capture
+        actions={actions}
+        modal={true}
+        open={this.state.isReplayCalloutVisible}
+        autoScrollBodyContent={true}>
+        <div class="add-replay-item">
+          Related Capture
             <DropDownMenu
-              style={dropdownStyle.customWidth}
-              value={this.state.selectedCapture}
-              onChange={this.handleCaptureSelection}>
-              {captureItems}
-            </DropDownMenu>
-         </div>
-         <div class="add-replay-item">
-            RDS Region
+            style={dropdownStyle.customWidth}
+            value={this.state.selectedCapture}
+            onChange={this.handleCaptureSelection}>
+            {captureItems}
+          </DropDownMenu>
+        </div>
+        <div class="add-replay-item">
+          RDS Region
             <DropDownMenu
-              style={dropdownStyle.customWidth}
-              value={this.state.rdsRegionValue}
-              onChange={this.handleRegionChange}>
-              {rdsRegionItems !== undefined ? rdsRegionItems : []}
-            </DropDownMenu>
-          </div>
-          <div class="rds-instance-item">
-            <div>
-              <div class="rds-instance-row">
-                <div>
-                  RDS Instance
+            style={dropdownStyle.customWidth}
+            value={this.state.rdsRegionValue}
+            onChange={this.handleRegionChange}>
+            {rdsRegionItems !== undefined ? rdsRegionItems : []}
+          </DropDownMenu>
+        </div>
+        <div class="rds-instance-item">
+          <div>
+            <div class="rds-instance-row">
+              <div>
+                RDS Instance
                 </div>
-                {this.state.rdsLoading &&
-                  <div>
-                    <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-                  </div>
-                }
-              </div>
-              <div class="override-dropdown-width">
-                <DropDownMenu
-                  style={dropdownStyle.customWidth}
-                  value={this.state.rdsValue}
-                  disabled={this.state.rdsLoading || !this.state.regionSelected}
-                  onChange={this.handleRdsChange}>
-                  {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
-                </DropDownMenu>
-              </div>
+              {this.state.rdsLoading &&
+                <div>
+                  <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                </div>
+              }
+            </div>
+            <div class="override-dropdown-width">
+              <DropDownMenu
+                style={dropdownStyle.customWidth}
+                value={this.state.rdsValue}
+                disabled={this.state.rdsLoading || !this.state.regionSelected}
+                onChange={this.handleRdsChange}>
+                {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
+              </DropDownMenu>
             </div>
           </div>
-          <div class="add-replay-item">
-             S3 Bucket
+        </div>
+        <div class="add-replay-item">
+          S3 Bucket
             <DropDownMenu
-              style={dropdownStyle.customWidth}
-              maxHeight={300}
-              value={this.state.s3Value}
-              onChange={this.handleS3Change}>
-              {this.state.s3Items !== undefined ? this.state.s3Items : []}
-            </DropDownMenu>
-          </div>
-          <div class="add-replay-item">
-            Replay Alias
+            style={dropdownStyle.customWidth}
+            maxHeight={300}
+            value={this.state.s3Value}
+            onChange={this.handleS3Change}>
+            {this.state.s3Items !== undefined ? this.state.s3Items : []}
+          </DropDownMenu>
+        </div>
+        <div class="add-replay-item">
+          Replay Alias
              <TextField
-                hintText="Type alias here"
-                onChange={this.handleAliasChange}
-              />
-          </div>
-          {this.state.showAliasFailure &&
+            hintText="Type alias here"
+            onChange={this.handleAliasChange}
+          />
+        </div>
+        {this.state.showAliasFailure &&
           <div class="error-message">
             Alias already in use, please provide an unique alias.
           </div>}
-          <div class="add-replay-item">
-            Database Name
+        <div class="add-replay-item">
+          Database Name
              <TextField
-                hintText="Type name here"
-                onChange={this.handleDBNameChange}
-              />
-          </div>
-          {this.state.showDBConnectFailure &&
+            hintText="Type name here"
+            onChange={this.handleDBNameChange}
+          />
+        </div>
+        {this.state.showDBConnectFailure &&
           <div class="error-message">
             Database credentials are invalid, please check your input.
           </div>}
-          <div class="add-replay-item">
-            Database Username
+        <div class="add-replay-item">
+          Database Username
              <TextField
-                hintText="Type username here"
-                onChange={this.handleDBUsernameChange}
-              />
-          </div>
-          <div class="add-replay-item">
-            Database Password
+            hintText="Type username here"
+            onChange={this.handleDBUsernameChange}
+          />
+        </div>
+        <div class="add-replay-item">
+          Database Password
              <TextField
-                hintText="Type password here"
-                onChange={this.handleDBPasswordChange}
-                type="password"
-              />
-          </div>
-          <div class="add-replay-item">
-             Fast Replay (Transactions run successively)
+            hintText="Type password here"
+            onChange={this.handleDBPasswordChange}
+            type="password"
+          />
+        </div>
+        <div class="add-replay-item">
+          Fast Replay (Transactions run successively)
              <Checkbox
-                 label="Fast Replay"
-                 checked={this.state.fastReplay}
-                 disabled={false}
-                 onCheck={() => this.setState({fastReplay: !this.state.fastReplay})}/>
-          </div>
-          {!this.state.fastReplay ?
-            <div class="add-replay-item">
-              Start Time
+            label="Fast Replay"
+            checked={this.state.fastReplay}
+            disabled={false}
+            onCheck={() => this.setState({ fastReplay: !this.state.fastReplay })} />
+        </div>
+        {!this.state.fastReplay ?
+          <div class="add-replay-item">
+            Start Time
               <div class="replay-row">
-                <DatePicker
-                  hintText="Day"
-                  ref={(input) => {this.replayStartDay = input;}}
-                />
-                <TimePicker
-                  hintText="Time"
-                  ref={(input) => {this.replayStartTime = input;}}
-                />
-              </div>
+              <DatePicker
+                hintText="Day"
+                ref={(input) => { this.replayStartDay = input; }}
+              />
+              <TimePicker
+                hintText="Time"
+                ref={(input) => { this.replayStartTime = input; }}
+              />
             </div>
-            :
-            ''
-          }
+          </div>
+          :
+          ''
+        }
       </Dialog>
     );
   }
   render() {
     return (
       <div className="HomePage">
-      	<h2>Dashboard</h2>
-      	<h3>Captures</h3>
-      	<Button
-      		onClick={this.showCaptureCallout}
-      		content="Add Capture"
-      	/>
-        { this.renderCaptureForm() }
-      	<CaptureContainer
-          cards={this.state.captureCards}
+        <h2>Dashboard</h2>
+        <h3>Captures</h3>
+        <Button
+          onClick={this.showCaptureCallout}
+          content="Add Capture"
+        />
+        {this.renderCaptureForm()}
+        <CaptureContainer
+          cards={this.props.Capture}
           showLoadingCard={this.state.showLoadingCard}
           showLoadingContent={this.state.loadingCaptureContent}
           errorFound={this.state.captureContentErrorFound}
         />
-      	<h3>Replays</h3>
-      	<Button
-      		onClick={this.showReplayCallout}
-      		content="Add Replay"
-      	/>
-      	{this.renderReplayForm()}
-      	<ReplayContainer
-          cards={this.state.replayCards}
+        <h3>Replays</h3>
+        <Button
+          onClick={this.showReplayCallout}
+          content="Add Replay"
+        />
+        {this.renderReplayForm()}
+        <ReplayContainer
+          cards={this.props.Replays}
           showLoadingCard={this.state.showReplayLoadingCard}
           showLoadingContent={this.state.loadingReplayContent}
           errorFound={this.state.replayContentErrorFound}

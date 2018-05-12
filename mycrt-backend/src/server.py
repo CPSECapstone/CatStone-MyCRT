@@ -216,9 +216,10 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
-                    p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
-                    p.daemon = True
-                    p.start()
+                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
+                    # p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
+                    # p.daemon = True
+                    # p.start()
                 else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
                     prepare_scheduled_replay(newReplay, capture, db.get_session(), g.user)
@@ -303,15 +304,14 @@ def create_app(config={}):
             user = user_repository.find_user_by_username(username_or_token)
             if not user or not user.verify_password(password):
                 g.user = None
-                return True
+                return False
 
         g.user = user
         return True
 
     @app.route('/authenticate', methods=['GET'])
-    @auth.login_required
     def login():
-        if (g.user is None):
+        if (not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
 
         token = g.user.generate_auth_token()
@@ -359,13 +359,13 @@ def create_app(config={}):
 
         return jsonify(metrics), 200
 
-    @app.teardown_appcontext
-    def shutdown_session(exception=None):
-        db.get_session().remove()
+    # @app.teardown_appcontext
+    # def shutdown_session(exception=None):
+
+        # db.get_session().remove()
 
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')

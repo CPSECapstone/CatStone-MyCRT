@@ -37,25 +37,91 @@ export function register(userInfo, cb, errCb) {
           })
     }
 }
-// logInUser() {
-//     $.ajax({
-//       url: SERVER_PATH + "/authenticate",
-//       dataType: 'json',
-//       headers: {'Content-Type': 'application/json',
-//                 'Authorization': 'Basic ' + btoa(this.state.usernameValue + ":" + this.state.passwordValue)},
-//       type: 'GET',
-//       success: function(data) {
-//         console.log("Successful Login");
-//         console.log(data.token);
-//         this.setState(prevState => ({
-//           showLogInError: false
-//         }));
-//         this.props.onLogIn(data.token);
-//       }.bind(this),
-//       error: function(xhr, status, err) {
-//         console.error(this.props.url, status, err.toString());
-//         this.setState(prevState => ({
-//           showLogInError: true
-//         }));
-//       }.bind(this)
-//   });
+
+export function getAllCaptures(cb, errCb) {
+    return (dispatch, prevState) => {
+        api.getAllCaptures()
+          .then(captures => dispatch({captures: captures, type: "GET_CAPTURES"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+              if (errCb)
+                 errCb();
+              console.log('We had an error of ' + error);
+          });
+    }
+}
+
+export function getAllReplays(cb, errCb) {
+    return (dispatch, prevState) => {
+        api.getAllReplays()
+          .then(replays => dispatch({replays: replays, type: "GET_ALL_REPLAYS"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+              if (errCb)
+                 errCb();
+              console.log('We had an error of ' + error);
+          });
+    }
+}
+
+export function getS3Buckets(cb, errCb) {
+    return (dispatch, prevState) => {
+        api.getS3Buckets()
+          .then(buckets => dispatch({buckets: buckets, type: "GET_USER_BUCKETS"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+              if (errCb) errCb();
+              console.log("Error retrieving S3 Buckets: " + error);
+          })
+    }
+}
+
+export function getRDSInstances(region, cb, errCb) {
+    return (dispatch, prevState) => {
+        api.getRDSInstances(region)
+          .then(rdsInstances => dispatch({rdsInstances: rdsInstances, type: "GET_USER_INSTANCES"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+              if (errCb) errCb();
+              console.log("Error retrieving RDS Instances: " + error);
+          })
+    }
+}
+
+export function postCapture(capture, cb, errCb) {
+    return (dispatch, prevState) => {
+        api.postCapture(capture)
+          .then(() => dispatch({capture: {
+             captureAlias: capture.alias,
+             captureStatus: 4, //LOADING
+             rdsInstance: capture.rds_endpoint,
+             s3Bucket: capture.bucket_name,
+             endTime: capture.end_time,
+             startTime: capture.start_time
+          }, type:"ADD_CAPTURE"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+            console.log("--- ERROR POSTING----")
+            console.log(error)
+            error.then((result) => {if (errCb) errCb(result.error)})  
+          })
+    }
+}
+
+export function postReplay(replay, cb, errCb) {
+    return (dispatch, prevState) => {
+        api.postReplay(replay)
+          .then(() => dispatch({replay: {
+            replayAlias: replay.replay_alias,
+            rdsInstance: replay.rds_endpoint,
+            s3Bucket: replay.bucket_name,
+            replayStatus: 4, //LOADING
+            startTime: replay.start_time,
+            is_fast: replay.is_fast
+          }, type:"ADD_REPLAY"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+            error.then((result) => {if (errCb) errCb(result.error)})  
+          })
+    }
+}

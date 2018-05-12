@@ -50,7 +50,7 @@ class LogIn extends Component {
   logInUser() {
     this.props.logIn(this.state.usernameValue, this.state.passwordValue,
       () => this.props.history.push("/dashboard"),
-      () => {this.setState(prevState => ({showLogInError: true})); console.log(this.props.history)}
+      () => this.setState(prevState => ({showLogInError: true}))
     );
 }
 
