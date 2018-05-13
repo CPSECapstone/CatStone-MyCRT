@@ -7,6 +7,11 @@ import * as api from '../api';
     };
 }*/
 
+export function setToken(token) {
+    return (dispatch, prevState) => {
+        api.setToken(token)
+    }
+}
 export function logIn(username, password, cb, errCb) {
     return (dispatch, prevState) => {
         api.logIn(username, password)
@@ -22,7 +27,7 @@ export function logOut(cb) {
 
     return (dispatch, prevState) => {
         api.logOut();
-
+        dispatch({type:"LOG_OUT"});
         if (cb) cb();
     }
 }

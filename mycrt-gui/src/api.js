@@ -87,6 +87,10 @@ export function del(endpoint) {
     })
 }
 
+export function setToken(tok) {
+    token = tok;
+}
+
 /**
  * 
  * @param {string} username 

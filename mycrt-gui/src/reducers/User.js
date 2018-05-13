@@ -5,7 +5,7 @@ function User(state = {}, action) {
     switch(action.type) {
     case 'LOG_IN':
        return {token: action.token};
-    case 'SIGN_OUT':
+    case 'LOG_OUT':
        return {}; // Clear user state
     default:
        return state;
