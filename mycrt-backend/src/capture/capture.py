@@ -12,8 +12,12 @@ from src.database.updateRecords import updateCapture
 from src.metrics.metrics import save_metrics
 from src.email.email_server import sendCaptureEmail
 
+import time
+from threading import Timer
+
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
+
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture):
     try:
@@ -25,18 +29,49 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         return {'Error': {'Message': 'Failed to connect to your database with credentials',
                       'Code': 400}}
 
-    newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
+    new_capture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
-    if (newCapture):
-        return newCapture[0][0]
+    if new_capture:
+        return new_capture[0][0]
 
     return {'Error': {'Message': 'Failed to insert capture into database',
                       'Code': 400}}
 
 
+def start_capture():
+    pass
+
+
+def end_capture():
+    pass
+
+
+def capture_tick():
+    get_log()
+    clear_log()
+    append_to_file()
+    set_next_time_to_tick()
+
+
+def get_log():
+    pass
+
+
+def clear_log():
+    pass
+
+
+def append_to_file():
+    pass
+
+
+def set_next_time_to_tick():
+    pass
+
+
 def completeCapture(capture, user, db_session):
     s3 = boto3.client('s3', aws_access_key_id=user.access_key,
-     aws_secret_access_key=user.secret_key)
+                      aws_secret_access_key=user.secret_key)
     currentCapture = capture
 
     fileName = currentCapture['captureAlias'] + '.log'
@@ -111,6 +146,7 @@ def completeCapture(capture, user, db_session):
         os.remove(fileName)
     except:
         pass
+
 
 def get_db_query(db_name):
     db_query = """Select event_time, argument from mysql.general_log where
