@@ -216,10 +216,10 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
-                    replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
-                    # p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
-                    # p.daemon = True
-                    # p.start()
+                    # replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
+                    p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
+                    p.daemon = True
+                    p.start()
                 else:
                     newReplay = getReplayFromId(response, db.get_session())[0]
                     prepare_scheduled_replay(newReplay, capture, db.get_session(), g.user)
@@ -311,7 +311,7 @@ def create_app(config={}):
 
     @app.route('/authenticate', methods=['GET'])
     def login():
-        if (not verify_password(request.authorization.username, request.authorization.password)):
+        if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
 
         token = g.user.generate_auth_token()
