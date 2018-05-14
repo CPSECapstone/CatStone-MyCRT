@@ -25,14 +25,16 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         return {'Error': {'Message': 'Failed to connect to your database with credentials',
                       'Code': 400}}
 
-    newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
-        '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
+    if end_time == None:
+        newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time, bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
+    else:
+        newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
+            '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
     if (newCapture):
         return newCapture[0][0]
 
     return {'Error': {'Message': 'Failed to insert capture into database',
                       'Code': 400}}
-
 
 def completeCapture(capture, user, db_session):
     s3 = boto3.client('s3', aws_access_key_id=user.access_key,

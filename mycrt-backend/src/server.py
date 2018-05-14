@@ -18,6 +18,7 @@ from .capture.captureScheduler import checkAllRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
+from .database.updateRecords import updateCaptureEndTime
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -80,6 +81,31 @@ def create_app(config={}):
 
         return jsonify(userCapture), 200
 
+    #FIXING
+    @app.route('/users/captures/<capture_id>', methods=['PUT'])
+    @auth.login_required
+    def update_capture_time(capture_id):
+        print('hello')
+        if request.headers['Content-Type'] == 'application/json':
+            jsonData = request.json
+
+            if 'end_time' not in jsonData:
+                return jsonify({"error": "Missing field in request."}), 400
+            else:
+                end_time = jsonData['end_time']
+
+                # NOT DONE
+                updateCaptureEndTime(capture_id, end_time, db.get_session())
+                userCaptures = getCaptureFromId(capture_id, db.get_session())
+
+                userCapture = userCaptures[0]
+                # add correct error thing
+                return jsonify(userCapture), 200
+
+        else:
+            return jsonify({"error": "Missing field in request."}), 400
+
+
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
     def get_users_captures():
@@ -95,6 +121,9 @@ def create_app(config={}):
     def post_capture():
         if request.headers['Content-Type'] == 'application/json':
             jsonData = request.json
+
+            if 'end_time' not in jsonData:
+                jsonData['end_time'] = None
 
             if ('rds_endpoint' not in jsonData or
                 'region_name' not in jsonData or
