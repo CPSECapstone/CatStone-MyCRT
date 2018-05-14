@@ -74,7 +74,8 @@ class HomePage extends Component {
       pauseReplayPolling: false,
       loadingReplayContent: true,
       showDBConnectFailure: false,
-      showAliasFailure: false
+      showAliasFailure: false,
+      aliasError: undefined
     };
 
 
@@ -478,8 +479,11 @@ class HomePage extends Component {
   }
 
   handleAliasChange(event, value) {
+    var regEx = /^[-_a-zA-Z0-9]+$/i;
+
     this.setState(prevState => ({
-      aliasValue: value
+      aliasValue: value,
+      aliasError: ((regEx.test(value)) ? "" : "Invalid must contain alphanumeric, -, or _")
     }))
   }
 
@@ -532,7 +536,8 @@ class HomePage extends Component {
       captureEndDay: undefined,
       isErrorVisible: false,
       showDBConnectFailure: false,
-      showAliasFailure: false
+      showAliasFailure: false,
+      aliasError: undefined
     }));
     this.hideCaptureCallout();
   }
@@ -547,7 +552,8 @@ class HomePage extends Component {
       isErrorVisible: false,
       showDBConnectFailure: false,
       showAliasFailure: false,
-      selectedCapture: undefined
+      selectedCapture: undefined,
+      aliasError: undefined
     }));
 
     this.hideReplayCallout();
@@ -684,6 +690,7 @@ class HomePage extends Component {
             Capture Alias
              <TextField
               hintText="Type alias here"
+              errorText={this.state.aliasError}
               onChange={this.handleAliasChange}
             />
           </div>
@@ -843,6 +850,7 @@ class HomePage extends Component {
           Replay Alias
              <TextField
             hintText="Type alias here"
+            errorText={this.state.aliasError}
             onChange={this.handleAliasChange}
           />
         </div>
