@@ -17,7 +17,8 @@ const defaultState = {};
 const persistConfig = {
     key: 'root',
     storage: storage,
-    stateReconciler: autoMergeLevel2
+    stateReconciler: autoMergeLevel2,
+    whiteList: ['User']
 };
 
 const pReducer = persistReducer(persistConfig, rootReducer);

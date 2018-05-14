@@ -8,7 +8,6 @@ import NavBar from '../Header/NavBar.js';
 import LogIn from '../Pages/LogIn.js';
 import HomePage from '../Pages/HomePage.js';
 import ViewResults from '../Pages/ViewResults.js';
-import PersistAuthorization from '../PersistAuthorization/PersistAuthorization.js';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import $ from 'jquery';
@@ -64,55 +63,58 @@ class Main extends Component {
       this.props.setToken(this.props.User.token);
     }
 
-      return (
+    return (
       <MuiThemeProvider>
-      <div class="App">
-        {/* <PersistAuthorization> */}
-        <Switch>
-          <Route exact path='/' render={() => { 
-            console.log("render " + this.state.selected)
-            if (this.state.loggedIn || (this.props.User && this.props.User.token)) {
+        <div class="App">
+          <Switch>
+            <Route exact path='/' render={() => {
+              console.log("render " + this.state.selected)
+              if (this.state.loggedIn || (this.props.User && this.props.User.token)) {
+                return (
+                  <Redirect to={"/" + navLinks[this.state.selected].href} />
+                );
+              }
               return (
-                <Redirect to={"/" + navLinks[this.state.selected].href}/>
+                <Redirect to="/login" />
               );
-            }
-            return (
-              <Redirect to="/login"/>
-            );
-          }}/>
-          <Route path='/dashboard' 
-           render={() => {if (this.isLoggedIn()) {
-            return(<div>
-              <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))}/>
-              <div class="app-content">
-                <NavBar navLinks={navLinks} switchTab={this.switchTab}/>
-                <NavPage selected={this.state.selected} parentContext={this} {...this.props}/>
-              </div>
-            </div>)}
-            else {
-              return (<Redirect to="/login"/>)
-            }}
-            }/>
-          <Route path='/results'
-           render={() => {
-             if (this.isLoggedIn()) {
-             return(
-            <div>
-              <Header onLogOut={() => that.props.logOut(() => that.props.history.push("/login"))}/>
-              <div class="app-content">
-                <NavBar navLinks={navLinks} switchTab={this.switchTab}/>
-                <NavPage selected={1} parentContext={this} {...this.props}/>
-              </div>
-            </div>)}
-            else {
-              return (<Redirect to="/login"/>)
-            }}
+            }} />
+            <Route path='/dashboard'
+              render={() => {
+                if (this.isLoggedIn()) {
+                  return (<div>
+                    <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
+                    <div class="app-content">
+                      <NavBar navLinks={navLinks} switchTab={this.switchTab} />
+                      <NavPage selected={this.state.selected} parentContext={this} {...this.props} />
+                    </div>
+                  </div>)
+                }
+                else {
+                  return (<Redirect to="/login" />)
+                }
+              }
+              } />
+            <Route path='/results'
+              render={() => {
+                if (this.isLoggedIn()) {
+                  return (
+                    <div>
+                      <Header onLogOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
+                      <div class="app-content">
+                        <NavBar navLinks={navLinks} switchTab={this.switchTab} />
+                        <NavPage selected={1} parentContext={this} {...this.props} />
+                      </div>
+                    </div>)
+                }
+                else {
+                  return (<Redirect to="/login" />)
+                }
+              }
 
-            }/>
-          <Route path='/login'
-           render={() => <LogIn onLogIn={this.onLogIn} parentContext={this} {...this.props}/>}/>
-        </Switch>
-        {/* </PersistAuthorization> */}
+              } />
+            <Route path='/login'
+              render={() => <LogIn onLogIn={this.onLogIn} parentContext={this} {...this.props} />} />
+          </Switch>
         </div>
       </MuiThemeProvider>
     );
