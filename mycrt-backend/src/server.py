@@ -85,7 +85,6 @@ def create_app(config={}):
     def get_users_captures():
         current_user = g.user
 
-        checkAllRDSInstances(current_user, db.get_session())
         allCaptures = getUsersCaptures(current_user.username, db.get_session())
 
         return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
