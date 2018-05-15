@@ -15,7 +15,6 @@ def checkAllRDSInstances(db_session):
     now = datetime.datetime.now() + datetime.timedelta(hours=8)
 
     #Go through all the captures we received
-    print(currentCaptures)
     for capture in currentCaptures:
         if capture['endTime']  + datetime.timedelta(hours=1) <= now:
             user = getUserFromId(capture["userId"], db_session)[0]
