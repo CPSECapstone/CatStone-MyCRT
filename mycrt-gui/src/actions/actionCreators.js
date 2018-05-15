@@ -3,6 +3,9 @@ import * as api from '../api';
 export function setToken(token) {
     return (dispatch, prevState) => {
         api.setToken(token)
+          .catch((error) => {
+              dispatch({type:"LOG_OUT"})
+          })
     }
 }
 export function logIn(username, password, cb, errCb) {
@@ -31,6 +34,7 @@ export function register(userInfo, cb, errCb) {
           .then(result => console.log("User Created successfully"))
           .then(() => {if (cb) cb();})
           .catch((error) => {
+              checkError(error, dispatch);
               if (errCb) errCb("User already exists");
           })
     }
@@ -42,6 +46,7 @@ export function getAllCaptures(cb, errCb) {
           .then(captures => dispatch({captures: captures, type: "GET_CAPTURES"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
+            checkError(error, dispatch);
               if (errCb)
                  errCb();
               console.log('We had an error of ' + error);
@@ -55,6 +60,7 @@ export function getAllReplays(cb, errCb) {
           .then(replays => dispatch({replays: replays, type: "GET_ALL_REPLAYS"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
+            checkError(error, dispatch);
               if (errCb)
                  errCb();
               console.log('We had an error of ' + error);
@@ -68,6 +74,7 @@ export function getS3Buckets(cb, errCb) {
           .then(buckets => dispatch({buckets: buckets, type: "GET_USER_BUCKETS"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
+            checkError(error, dispatch);
               if (errCb) errCb();
               console.log("Error retrieving S3 Buckets: " + error);
           })
@@ -80,6 +87,7 @@ export function getRDSInstances(region, cb, errCb) {
           .then(rdsInstances => dispatch({rdsInstances: rdsInstances, type: "GET_USER_INSTANCES"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
+            checkError(error, dispatch);
               if (errCb) errCb();
               console.log("Error retrieving RDS Instances: " + error);
           })
@@ -99,8 +107,6 @@ export function postCapture(capture, cb, errCb) {
           }, type:"ADD_CAPTURE"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
-            console.log("--- ERROR POSTING----")
-            console.log(error)
             error.then((result) => {if (errCb) errCb(result.error)})  
           })
     }
@@ -122,4 +128,8 @@ export function postReplay(replay, cb, errCb) {
             error.then((result) => {if (errCb) errCb(result.error)})  
           })
     }
+}
+
+function checkError(err, dispatcher) {
+    return err[0].includes("Unauthorized") ? dispatcher({type:"LOG_OUT"}) : console.log(err); 
 }
