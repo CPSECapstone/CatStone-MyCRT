@@ -20,6 +20,17 @@ def getUserFromUsername(username, db_session):
 	userQuery = db_session.query(User).filter(User.username == username)
 	return db_session.execute(userQuery).fetchall()
 
+
+def getUserFromId(userId, db_session):
+	"""
+		Function to get a User given the username
+
+		Keyword arguments:
+		userId -- the userId of the user you want to obtain
+	"""
+	userQuery = db_session.query(User).filter(User.id == userId)
+	return db_session.execute(userQuery).fetchall()
+
 def getUserEmail(username, db_session):
 	"""
 		Function to get a user email
@@ -117,6 +128,13 @@ def getAllCapturesThatHaveNotCompleted(userId, db_session):
 	"""
 
 	captureInformation = Capture.query.filter(Capture.captureStatus <= 1).filter(Capture.userId == userId)
+	return Capture.convertToDict(db_session.execute(captureInformation).fetchall())
+
+def getAllIncompleteCaptures(db_session):
+	"""Function to get all current captures that have a status of 0
+	"""
+
+	captureInformation = Capture.query.filter(Capture.captureStatus <= 1)
 	return Capture.convertToDict(db_session.execute(captureInformation).fetchall())
 
 def getUsersReplays(userId, isFast, db_session):
