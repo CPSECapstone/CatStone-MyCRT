@@ -89,6 +89,17 @@ export function del(endpoint) {
 
 export function setToken(tok) {
     token = tok;
+
+    headers.set('Authorization', 'Basic ' + token);
+    return get("authenticate")
+      .then((response) => {
+        if (response.ok) {
+            return response.json();
+        }
+
+        console.log("Failed to login");
+        return createErrorPromise(response)
+    });
 }
 
 /**

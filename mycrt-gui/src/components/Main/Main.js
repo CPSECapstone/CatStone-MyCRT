@@ -42,6 +42,12 @@ class Main extends Component {
     document.body.style.background = "#333b44";
   }
 
+  componentWillMount() {
+    if (this.props.User && this.props.User.token) {
+      this.props.setToken(this.props.User.token);
+    }
+  }
+
   isLoggedIn() {
     return (this.props.User && this.props.User.token);
   }
@@ -59,9 +65,6 @@ class Main extends Component {
   render() {
     console.log("Im in App " + this.state.selected);
     var that = this;
-    if (this.props.User && this.props.User.token) {
-      this.props.setToken(this.props.User.token);
-    }
 
     return (
       <MuiThemeProvider>
