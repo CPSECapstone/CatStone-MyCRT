@@ -6,6 +6,7 @@ from src.database.updateRecords import updateReplay
 from src.database.addRecords import insertScheduledQuery
 from src.database.getRecords import getCaptureFromId
 from src.metrics.metrics import save_metrics
+from src.email.email_server import sendReplayEmail
 from datetime import datetime
 from flask import g
 import warnings
@@ -85,6 +86,8 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "WriteIOPS", region_name, user)
+
+    sendReplayEmail(replay_id, user.email, db_session)
 
     try:
         os.remove(replay_alias + ".metrics")
