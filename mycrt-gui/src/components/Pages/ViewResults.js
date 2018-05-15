@@ -183,7 +183,6 @@ class ViewResults extends Component {
     var selectedRows = [];
     var relatedCaptureId = -1;
 
-
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(i);
