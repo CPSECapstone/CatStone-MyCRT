@@ -329,9 +329,14 @@ class HomePage extends Component {
       () => {
         var rdsMenuItems = [];
         var instances = this.props.RDSInstances;
+        var errMes = "No instances available in this region";
 
         for (let i = 0; i < instances.length; i++) {
           rdsMenuItems.push(<MenuItem value={instances[i]} key={i} primaryText={`${instances[i]}`} />);
+        }
+
+        if (rdsMenuItems.length === 0) {
+          rdsMenuItems.push(<MenuItem value={errMes} key={0} primaryText={errMes} />);
         }
 
         that.setState(prevState => ({
