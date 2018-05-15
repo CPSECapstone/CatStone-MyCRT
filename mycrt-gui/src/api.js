@@ -90,7 +90,7 @@ export function del(endpoint) {
 export function setToken(tok) {
     token = tok;
 
-    headers.set('Authorization', 'Basic ' + token);
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
     return get("authenticate")
       .then((response) => {
         if (response.ok) {
