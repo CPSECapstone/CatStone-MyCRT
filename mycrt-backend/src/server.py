@@ -85,7 +85,6 @@ def create_app(config={}):
     def get_users_captures():
         current_user = g.user
 
-        checkAllRDSInstances(current_user, db.get_session())
         allCaptures = getUsersCaptures(current_user.username, db.get_session())
 
         return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
@@ -216,6 +215,8 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
+                    # Note: Leaving this here because process doesn't work might need to use Thread instead refer captureScheduler.py
+                    # replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
                     p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
                     p.daemon = True
                     p.start()
@@ -302,14 +303,17 @@ def create_app(config={}):
         if not user:
             user = user_repository.find_user_by_username(username_or_token)
             if not user or not user.verify_password(password):
+                g.user = None
                 return False
 
         g.user = user
         return True
 
     @app.route('/authenticate', methods=['GET'])
-    @auth.login_required
     def login():
+        if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
+            return jsonify(), 401
+
         token = g.user.generate_auth_token()
         return jsonify({ "token" : token.decode('ascii') })
 
@@ -359,4 +363,15 @@ def create_app(config={}):
     def shutdown_session(exception=None):
         db.get_session().remove()
 
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+        return response
+
     return app
+
+
+
+

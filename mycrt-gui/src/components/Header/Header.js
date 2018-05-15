@@ -61,7 +61,7 @@ class Header extends Component {
       		<h5>My Capture Replay Tool</h5>
       	</div>
       	<div class="header-glyphicons">
-          <div class="logout glyphiconstyle" onClick={this.props.onLogOut}>
+          <div class="logout glyphiconstyle" onClick={this.props.logOut}>
             Logout
             <div class="glyphicon glyphicon-log-out" />
           </div>
