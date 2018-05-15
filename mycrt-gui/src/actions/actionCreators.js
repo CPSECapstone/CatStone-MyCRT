@@ -1,11 +1,4 @@
 import * as api from '../api';
-//TODO: remove template function, replace with other actions
-
-/*export function exampleAction(credentials, cb) {
-    return (dispatch, prevState) => {
-        
-    };
-}*/
 
 export function setToken(token) {
     return (dispatch, prevState) => {

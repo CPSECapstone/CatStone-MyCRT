@@ -216,6 +216,7 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
+                    # Note: Leaving this here because process doesn't work might need to use Thread instead refer captureScheduler.py
                     # replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
                     p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
                     p.daemon = True
@@ -359,10 +360,9 @@ def create_app(config={}):
 
         return jsonify(metrics), 200
 
-    # @app.teardown_appcontext
-    # def shutdown_session(exception=None):
-
-        # db.get_session().remove()
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        db.get_session().remove()
 
     @app.after_request
     def after_request(response):

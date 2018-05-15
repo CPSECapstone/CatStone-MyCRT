@@ -1,5 +1,3 @@
-//TODO: replace sample User reducer
-
 function User(state = {}, action) {
     console.log("Prss reducing action " + action.type);
     switch(action.type) {
