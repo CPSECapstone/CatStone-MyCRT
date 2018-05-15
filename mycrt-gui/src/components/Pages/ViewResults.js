@@ -282,47 +282,22 @@ class ViewResults extends Component {
   }
 
   getCaptureData() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/captures",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        component.setState(prevState => ({
-          captures: json["userCaptures"].filter(capture => capture.captureStatus > IN_PROGRESS),
-          showCaptureResultsLoading: false
-        }));
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+    this.props.getAllCaptures(() => {
+      this.setState(prevState => ({
+        captures: this.props.Capture.filter(capture => capture.captureStatus > IN_PROGRESS),
+        showCaptureResultsLoading: false
+      }));
+    })
   }
 
   getReplayData() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/replays",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        component.setState(prevState => ({
-          replays: json["userReplays"].filter(replay => replay.replayStatus > IN_PROGRESS),
-          showReplayResultsLoading: false
-        }));
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+    this.props.getAllReplays(() => {
+      this.setState(prevState => ({
+        replays: this.props.Replays.filter(replay => replay.replayStatus > IN_PROGRESS),
+        showReplayResultsLoading: false
+      }));
+    })
+    
   }
   
   getCaptureMetricData(captureId) {
@@ -334,7 +309,7 @@ class ViewResults extends Component {
       url: SERVER_PATH + "/users/captures/" + captureId + "/metrics",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+                'Authorization': 'Basic ' + btoa(this.props.User.token + ":")},
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
@@ -396,7 +371,7 @@ class ViewResults extends Component {
       url: SERVER_PATH + "/users/replays/" + replayId + "/metrics",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+                'Authorization': 'Basic ' + btoa(this.props.User.token + ":")},
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
