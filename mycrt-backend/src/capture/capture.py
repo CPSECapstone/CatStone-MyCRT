@@ -48,6 +48,8 @@ def completeCapture(capture, user, db_session):
         os.remove(fileName)
 
     with open(fileName, 'w', newline='') as f:
+        connection = None
+        queries = []
         try:
             sql = get_db_query(currentCapture['rdsDatabase'])
 
@@ -56,15 +58,16 @@ def completeCapture(capture, user, db_session):
                                          passwd=currentCapture['rdsPassword'],
                                          db=currentCapture['rdsDatabase'],
                                          connect_timeout=5)
-            queries = []
 
         except OperationalError as e:
             errList.append(e)
         finally:
-            if connection.open:
-                connection.close()
+            if connection != None:
+                if connection.open:
+                    connection.close()
 
         try:
+            cursor = None
             if len(errList) == 0:
                 connection = pymysql.connect(currentCapture['rdsInstance'],
                                          user=currentCapture['rdsUsername'],
@@ -80,9 +83,10 @@ def completeCapture(capture, user, db_session):
         except MySQLError as e:
             errList.append(e)
         finally:
-            cursor.close()
-            if connection.open:
-                connection.close()
+            if cursor != None:
+                cursor.close()
+                if connection.open:
+                    connection.close()
 
         file_writer = csv.writer(f)
 
