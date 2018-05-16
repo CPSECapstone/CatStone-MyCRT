@@ -1,10 +1,13 @@
 from pymysql import OperationalError, MySQLError
 import pymysql
 import time
+import threading
+
 from flask import Flask
 from src.database.mycrt_database import MyCrtDb
 
 from src.capture.captureScheduler import checkAllRDSInstances
+
 
 def run_capture_app():
     app = Flask(__name__, static_url_path='')
@@ -19,6 +22,11 @@ def run_capture_app():
         db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
         checkAllRDSInstances(db.get_session())
         print("Finished Checking All RDS Instances")
+
+        while threading.active_count() > 1:
+            time.sleep(5)
+            print("The current number of threads is ", threading.active_count())
+
 
 
 

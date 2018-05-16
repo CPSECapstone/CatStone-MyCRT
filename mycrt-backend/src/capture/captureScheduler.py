@@ -6,8 +6,6 @@ from src.database.models import User
 import datetime
 import threading
 
-
-
 def checkAllRDSInstances(db_session):
     currentCaptures = getAllIncompleteCaptures(db_session)
 
