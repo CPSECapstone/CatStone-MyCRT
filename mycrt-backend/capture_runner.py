@@ -26,7 +26,8 @@ def run_capture_app():
         while threading.active_count() > 1:
             time.sleep(5)
             print("The current number of threads is ", threading.active_count())
-
+        
+        db.dispose_engine()
 
 
 
