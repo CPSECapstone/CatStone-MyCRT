@@ -14,7 +14,6 @@ from .capture.capture import capture
 from .replay.replay import replay, prepare_scheduled_replay
 from .metrics.metrics import save_metrics
 from .capture.captureHelper import getS3Instances, getRDSInstances
-from .capture.captureScheduler import checkAllRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
