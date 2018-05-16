@@ -16,6 +16,23 @@ def updateCapture(captureId, captureStatus, db_session):
     except:
 	    db_session.rollback()
 
+
+def updateCaptureEndTime(captureId, endTime, db_session):
+    """Function to update a capture's end time
+
+       Keyword arguments:
+        captureId -- the id of the capture to update
+        endTime -- the time when the capture was stopped
+    """
+
+    formatted_end_time = endTime.split('.', 1)[0].replace('T', ' ')
+    try:
+        capture = db_session.query(Capture).filter(Capture.captureId == captureId).update({"endTime": formatted_end_time})
+        db_session.commit()
+    except:
+	    db_session.rollback()
+
+
 def updateReplay(replayId, replayStatus, db_session):
     """Function to update a given replay's status
     
