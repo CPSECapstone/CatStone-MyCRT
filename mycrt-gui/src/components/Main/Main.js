@@ -63,7 +63,6 @@ class Main extends Component {
   }
 
   render() {
-    console.log("Im in App " + this.state.selected);
     var that = this;
 
     return (
