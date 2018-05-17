@@ -9,10 +9,6 @@ class NavPage extends Component {
     super(props);
   }
 
-  componentDidUpdate () {
-    window.scrollTo(0, 0)
-  }
-
   render() {
     var parentContext = this.props.parentContext;
     var that = this;
