@@ -678,6 +678,10 @@ class HomePage extends Component {
               </div>
             </div>
           </div>
+          {this.state.regionSelected && this.state.rdsItems.length === 0 &&
+            <div class="error-message" style={{paddingTop:10}}>
+              No instances in this region, please select a different one.
+          </div>}
           <div class="add-capture-item">
             S3 Bucket
             <DropDownMenu
