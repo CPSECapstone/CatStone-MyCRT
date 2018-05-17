@@ -183,19 +183,19 @@ class ViewResults extends Component {
     var selectedRows = [];
     var relatedCaptureId = -1;
 
-
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(i);
       }
-    } else if (rows === "none") {
+    } else if (rows === "none" || rows.length === 0) {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(-1);
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
         selectedCaptureRows: selectedRows,
-        relatedCaptureId: relatedCaptureId
+        selectedCaptureIds: [],
+        relatedCaptureId: this.state.selectedReplayRows.length >= 1 ? this.state.relatedCaptureId : -1
       }));
       return;
     } else {
@@ -237,12 +237,14 @@ class ViewResults extends Component {
     var disabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
+    console.log("Selected rows are----" + rows);
 
     if (rows === "all") {
       for (var i = 0; i < this.state.replays.length; i++) {
         selectedRows.push(i);
       }
     } else if (rows === "none" || rows.length === 0) {
+      console.log("Related capture Id----" + this.state.relatedCaptureId)
       for (var i = 0; i < this.state.replays.length; i++) {
         selectedRows.push(-1);
       }
@@ -250,7 +252,7 @@ class ViewResults extends Component {
         isCompareDisabled: true,
         selectedReplayRows: selectedRows,
         selectedReplayIds: [],
-        relatedCaptureId: this.state.relatedCaptureId        
+        relatedCaptureId: this.state.selectedCaptureIds.length > 0 ? this.state.relatedCaptureId : -1
       }));
       return;
     } else {
@@ -476,7 +478,7 @@ class ViewResults extends Component {
           height={'100%'}
           fixedHeader={true}
           selectable={true}
-          multiSelectable={true}
+          multiSelectable={false}
           onRowSelection={this.onCaptureRowSelection}
         >
           <TableHeader
@@ -958,10 +960,10 @@ class ViewResults extends Component {
 
   render() {
     return(
-    <div class="ViewResults">
+    <div className="ViewResults">
       <h2>View Results</h2>
-      <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
-         <div class="refresh-result-button">
+      <h5 className="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
+         <div className="refresh-result-button">
             <Button
               onClick={this.onCompareClick}
               content="Compare"
