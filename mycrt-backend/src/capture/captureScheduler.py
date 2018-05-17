@@ -10,13 +10,18 @@ def checkAllRDSInstances(db_session):
     currentCaptures = getAllIncompleteCaptures(db_session)
 
     #The current time 
-    now = datetime.datetime.now() + datetime.timedelta(hours=8)
+    now = datetime.datetime.utcnow()# + datetime.timedelta(hours=8)
 
     #Go through all the captures we received
     for capture in currentCaptures:
+        print("Current time is :", now)
+        print(capture['startTime'])
         if capture['endTime'] == None:
             pass
-        elif capture['endTime']  + datetime.timedelta(hours=1) <= now:
+        elif capture['startTime'] <= now and capture['endTime'] > now:
+            #datetime.timedelta(hours=1)
+            updateCapture(capture['captureId'], 1, db_session)
+        elif capture['endTime']<= now:
             user = getUserFromId(capture["userId"], db_session)[0]
             userObject = User(id=user[0], username=user[1], password=user[2],
                               email=user[3], access_key=user[4],
@@ -25,5 +30,3 @@ def checkAllRDSInstances(db_session):
             thread.daemon = True
             thread.start()
             # completeCapture(capture, User(user), db_session)
-        elif capture['startTime']  + datetime.timedelta(hours=1) <= now and capture['endTime'] + datetime.timedelta(hours=1) > now:
-            updateCapture(capture['captureId'], 1, db_session)

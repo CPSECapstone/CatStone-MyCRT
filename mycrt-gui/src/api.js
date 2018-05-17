@@ -2,7 +2,7 @@
  *
  * File that contains all direct api calls to the baseURL.
  */
-const baseURL = "http://localhost:5000/";
+const baseURL = "http://ec2-18-144-66-102.us-west-1.compute.amazonaws.com:8080/";
 const headers = new Headers();
 var token;
 
