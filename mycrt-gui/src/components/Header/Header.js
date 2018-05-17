@@ -5,7 +5,7 @@ import './Header.css';
 import '../../bootstrap-3.3.7-dist/css/bootstrap.min.css';
 
 import Popover from 'material-ui/Popover/Popover';
-import MenuItem from 'material-ui/MenuItem';
+import {Menu, MenuItem} from 'material-ui/Menu';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
 
@@ -15,27 +15,64 @@ class Header extends Component {
     this.state = {
       isPopoverVisible: false,
       anchorEl: undefined,
+      settingsVisible: false,
+      helpVisible: false,
       anchorOrigin: {
         horizontal: 'left',
-        vertical: 'bottom'
+        vertical: 'bottom',
       },
       targetOrigin: {
         horizontal: 'left',
-        vertical: 'top'
-      }
+        vertical: 'top',
+      },
     };
 
     // This binding is necessary to make `this` work in the callback
-    this.showPopover = this.showPopover.bind(this);
-
     this.handleNotifClick = this.handleNotifClick.bind(this);
     this.handleRequestClose = this.handleRequestClose.bind(this);
   }
 
-  showPopover() {
-    this.setState(prevState => ({
-      isPopoverVisible: true
-    }));
+  handleSettingsClick = (event) => {
+    // This prevents ghost click.
+    event.preventDefault();
+    this.setState({
+      settingsVisible: true,
+      anchorEl: event.currentTarget,
+    });
+  };
+
+  handleHelpClick = (event) => {
+    // This prevents ghost click.
+    event.preventDefault();
+    this.setState({
+      helpVisible: true,
+      anchorEl: event.currentTarget,
+    });
+  };
+
+  handleRequestClose = () => {
+    this.setState({
+      settingsVisible: false,
+      helpVisible: false
+    });
+  };
+
+  setAnchor = (positionElement, position) => {
+    const {anchorOrigin} = this.state;
+    anchorOrigin[positionElement] = position;
+
+    this.setState({
+      anchorOrigin: anchorOrigin,
+    });
+  };
+
+  setTarget = (positionElement, position) => {
+    const {targetOrigin} = this.state;
+    targetOrigin[positionElement] = position;
+
+    this.setState({
+      targetOrigin: targetOrigin,
+    });
   };
 
   handleNotifClick(event) {
@@ -46,13 +83,13 @@ class Header extends Component {
       anchorEl: event.currentTarget
     }));
     console.log(event.currentTarget)
-  };
+  }
 
   handleRequestClose() {
     this.setState(prevState => ({
       isPopoverVisible: false
     }));
-  };
+  }
 
   render() {
     return (
@@ -65,18 +102,10 @@ class Header extends Component {
             Logout
             <div class="glyphicon glyphicon-log-out" />
           </div>
-          <IconMenu
-            iconButtonElement={
-              <IconButton touch={true}>
-                <div class="glyphiconstyle glyphicon glyphicon-question-sign" />
-              </IconButton>
-            }
-          >
-            <MenuItem>
-            <a href="https://noizrnel3.wixsite.com/catstone/external-contact-page" target="_blank"><div>Contact Us</div></a>
-            </MenuItem>
-          </IconMenu>
-	        <div class="glyphiconstyle glyphicon glyphicon-cog" />
+          <div class="glyphiconstyle glyphicon glyphicon-question-sign" 
+            onClick={this.handleHelpClick}></div>
+          <div class="glyphiconstyle glyphicon glyphicon-cog" 
+              onClick={this.handleSettingsClick}></div>
 	        <IconMenu
             iconButtonElement={
               <IconButton touch={true}>
@@ -98,6 +127,31 @@ class Header extends Component {
             </div>
           </IconMenu>
         </div>
+        <Popover
+          open={this.state.settingsVisible}
+          anchorEl={this.state.anchorEl}
+          anchorOrigin={this.state.anchorOrigin}
+          targetOrigin={this.state.targetOrigin}
+          onRequestClose={this.handleRequestClose}
+        >
+          <Menu>
+            <MenuItem primaryText="Refresh" />
+            <MenuItem primaryText="Help &amp; feedback" />
+            <MenuItem primaryText="Settings" />
+            <MenuItem primaryText="Sign out" />
+          </Menu>
+        </Popover>
+        <Popover
+          open={this.state.helpVisible}
+          anchorEl={this.state.anchorEl}
+          anchorOrigin={this.state.anchorOrigin}
+          targetOrigin={this.state.targetOrigin}
+          onRequestClose={this.handleRequestClose}
+        >
+          <Menu>
+            <MenuItem primaryText="Contact Us" onClick={() => {window.open("https://noizrnel3.wixsite.com/catstone/external-contact-page")}}/>
+          </Menu>
+        </Popover>
       </div>
     );
   }
