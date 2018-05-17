@@ -14,10 +14,10 @@ from .capture.capture import capture
 from .replay.replay import replay, prepare_scheduled_replay
 from .metrics.metrics import save_metrics
 from .capture.captureHelper import getS3Instances, getRDSInstances
-from .capture.captureScheduler import checkAllRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
+from .database.updateRecords import updateCaptureEndTime
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -80,6 +80,27 @@ def create_app(config={}):
 
         return jsonify(userCapture), 200
 
+    @app.route('/users/captures/<capture_id>', methods=['PUT'])
+    @auth.login_required
+    def update_capture_time(capture_id):
+        if request.headers['Content-Type'] == 'application/json':
+            jsonData = request.json
+
+            if 'end_time' not in jsonData:
+                return jsonify({"error": "Missing field in request."}), 400
+            else:
+                end_time = jsonData['end_time']
+
+                updateCaptureEndTime(capture_id, end_time, db.get_session())
+                userCaptures = getCaptureFromId(capture_id, db.get_session())
+
+                userCapture = userCaptures[0]
+                return jsonify(userCapture), 200
+
+        else:
+            return jsonify({"error": "Missing field in request."}), 400
+
+
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
     def get_users_captures():
@@ -94,6 +115,9 @@ def create_app(config={}):
     def post_capture():
         if request.headers['Content-Type'] == 'application/json':
             jsonData = request.json
+
+            if 'end_time' not in jsonData:
+                jsonData['end_time'] = None
 
             if ('rds_endpoint' not in jsonData or
                 'region_name' not in jsonData or
@@ -351,7 +375,7 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'], g.user)
+            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'], user_capture_replay['startTime'], g.user)
             if (type(response) is not dict):
                 metrics[metric] = response
             else:

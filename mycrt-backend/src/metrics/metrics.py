@@ -73,10 +73,11 @@ def calculate_period(start_time, end_time):
     elif period <= 30:
         return 30
 
-def get_metrics(metric_type, metric_alias, bucket_name, user):
+def get_metrics(metric_type, metric_alias, bucket_name, start_time, user):
     s3 = boto3.resource('s3', aws_access_key_id=user.access_key,
      aws_secret_access_key=user.secret_key)
     metric_data = []
+    time_format = '%Y-%m-%d %H:%M:%S'
 
     try:
         s3.Bucket(bucket_name).download_file(metric_alias, metric_alias)
@@ -89,7 +90,11 @@ def get_metrics(metric_type, metric_alias, bucket_name, user):
                 datapoint = dict(item.split("=") for item in line.rstrip('\n').split(","))
 
                 parsed_time = datapoint['Timestamp'].split(":")
-                datapoint['Timestamp'] = parsed_time[0] + ':'+ parsed_time[1]
+                datapoint['Timestamp'] = parsed_time[0] + ':'+ parsed_time[1] + ':' + parsed_time[3]
+
+                time_object = datetime.strptime(datapoint['Timestamp'], time_format)
+
+                datapoint['Timestamp'] = str(time_object - start_time)
 
                 if metric_type is 'FreeableMemory':
                     datapoint[metric_type] = float(datapoint[metric_type]) / 1000000
