@@ -507,7 +507,7 @@ class HomePage extends Component {
 
   isCaptureFieldsFilled() {
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
-      && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
+      && this.state.captureStartDay != undefined
       && this.state.dbUsernameValue != undefined && this.state.dbNameValue != undefined
       && this.state.dbPasswordValue != undefined && this.state.aliasValue != undefined
       && !this.state.isErrorVisible;
@@ -568,9 +568,11 @@ class HomePage extends Component {
       region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
-      end_time: this.state.captureEndDay.toISOString(),
       start_time: this.state.captureStartDay.toISOString()
     };
+    if (this.state.captureEndDay !== undefined) {
+      card["end_time"] = this.state.captureEndDay.toISOString();
+    }
     this.sendCaptureData(card);
     this.setState(prevState => ({
       isErrorVisible: false

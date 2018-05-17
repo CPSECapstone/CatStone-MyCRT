@@ -27,6 +27,7 @@ class ReplayContainer extends Component {
                 end={undefined}
                 status={card.replayStatus}
                 loading={this.props.showLoadingCard}
+                isCapture={false}
               />
           )}
           </div>

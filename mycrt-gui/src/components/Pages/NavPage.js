@@ -24,7 +24,7 @@ class NavPage extends Component {
       }
     }
     return (
-      <div class="NavPage">
+      <div class={"NavPage" + (this.props.isNavBarHidden ? " NavPage-hidden" : "")}>
       	{getState(this.props.selected)}
       </div>
     );

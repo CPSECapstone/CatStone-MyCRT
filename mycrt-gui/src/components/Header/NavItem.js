@@ -15,11 +15,13 @@ class NavItem extends Component {
   render() {
     console.log("NavItem " + this.props.itemIdx);
     return (
-      <div class="nav-item" onClick={this.onNavItemClick} href={this.props.href}>
+      <div class={"nav-item" + (this.props.selected ? " nav-item-selected" : "")} onClick={this.onNavItemClick} href={this.props.href}>
         <div class={"glyphicon " + this.props.icon}/>
-      	<a>
-      		{this.props.name}
-      	</a>
+      	{!this.props.hidden &&
+          <a>
+        		{this.props.name}
+        	</a>
+        }
       </div>
     );
   }
