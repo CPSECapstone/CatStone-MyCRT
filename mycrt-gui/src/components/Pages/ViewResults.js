@@ -195,7 +195,7 @@ class ViewResults extends Component {
         isCompareDisabled: true,
         selectedCaptureRows: selectedRows,
         selectedCaptureIds: [],
-        relatedCaptureId: this.state.selectedReplayRows.length >= 1 ? this.state.relatedCaptureId : -1
+        relatedCaptureId: this.state.selectedReplayIds.length >= 1 ? this.state.relatedCaptureId : -1
       }));
       return;
     } else {
