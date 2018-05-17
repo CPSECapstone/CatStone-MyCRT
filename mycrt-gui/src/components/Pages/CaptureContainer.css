@@ -4,14 +4,15 @@
 
 .CaptureContainer > .capture-subcontainer {
 	background: #ececec;
-	padding: 10px;
+	padding: 0 10px 10px 10px;
 	border-radius: 5px;
-	width: 95vw;
   text-align: center;
   display: flex;
   flex-direction: row;
   flex: 0 0 100%;
   overflow: auto;
+  flex-wrap: wrap;
+  max-height: 390px;
 }
 
 .no-captures {

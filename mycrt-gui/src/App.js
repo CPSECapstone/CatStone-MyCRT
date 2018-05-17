@@ -17,10 +17,13 @@ import Main from './components/Main/Main';
 
 // Properties to pass to Main
 function mapStateToProps(state) {
-   console.log("State is " + JSON.stringify(state));
    //returning reducers
    return {
-       User: state.User
+       User: state.User,
+       Capture: state.Capture,
+       Replays: state.Replays,
+       S3Buckets: state.S3Buckets,
+       RDSInstances: state.RDSInstances
    };
 }
 

@@ -14,10 +14,10 @@ from .capture.capture import capture
 from .replay.replay import replay, prepare_scheduled_replay
 from .metrics.metrics import save_metrics
 from .capture.captureHelper import getS3Instances, getRDSInstances
-from .capture.captureScheduler import checkAllRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
+from .database.updateRecords import updateCaptureEndTime
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -80,12 +80,32 @@ def create_app(config={}):
 
         return jsonify(userCapture), 200
 
+    @app.route('/users/captures/<capture_id>', methods=['PUT'])
+    @auth.login_required
+    def update_capture_time(capture_id):
+        if request.headers['Content-Type'] == 'application/json':
+            jsonData = request.json
+
+            if 'end_time' not in jsonData:
+                return jsonify({"error": "Missing field in request."}), 400
+            else:
+                end_time = jsonData['end_time']
+
+                updateCaptureEndTime(capture_id, end_time, db.get_session())
+                userCaptures = getCaptureFromId(capture_id, db.get_session())
+
+                userCapture = userCaptures[0]
+                return jsonify(userCapture), 200
+
+        else:
+            return jsonify({"error": "Missing field in request."}), 400
+
+
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
     def get_users_captures():
         current_user = g.user
 
-        checkAllRDSInstances(current_user, db.get_session())
         allCaptures = getUsersCaptures(current_user.username, db.get_session())
 
         return jsonify({"count": len(allCaptures), "userCaptures": allCaptures})
@@ -95,6 +115,9 @@ def create_app(config={}):
     def post_capture():
         if request.headers['Content-Type'] == 'application/json':
             jsonData = request.json
+
+            if 'end_time' not in jsonData:
+                jsonData['end_time'] = None
 
             if ('rds_endpoint' not in jsonData or
                 'region_name' not in jsonData or
@@ -216,6 +239,8 @@ def create_app(config={}):
                 capture = getCaptureFromId(jsonData['capture_id'], db.get_session())[0]
 
                 if (jsonData['is_fast']):
+                    # Note: Leaving this here because process doesn't work might need to use Thread instead refer captureScheduler.py
+                    # replay(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user)
                     p = Process(target=replay, args=(response, jsonData['replay_alias'], jsonData['rds_endpoint'], jsonData['region_name'], jsonData['db_user'], jsonData['db_password'], jsonData['db_name'], jsonData['bucket_name'], capture, db.get_session(), g.user))
                     p.daemon = True
                     p.start()
@@ -302,14 +327,17 @@ def create_app(config={}):
         if not user:
             user = user_repository.find_user_by_username(username_or_token)
             if not user or not user.verify_password(password):
+                g.user = None
                 return False
 
         g.user = user
         return True
 
     @app.route('/authenticate', methods=['GET'])
-    @auth.login_required
     def login():
+        if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
+            return jsonify(), 401
+
         token = g.user.generate_auth_token()
         return jsonify({ "token" : token.decode('ascii') })
 
@@ -347,7 +375,7 @@ def create_app(config={}):
             return jsonify(), 403
 
         for metric in availableMetrics:
-            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'], g.user)
+            response = get_metrics(metric, alias + '.metrics', user_capture_replay['s3Bucket'], user_capture_replay['startTime'], g.user)
             if (type(response) is not dict):
                 metrics[metric] = response
             else:
@@ -359,4 +387,19 @@ def create_app(config={}):
     def shutdown_session(exception=None):
         db.get_session().remove()
 
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+        return response
+
     return app
+
+    @app.before
+    def verify_login():
+        if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
+            return jsonify(), 401
+
+
+
