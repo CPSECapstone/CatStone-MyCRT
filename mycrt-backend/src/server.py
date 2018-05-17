@@ -63,9 +63,45 @@ def create_app(config={}):
         secret_key = jsonData['secret_key']
         success = user_repository.register_user(username, password, email, access_key, secret_key)
         if (not success):
-            return jsonify({"error": "Could not add record to database."}), 400
+            return jsonify({"error": "Could not add record to database."}), 500
 
         return jsonify(), 201
+
+        @app.route('/users/<username>/keys', methods=['PUT'])
+        def edit_keys():
+            jsonData = request.get_json()
+
+            if (!getUserFromUsername(jsonData['username'], db.get_session())):
+                return jsonify({"error": "User does not exist."}), 404
+
+            if (g.user.username != username):
+                return jsonify({"error": "username does not match logged in user."}), 401
+
+            if ('username' not in jsonData or
+                'password' not in jsonData or
+                'email' not in jsonData or
+                'secret_key' not in jsonData or
+                'access_key' not in jsonData):
+                    return jsonify({"error": "Missing field in request."}), 400
+
+            jsonUsername = jsonData['username']
+            jsonPassword = jsonData['password']
+            jsonEmail = jsonData['email']
+            jsonAccess_key = jsonData['access_key']
+            jsonSecret_key = jsonData['secret_key']
+
+            if(not user.verify_password(jsonPassword)):
+                return jsonify({"error": "Password does not match."}), 400
+
+            if (g.user.username != jsonUsername || g.user.email != jsonEmail):
+                return jsonify({"error": "Cannot edit username or email."}), 400
+
+            success = updateKeys(jsonUsername, jsonAccess_key, jsonSecret_key)
+
+            if (not success):
+                return jsonify({"error": "Could not edit record in the database."}), 500
+
+            return jsonify(), 200
 
     @app.route('/users/captures/<capture_id>', methods=['GET'])
     @auth.login_required
@@ -400,6 +436,3 @@ def create_app(config={}):
     def verify_login():
         if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
-
-
-
