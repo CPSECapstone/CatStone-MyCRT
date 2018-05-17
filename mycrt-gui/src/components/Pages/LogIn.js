@@ -200,6 +200,7 @@ class LogIn extends Component {
     ];
 
     return (
+      <div class="LogInBg">
       <div class="LogIn">
         <div class="log-in-content">
           <div class="log-in-item">
@@ -293,6 +294,7 @@ class LogIn extends Component {
             </div>
           </div>
         </Dialog>
+      </div>
       </div>
     );
   }

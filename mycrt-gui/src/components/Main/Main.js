@@ -34,12 +34,10 @@ class Main extends Component {
     this.state = {
       selected: 0,
       loggedIn: false,
-      token: undefined,
+      token: undefined
     };
     this.switchTab = this.switchTab.bind(this);
     this.isLoggedIn = this.isLoggedIn.bind(this);
-
-    document.body.style.background = "#333b44";
   }
 
   componentWillMount() {
@@ -101,7 +99,7 @@ class Main extends Component {
                 if (this.isLoggedIn()) {
                   return (
                     <div>
-                      <Header onLogOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
+                      <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
                       <div class="app-content">
                         <NavBar navLinks={navLinks} switchTab={this.switchTab} />
                         <NavPage selected={1} parentContext={this} {...this.props} />
