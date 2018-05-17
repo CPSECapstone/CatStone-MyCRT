@@ -17,7 +17,6 @@ import Main from './components/Main/Main';
 
 // Properties to pass to Main
 function mapStateToProps(state) {
-   console.log("State is " + JSON.stringify(state));
    //returning reducers
    return {
        User: state.User,

@@ -6,8 +6,6 @@ from src.database.models import User
 import datetime
 import threading
 
-
-
 def checkAllRDSInstances(db_session):
     currentCaptures = getAllIncompleteCaptures(db_session)
 
@@ -16,7 +14,9 @@ def checkAllRDSInstances(db_session):
 
     #Go through all the captures we received
     for capture in currentCaptures:
-        if capture['endTime']  + datetime.timedelta(hours=1) <= now:
+        if capture['endTime'] == None:
+            pass
+        elif capture['endTime']  + datetime.timedelta(hours=1) <= now:
             user = getUserFromId(capture["userId"], db_session)[0]
             userObject = User(id=user[0], username=user[1], password=user[2],
                               email=user[3], access_key=user[4],

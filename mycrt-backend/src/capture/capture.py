@@ -25,14 +25,16 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
         return {'Error': {'Message': 'Failed to connect to your database with credentials',
                       'Code': 400}}
 
-    newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
-        '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
+    if end_time == None:
+        newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time, bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
+    else:
+        newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
+            '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
     if (newCapture):
         return newCapture[0][0]
 
     return {'Error': {'Message': 'Failed to insert capture into database',
                       'Code': 400}}
-
 
 def completeCapture(capture, user, db_session):
     s3 = boto3.client('s3', aws_access_key_id=user.access_key,
@@ -46,6 +48,8 @@ def completeCapture(capture, user, db_session):
         os.remove(fileName)
 
     with open(fileName, 'w', newline='') as f:
+        connection = None
+        queries = []
         try:
             sql = get_db_query(currentCapture['rdsDatabase'])
 
@@ -54,15 +58,16 @@ def completeCapture(capture, user, db_session):
                                          passwd=currentCapture['rdsPassword'],
                                          db=currentCapture['rdsDatabase'],
                                          connect_timeout=5)
-            queries = []
 
         except OperationalError as e:
             errList.append(e)
         finally:
-            if connection.open:
-                connection.close()
+            if connection != None:
+                if connection.open:
+                    connection.close()
 
         try:
+            cursor = None
             if len(errList) == 0:
                 connection = pymysql.connect(currentCapture['rdsInstance'],
                                          user=currentCapture['rdsUsername'],
@@ -78,9 +83,10 @@ def completeCapture(capture, user, db_session):
         except MySQLError as e:
             errList.append(e)
         finally:
-            cursor.close()
-            if connection.open:
-                connection.close()
+            if cursor != None:
+                cursor.close()
+                if connection.open:
+                    connection.close()
 
         file_writer = csv.writer(f)
 
