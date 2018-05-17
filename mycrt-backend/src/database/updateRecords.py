@@ -35,7 +35,7 @@ def updateCaptureEndTime(captureId, endTime, db_session):
 
 def updateReplay(replayId, replayStatus, db_session):
     """Function to update a given replay's status
-    
+
        Keyword arguments:
          replayId -- the id of the replay to update
          replayStatus -- an integer value [0, 1, 2, 3] representing [not started, in progress, success, error]
@@ -43,6 +43,21 @@ def updateReplay(replayId, replayStatus, db_session):
 
     try:
         replay = db_session.query(Replay).filter(Replay.replayId == replayId).update({"replayStatus": replayStatus})
+        db_session.commit()
+    except:
+        db_session.rollback()
+
+def updateKeys(username, accessKey, secretKey, db_session):
+    """Function to update a users keys
+
+       Keyword arguments:
+         username -- users unique username
+         accessKey -- new access key
+         secretKey -- new secret key
+    """
+
+    try:
+        user = db_session.query(User).filter(User.username == username).update({"access_key": accessKey, "secret_key", secretKey})
         db_session.commit()
     except:
         db_session.rollback()
