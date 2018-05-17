@@ -3,7 +3,7 @@ from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
 from .database.user_repository import UserRepository
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -129,6 +129,16 @@ def create_app(config={}):
                 'alias' not in jsonData or
                 'bucket_name' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
+
+            now = datetime.now() + timedelta(hours=7,minutes=-5)
+
+            start_time = jsonData['start_time'].split('.', 1)[0].replace('T', ' ')
+            time_format = '%Y-%m-%d %H:%M:%S'
+
+            start_time_object = datetime.strptime(start_time, time_format)
+
+            if (start_time_object < now):
+                return jsonify({"error": "Start time cannot be more than 5 minutes in the past."}), 400
 
             if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0 or
                 len(getCaptureFromAlias(jsonData['alias'], db.get_session())) != 0):
