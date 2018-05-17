@@ -396,6 +396,10 @@ def create_app(config={}):
 
     return app
 
+    @app.before
+    def verify_login():
+        if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
+            return jsonify(), 401
 
 
 
