@@ -86,6 +86,7 @@ class ViewResults extends Component {
     this.getCaptureData = this.getCaptureData.bind(this);
     this.getReplayData = this.getReplayData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
+    this.downloadLog = this.downloadLog.bind(this);
     this.onReplayLogClose = this.onReplayLogClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
@@ -423,6 +424,34 @@ class ViewResults extends Component {
     });
   }
 
+  /**
+   * Function referenced from
+   * 
+   * https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser/20343999
+   * 
+   * Param:
+   *   isCapture: expected boolean to determine if a capture or replay is being downloaded
+   */
+  downloadLog(isCapture) {
+    var metricsObject = {
+      freeableMemory: this.state.freeableMemory,
+      cpuUtilization: this.state.cpuUtilization,
+      readIOPS: this.state.readIOPS,
+      writeIOPS: this.state.writeIOPS
+    }
+    
+    console.log("current processing" + (isCapture ? "capture" : "replay"));
+    console.log(metricsObject);
+
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(metricsObject));
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", 
+      (isCapture ? this.state.captureDetails["captureAlias"] : this.state.replayDetails["replayAlias"])+ ".json");
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
   onLogClose() {
     this.setState(prevState => ({
       isLogOpen: false,
@@ -612,7 +641,8 @@ class ViewResults extends Component {
       <FlatButton
         label="Download Log"
         primary={true}
-        onClick={this.onLogClose}
+        disabled={this.state.captureDetailsLoading}
+        onClick={() => this.downloadLog(true)}
       />,
     ];
 
@@ -734,7 +764,8 @@ class ViewResults extends Component {
       <FlatButton
         label="Download Log"
         primary={true}
-        onClick={this.onReplayLogClose}
+        disabled={this.state.replayDetailsLoading}
+        onClick={() => this.downloadLog(false)}
       />,
     ];
 
