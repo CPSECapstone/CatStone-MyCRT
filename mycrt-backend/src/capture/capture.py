@@ -115,12 +115,13 @@ def capture_loop(user, user_capture, db_session):
     sendCaptureEmail(user_capture['captureId'], user.email, db_session)
 
 
-def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture):
+def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture, Capture=Capture, Thread=Thread):
     new_capture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
     capture_dict = Capture.convertToDict(new_capture)
     Thread(target=capture_loop, args=[user, capture_dict[0], db_session]).start()
     return new_capture[0][0]
+
 
 def completeCapture(capture, user, db_session):
     s3 = boto3.client('s3', aws_access_key_id=user.access_key,

@@ -15,13 +15,13 @@ class MyTestCase(unittest.TestCase):
         mock_insert_capture = MagicMock(return_value=[['expected']])
         mock_pymysql = MagicMock()
         mock_pymysql.connect = MagicMock()
+        mock_thread = MagicMock()
+        mock_capture = MagicMock()
         user = TestUser()
-        result = capture('rds_endpoint', 'region_name', 'db_user', 'db_password', 'db_name', 'start_time', 'end_time', 'alias', 'bucket_name', user, 'db_session', pymysql=mock_pymysql, insertCapture=mock_insert_capture)
+        result = capture('rds_endpoint', 'region_name', 'db_user', 'db_password', 'db_name', 'start_time', 'end_time', 'alias', 'bucket_name', user, 'db_session', pymysql=mock_pymysql, insertCapture=mock_insert_capture, Capture=mock_capture, Thread=mock_thread)
 
         assert result == 'expected'
-        assert mock_pymysql.connect.called
         mock_insert_capture.assert_called_with(user.id, 'alias', 'start_time', 'end_time', 'bucket_name', 'alias', 'rds_endpoint', 'db_user', 'db_password', 'db_name', 'region_name', 'db_session')
-
 
 
 if __name__ == '__main__':
