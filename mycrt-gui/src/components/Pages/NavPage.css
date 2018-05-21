@@ -5,3 +5,7 @@
 	flex: 1 1 auto;
 	margin-left: 140px;
 }
+
+.NavPage-hidden {
+	margin-left: 45px !important;
+}

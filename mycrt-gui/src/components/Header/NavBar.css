@@ -10,6 +10,24 @@
   height: 100%;
 }
 
+.Nav-Bar-hidden {
+  width: 45px !important;
+}
+
 .bg-light {
     background-color: #f8f9fa;
+}
+
+.hide-nav-bar{
+  color: #aaa;
+  text-align: center;
+  border-top: solid 1px #aaa;
+  border-bottom: solid 1px #aaa;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.hide-nav-bar:hover {
+  color: white;
+  background: #46515d;
 }
