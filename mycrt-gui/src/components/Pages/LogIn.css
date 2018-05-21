@@ -1,3 +1,10 @@
+.LogInBg {
+  text-align: center;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #333b44;
+}
+
 .LogIn {
 	text-align: center;
 	position: fixed;

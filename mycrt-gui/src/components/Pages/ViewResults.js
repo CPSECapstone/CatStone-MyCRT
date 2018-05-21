@@ -85,7 +85,6 @@ class ViewResults extends Component {
     this.getReplayMetricData = this.getReplayMetricData.bind(this);
     this.getCaptureData = this.getCaptureData.bind(this);
     this.getReplayData = this.getReplayData.bind(this);
-    this.sendData = this.sendData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
     this.onReplayLogClose = this.onReplayLogClose.bind(this);
 
@@ -184,19 +183,19 @@ class ViewResults extends Component {
     var selectedRows = [];
     var relatedCaptureId = -1;
 
-
     if (rows === "all") {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(i);
       }
-    } else if (rows === "none") {
+    } else if (rows === "none" || rows.length === 0) {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(-1);
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
         selectedCaptureRows: selectedRows,
-        relatedCaptureId: relatedCaptureId
+        selectedCaptureIds: [],
+        relatedCaptureId: this.state.selectedReplayIds.length >= 1 ? this.state.relatedCaptureId : -1
       }));
       return;
     } else {
@@ -238,12 +237,14 @@ class ViewResults extends Component {
     var disabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
+    console.log("Selected rows are----" + rows);
 
     if (rows === "all") {
       for (var i = 0; i < this.state.replays.length; i++) {
         selectedRows.push(i);
       }
     } else if (rows === "none" || rows.length === 0) {
+      console.log("Related capture Id----" + this.state.relatedCaptureId)
       for (var i = 0; i < this.state.replays.length; i++) {
         selectedRows.push(-1);
       }
@@ -251,7 +252,7 @@ class ViewResults extends Component {
         isCompareDisabled: true,
         selectedReplayRows: selectedRows,
         selectedReplayIds: [],
-        relatedCaptureId: this.state.relatedCaptureId        
+        relatedCaptureId: this.state.selectedCaptureIds.length > 0 ? this.state.relatedCaptureId : -1
       }));
       return;
     } else {
@@ -283,47 +284,22 @@ class ViewResults extends Component {
   }
 
   getCaptureData() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/captures",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        component.setState(prevState => ({
-          captures: json["userCaptures"].filter(capture => capture.captureStatus > IN_PROGRESS),
-          showCaptureResultsLoading: false
-        }));
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+    this.props.getAllCaptures(() => {
+      this.setState(prevState => ({
+        captures: this.props.Capture.filter(capture => capture.captureStatus > IN_PROGRESS),
+        showCaptureResultsLoading: false
+      }));
+    })
   }
 
   getReplayData() {
-    var parentContextState = this.props.parentContext.state;
-    var component = this;
-
-    $.ajax({
-      url: SERVER_PATH + "/users/replays",
-      dataType: 'json',
-      headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
-      type: 'GET',
-      success: function(json) {
-        component.setState(prevState => ({
-          replays: json["userReplays"].filter(replay => replay.replayStatus > IN_PROGRESS),
-          showReplayResultsLoading: false
-        }));
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
+    this.props.getAllReplays(() => {
+      this.setState(prevState => ({
+        replays: this.props.Replays.filter(replay => replay.replayStatus > IN_PROGRESS),
+        showReplayResultsLoading: false
+      }));
+    })
+    
   }
   
   getCaptureMetricData(captureId) {
@@ -335,7 +311,7 @@ class ViewResults extends Component {
       url: SERVER_PATH + "/users/captures/" + captureId + "/metrics",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+                'Authorization': 'Basic ' + btoa(this.props.User.token + ":")},
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
@@ -397,7 +373,7 @@ class ViewResults extends Component {
       url: SERVER_PATH + "/users/replays/" + replayId + "/metrics",
       dataType: 'json',
       headers: {'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(parentContextState.token + ":")},
+                'Authorization': 'Basic ' + btoa(this.props.User.token + ":")},
       type: 'GET',
       success: function(json) {
         component.setState(prevState => ({
@@ -487,21 +463,6 @@ class ViewResults extends Component {
     this.getReplayMetricData(this.state.replays[rowIndex].replayId);
   }
 
-  sendData(formDataValues) {
-    console.log(formDataValues);
-    $.ajax({
-      url: 'http://localhost:5000/metrics',
-      dataType: 'json',
-      type: 'GET',
-      success: function(data) {
-        this.setState({formData: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  }
-
   isRelatedReplayOrCapture(captureId) {
     return (this.state.selectedCaptureRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
       (this.state.selectedReplayRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
@@ -517,7 +478,7 @@ class ViewResults extends Component {
           height={'100%'}
           fixedHeader={true}
           selectable={true}
-          multiSelectable={true}
+          multiSelectable={false}
           onRowSelection={this.onCaptureRowSelection}
         >
           <TableHeader
@@ -999,10 +960,10 @@ class ViewResults extends Component {
 
   render() {
     return(
-    <div class="ViewResults">
+    <div className="ViewResults">
       <h2>View Results</h2>
-      <h5 class="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
-         <div class="refresh-result-button">
+      <h5 className="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
+         <div className="refresh-result-button">
             <Button
               onClick={this.onCompareClick}
               content="Compare"

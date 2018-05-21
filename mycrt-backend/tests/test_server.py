@@ -3,7 +3,7 @@ from src.server import create_app
 from src.database.mycrt_database import MyCrtDb
 import unittest
 import tempfile
-from flask import json
+from flask import json, Response
 from base64 import b64encode
 
 class TestServer(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestServer(unittest.TestCase):
 
     def test_login_without_credentials(self):
         result = self.app.get('/authenticate')
-        assert b'Unauthorized' in result.data
+        assert result.status_code == 401
 
     def register_user_request(self, username, password, email, access_key, secret_key):
         ''' Helper method for making a register request
