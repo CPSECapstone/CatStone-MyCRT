@@ -20,9 +20,7 @@ from threading import Thread
 CAPTURE_STATUS_ERROR = 3
 CAPTURE_STATUS_SUCCESS = 2
 
-WAIT_INTERVAL_SECONDS = 3600
-
-SLEEP_INTERVAL = 60
+SLEEP_INTERVAL = 3500
 
 
 class CaptureInterval:
@@ -88,32 +86,6 @@ class CaptureInterval:
         os.remove(self.filename)
 
 
-class capture_context:
-    def __init__(self, user, capture):
-        self.user = user
-        self.capture = capture
-        self.filename = self.capture['alias'] + '.log'
-
-    def __enter__(self, rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture):
-        self.capture_setup(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture)
-
-    def __exit__(self):
-        self.update_capture_status()
-        self.upload_queries_to_s3()
-        self.remove_queries_file()
-
-    def update_capture_status(self):
-        if len(self.errors) > 0:
-            updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
-            print(self.errors)
-        else:
-            updateCapture(capture['captureId'], CAPTURE_STATUS_SUCCESS, db_session)
-            save_metrics(self.capture['captureAlias'], self.capture['startTime'], self.capture['endTime'], self.capture['s3Bucket'], self.capture['rdsInstance'], "CPUUtilization", self.capture['regionName'], self.user)
-            save_metrics(self.capture['captureAlias'], self.capture['startTime'], self.capture['endTime'], self.capture['s3Bucket'], self.capture['rdsInstance'], "FreeableMemory", self.capture['regionName'], self.user)
-            save_metrics(self.capture['captureAlias'], self.capture['startTime'], self.capture['endTime'], self.capture['s3Bucket'], self.capture['rdsInstance'], "ReadIOPS", self.capture['regionName'], self.user)
-            save_metrics(self.capture['captureAlias'], self.capture['startTime'], self.capture['endTime'], self.capture['s3Bucket'], self.capture['rdsInstance'], "WriteIOPS", self.capture['regionName'], self.user)
-
-
 def time_diff_to_seconds(time_diff):
     return time_diff.days * 24 * 3600 + time_diff.seconds
 
@@ -140,36 +112,15 @@ def capture_loop(user, user_capture, db_session):
         save_metrics(user_capture['captureAlias'], user_capture['startTime'], user_capture['endTime'], user_capture['s3Bucket'], user_capture['rdsInstance'], "ReadIOPS", user_capture['regionName'], user)
         save_metrics(user_capture['captureAlias'], user_capture['startTime'], user_capture['endTime'], user_capture['s3Bucket'], user_capture['rdsInstance'], "WriteIOPS", user_capture['regionName'], user)
 
-    sendCaptureEmail(user_capture['user_captureId'], user.email, db_session)
+    sendCaptureEmail(user_capture['captureId'], user.email, db_session)
 
 
 def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture):
     new_capture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
         '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
-    print("New capture:  ")
-    print(new_capture)
     capture_dict = Capture.convertToDict(new_capture)
     Thread(target=capture_loop, args=[user, capture_dict[0], db_session]).start()
     return new_capture[0][0]
-
-
-def old_capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time, end_time, alias, bucket_name, user, db_session, pymysql=pymysql, insertCapture=insertCapture):
-    try:
-        connection = pymysql.connect(rds_endpoint, user=db_user, passwd=db_password, db=db_name, connect_timeout=5)
-
-        if connection.open:
-            connection.close()
-    except OperationalError as e:
-        return {'Error': {'Message': 'Failed to connect to your database with credentials',
-                      'Code': 400}}
-
-    new_capture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
-        '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
-    if new_capture:
-        return new_capture[0][0]
-
-    return {'Error': {'Message': 'Failed to insert capture into database',
-                      'Code': 400}}
 
 
 def completeCapture(capture, user, db_session):
@@ -239,7 +190,6 @@ def completeCapture(capture, user, db_session):
     # update capture status in DB
     if len(errList) > 0:
         updateCapture(capture['captureId'], CAPTURE_STATUS_ERROR, db_session)
-        print(errList)
     else:
         updateCapture(capture['captureId'], CAPTURE_STATUS_SUCCESS, db_session)
         save_metrics(currentCapture['captureAlias'], currentCapture['startTime'], currentCapture['endTime'], currentCapture['s3Bucket'], currentCapture['rdsInstance'], "CPUUtilization", currentCapture['regionName'], user)
