@@ -117,9 +117,6 @@ class Filter extends Component {
     }
 
     handleSelectFieldChange(filterName, event, values) {
-        console.log("Handling select field change");        
-        console.log(filterName);
-        console.log(values);
         this.setState(prevState => this.createJSON(filterName + "Values", values))
     }
 
