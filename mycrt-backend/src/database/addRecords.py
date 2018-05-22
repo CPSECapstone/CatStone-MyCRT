@@ -16,8 +16,12 @@ from .getRecords import getCaptureFromAlias, getReplayFromAlias
                                 "testRegion",
                                 0)
 '''
-def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, db_session):
-	capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
+def insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, db_session, status=None):
+	if status is not None:
+		capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername,
+						  rdsPassword, rdsDatabase, regionName, status)
+	else:
+		capture = Capture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName)
 	try:
 		db_session.add(capture)
 		db_session.commit()
