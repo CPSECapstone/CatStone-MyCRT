@@ -115,7 +115,7 @@ class LogIn extends Component {
   isRegisterFieldsFilled() {
     return this.state.regUsernameValue != undefined && this.state.regPasswordValue != undefined
     && this.state.emailValue != undefined && this.state.awsKeyValue != undefined
-    && this.state.secretKeyValue != undefined;
+    && this.state.secretKeyValue != undefined && !this.state.emailError;
   }
 
   onRegUsernameChange(event, value) {
@@ -142,14 +142,21 @@ class LogIn extends Component {
     }
   }
 
+  /**
+   * Regex referenced from
+   * 
+   * https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
+   */
   onEmailChange(event, value) {
+    var regEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;;
     if (value.length == 0) {
       this.setState(prevState => ({
         emailValue: undefined
       }));
     } else {
       this.setState(prevState => ({
-        emailValue: value
+        emailValue: value,
+        emailError: (regEx.test(value)) ? "" : "Must be a valid email"
       }));
     }
   }
@@ -200,6 +207,7 @@ class LogIn extends Component {
     ];
 
     return (
+      <div class="LogInBg">
       <div class="LogIn">
         <div class="log-in-content">
           <div class="log-in-item">
@@ -265,6 +273,7 @@ class LogIn extends Component {
               Email
                <TextField
                   hintText="Type email here"
+                  errorText={this.state.emailError}
                   onChange={this.onEmailChange}
                 />
             </div>
@@ -293,6 +302,7 @@ class LogIn extends Component {
             </div>
           </div>
         </Dialog>
+      </div>
       </div>
     );
   }

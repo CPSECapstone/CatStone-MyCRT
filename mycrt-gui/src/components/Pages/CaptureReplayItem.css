@@ -5,6 +5,7 @@
   flex-direction: row;
   background: white;
   margin-right: 10px;
+  margin-top: 10px;
   border-radius: 5px;
   padding-right: 5px;
 }
@@ -65,6 +66,29 @@
 	overflow:hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.stop-capture-button-active {
+  background: #ff6161;
+  border-radius: 10px;
+  padding: 1px 0px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 45px;
+}
+
+.stop-capture-button-disabled {
+  background: #eeeeee;
+  border-radius: 10px;
+  padding: 1px 0px;
+  color: white;
+  text-align: center;
+  margin-top: 45px;
+}
+
+.stop-capture-button-active:hover {
+  background: #ff9393;
 }
 
 .glyphicon-refresh-animate {

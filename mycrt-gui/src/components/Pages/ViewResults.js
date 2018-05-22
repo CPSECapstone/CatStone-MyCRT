@@ -19,6 +19,7 @@ import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import Filter from '../Filter/Filter';
 
 const SERVER_PATH = "http://localhost:5000";
 var NOT_STARTED = 0;
@@ -86,6 +87,7 @@ class ViewResults extends Component {
     this.getCaptureData = this.getCaptureData.bind(this);
     this.getReplayData = this.getReplayData.bind(this);
     this.onLogClose = this.onLogClose.bind(this);
+    this.downloadLog = this.downloadLog.bind(this);
     this.onReplayLogClose = this.onReplayLogClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
@@ -95,6 +97,8 @@ class ViewResults extends Component {
     this.renderCompare = this.renderCompare.bind(this);
 
     this.isRelatedReplayOrCapture = this.isRelatedReplayOrCapture.bind(this);
+    
+    this.onFilterChange = this.onFilterChange.bind(this);
   }
 
   componentDidMount() {
@@ -195,7 +199,7 @@ class ViewResults extends Component {
         isCompareDisabled: true,
         selectedCaptureRows: selectedRows,
         selectedCaptureIds: [],
-        relatedCaptureId: this.state.selectedReplayRows.length >= 1 ? this.state.relatedCaptureId : -1
+        relatedCaptureId: this.state.selectedReplayIds.length >= 1 ? this.state.relatedCaptureId : -1
       }));
       return;
     } else {
@@ -216,8 +220,9 @@ class ViewResults extends Component {
 
     
     for (var i = 0; i < selectedRows.length; i++) {
-      var visibleCaptures = this.state.relatedCaptureId === -1 ? this.state.captures :
-         this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId);
+      var visibleCaptures = this.state.relatedCaptureId === -1 ? 
+         this.state.captures.filter(c => (!this.state["captureAliasFilter"] || c.captureAlias.includes(this.state["captureAliasFilter"])))  :
+         this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId )
 
       selectedCaptureIds.push(visibleCaptures[selectedRows[i]].captureId);
       relatedCaptureId = visibleCaptures[selectedRows[i]].captureId;
@@ -270,7 +275,7 @@ class ViewResults extends Component {
     // get capture ids from row indexes
     var selectedReplayIds = [];
     var visibleReplays = this.state.relatedCaptureId === -1 ? 
-     this.state.replays : 
+     this.state.replays.filter(r => (!this.state["replayAliasFilter"] || r.replayAlias.includes(this.state["replayAliasFilter"]))) : 
      this.state.replays.filter(r => r.captureId === this.state.relatedCaptureId);
 
     for (var i = 0; i < selectedRows.length; i++) {
@@ -423,6 +428,34 @@ class ViewResults extends Component {
     });
   }
 
+  /**
+   * Function referenced from
+   * 
+   * https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser/20343999
+   * 
+   * Param:
+   *   isCapture: expected boolean to determine if a capture or replay is being downloaded
+   */
+  downloadLog(isCapture) {
+    var metricsObject = {
+      freeableMemory: this.state.freeableMemory,
+      cpuUtilization: this.state.cpuUtilization,
+      readIOPS: this.state.readIOPS,
+      writeIOPS: this.state.writeIOPS
+    }
+    
+    console.log("current processing" + (isCapture ? "capture" : "replay"));
+    console.log(metricsObject);
+
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(metricsObject));
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", 
+      (isCapture ? this.state.captureDetails["captureAlias"] : this.state.replayDetails["replayAlias"])+ ".json");
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
   onLogClose() {
     this.setState(prevState => ({
       isLogOpen: false,
@@ -469,13 +502,24 @@ class ViewResults extends Component {
       (this.state.relatedCaptureId === -1);
   }
 
+  onFilterChange(filterName, filterValues) {
+    this.setState(prevState => {
+      var obj = {};
+      obj[filterName + "Filter"] = filterValues;
+      return obj;
+    })
+  }
+
   renderCaptureTable() {
     var that = this;
     return (
       <div>
-      <h3>Capture Results</h3>
+          <h3>Capture Results</h3>
+          <Filter 
+            fields={[{name: "captureAlias", displayText: "Capture Alias", type: "TextField"}]}
+            onFilterChange={this.onFilterChange}></Filter>
         <Table
-          height={'100%'}
+          height={this.state.showCaptureResultsLoading || this.state.captures.length == 0 ? '100%' : '250px'}
           fixedHeader={true}
           selectable={true}
           multiSelectable={false}
@@ -503,7 +547,7 @@ class ViewResults extends Component {
           >
             {this.state.captures.map( (row, index) => {
               let boundItemClick = this.onOpenCaptureDetailsClick.bind(this, index);
-              if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
+              if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId) && (!that.state["captureAliasFilter"] || row.captureAlias.includes(that.state["captureAliasFilter"]))) {
                 return(
                 <TableRow key={row.captureId} selected={this.state.selectedCaptureIds.indexOf(row.captureId) !== -1} >
                   <TableRowColumn>{row.captureAlias}</TableRowColumn>
@@ -541,8 +585,12 @@ class ViewResults extends Component {
     return (
       <div>
       <h3>Replay Results</h3>
+      <Filter 
+        fields={[{name: "replayAlias", displayText: "Replay Alias", type: "TextField"}]}
+        onFilterChange={this.onFilterChange}>
+      </Filter>
       <Table
-          height={'100%'}
+          height={this.state.showReplayResultsLoading || this.state.replays.length ? '100%' : '250px'}
           fixedHeader={true}
           selectable={true}
           multiSelectable={true}
@@ -570,7 +618,7 @@ class ViewResults extends Component {
           >
             {this.state.replays.map( (row, index) => {
               let boundItemClick = this.onOpenReplayDetailsClick.bind(this, index);
-              if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
+              if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId) && (!that.state["replayAliasFilter"] || row.replayAlias.includes(that.state["replayAliasFilter"]))) {
                 return(
                 <TableRow key={index} selected={this.state.selectedReplayIds.indexOf(row.replayId) !== -1} >
                   <TableRowColumn>{row.replayAlias}</TableRowColumn>
@@ -612,7 +660,8 @@ class ViewResults extends Component {
       <FlatButton
         label="Download Log"
         primary={true}
-        onClick={this.onLogClose}
+        disabled={this.state.captureDetailsLoading}
+        onClick={() => this.downloadLog(true)}
       />,
     ];
 
@@ -734,7 +783,8 @@ class ViewResults extends Component {
       <FlatButton
         label="Download Log"
         primary={true}
-        onClick={this.onReplayLogClose}
+        disabled={this.state.replayDetailsLoading}
+        onClick={() => this.downloadLog(false)}
       />,
     ];
 
