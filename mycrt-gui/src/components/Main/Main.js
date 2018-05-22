@@ -19,13 +19,15 @@ var navLinks = [
     name: "Dashboard",
     href: "dashboard",
     idx: 0,
-    icon: "glyphicon-dashboard"
+    icon: "glyphicon-dashboard",
+    selected: true
   },
   {
     name: "View Results",
     href: "results",
     idx: 1,
-    icon: "glyphicon-th-list"
+    icon: "glyphicon-th-list",
+    selected: false
   }]
 
 class Main extends Component {
@@ -34,16 +36,25 @@ class Main extends Component {
     this.state = {
       selected: 0,
       loggedIn: false,
-      token: undefined
+      token: undefined,
+      isNavHidden: false
     };
     this.switchTab = this.switchTab.bind(this);
     this.isLoggedIn = this.isLoggedIn.bind(this);
+    this.toggleNavBar = this.toggleNavBar.bind(this);
   }
 
   componentWillMount() {
     if (this.props.User && this.props.User.token) {
       this.props.setToken(this.props.User.token);
     }
+  }
+
+  toggleNavBar() {
+    var oldHidden = this.state.isNavHidden;
+    this.setState(prevState => ({
+      isNavHidden: !oldHidden
+    }));
   }
 
   isLoggedIn() {
@@ -55,6 +66,11 @@ class Main extends Component {
     this.setState(prevState => ({
       selected: idx
     }));
+
+    for (var i in navLinks) {
+      navLinks[i].selected = false;
+    }
+    navLinks[idx].selected = true;
 
     this.props.history.push("/" + navLinks[idx].href);
     //window.location.hash = navLinks[idx].href;
@@ -84,8 +100,8 @@ class Main extends Component {
                   return (<div>
                     <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
                     <div class="app-content">
-                      <NavBar navLinks={navLinks} switchTab={this.switchTab} />
-                      <NavPage selected={this.state.selected} parentContext={this} {...this.props} />
+                      <NavBar navLinks={navLinks} switchTab={this.switchTab} isHidden={this.state.isNavHidden} toggleBar={this.toggleNavBar} />
+                      <NavPage selected={this.state.selected} parentContext={this} {...this.props} isNavBarHidden={this.state.isNavHidden} />
                     </div>
                   </div>)
                 }
@@ -101,8 +117,8 @@ class Main extends Component {
                     <div>
                       <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
                       <div class="app-content">
-                        <NavBar navLinks={navLinks} switchTab={this.switchTab} />
-                        <NavPage selected={1} parentContext={this} {...this.props} />
+                        <NavBar navLinks={navLinks} switchTab={this.switchTab} isHidden={this.state.isNavHidden} toggleBar={this.toggleNavBar} />
+                        <NavPage selected={1} parentContext={this} {...this.props} isNavHidden={false} isNavBarHidden={this.state.isNavHidden} />
                       </div>
                     </div>)
                 }

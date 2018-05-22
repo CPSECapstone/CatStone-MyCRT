@@ -29,3 +29,11 @@
 .nav-item a {
   	color: #aaa;
 }
+
+.nav-item-selected a {
+  color: white !important;
+}
+
+.nav-item-selected > .glyphicon {
+  color: white !important;
+}

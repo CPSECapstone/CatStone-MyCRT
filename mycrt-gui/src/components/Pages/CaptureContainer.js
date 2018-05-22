@@ -15,24 +15,6 @@ class CaptureContainer extends Component {
     super(props);
     this.state = {
     };
-
-    this.getCaptureStatus = this.getCaptureStatus.bind(this);
-  }
-
-  getCaptureStatus(start, end) {
-    //TODO: Poll for status, possibly move this to CaptureReplayItem.js
-    var now = new Date();
-    var status = NOT_STARTED;
-
-    console.log("Now: " + now);
-    console.log("Start: " + start);
-    console.log("End: " + end);
-
-    if (start >= now) {
-      status = (end <= now) ? COMPLETED : IN_PROGRESS;
-    }
-
-    return status;
   }
 
   render() {
@@ -52,6 +34,7 @@ class CaptureContainer extends Component {
                 end={card.endTime}
                 status={card.captureStatus}
                 loading={this.props.showLoadingCard}
+                isCapture={true}
               />
           )}
           </div>
