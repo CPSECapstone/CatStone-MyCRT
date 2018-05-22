@@ -1,0 +1,9 @@
+.text-field-style {
+    padding-left: 20px;
+}
+
+.search-icon-style {
+    padding-top: 10px;
+    padding-left: 10px;
+    transform: scale(1.5)
+}
