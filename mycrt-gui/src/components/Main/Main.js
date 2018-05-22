@@ -130,6 +130,7 @@ class Main extends Component {
               } />
             <Route path='/login'
               render={() => <LogIn onLogIn={this.onLogIn} parentContext={this} {...this.props} />} />
+            <Redirect from="*" to=".."/>
           </Switch>
         </div>
       </MuiThemeProvider>
