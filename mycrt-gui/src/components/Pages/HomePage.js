@@ -117,6 +117,9 @@ class HomePage extends Component {
     this.getReplayData = this.getReplayData.bind(this);
     this.checkReplayLoadingCard = this.checkReplayLoadingCard.bind(this);
     this.isReplayFieldsFilled = this.isReplayFieldsFilled.bind(this);
+
+    this.renderDatabaseFormFields = this.renderDatabaseFormFields.bind(this);
+    this.renderFormAWSFields = this.renderFormAWSFields.bind(this);
   }
 
   componentDidMount() {
@@ -566,10 +569,108 @@ class HomePage extends Component {
     this.setState({
       isErrorVisible: false
     })
-
-
   }
 
+  renderDatabaseFormFields() {
+    return (
+      <div>
+      <div class="add-replay-item">
+      Database Name
+         <TextField
+        hintText="Type name here"
+        onChange={this.handleDBNameChange}
+      />
+    </div>
+    {this.state.showDBConnectFailure &&
+      <div class="error-message">
+        Database credentials are invalid, please check your input.
+      </div>}
+    <div class="add-replay-item">
+      Database Username
+         <TextField
+        hintText="Type username here"
+        onChange={this.handleDBUsernameChange}
+      />
+    </div>
+    <div class="add-replay-item">
+      Database Password
+         <TextField
+        hintText="Type password here"
+        onChange={this.handleDBPasswordChange}
+        type="password"
+      />
+    </div>
+    </div>
+    );
+  }
+
+  renderFormAWSFields() {
+    const dropdownStyle = {
+      customWidth: {
+        width: 300,
+      },
+    };
+
+    return (
+      <div>
+        <div class="add-capture-item">
+          RDS Region
+    <DropDownMenu
+            style={dropdownStyle.customWidth}
+            value={this.state.rdsRegionValue}
+            onChange={this.handleRegionChange}>
+            {rdsRegionItems !== undefined ? rdsRegionItems : []}
+          </DropDownMenu>
+        </div>
+        <div class="rds-instance-item">
+          <div>
+            <div class="rds-instance-row">
+              <div>
+                RDS Instance
+        </div>
+              {this.state.rdsLoading &&
+                <div>
+                  <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                </div>
+              }
+            </div>
+            <div class="override-dropdown-width">
+              <DropDownMenu
+                style={dropdownStyle.customWidth}
+                value={this.state.rdsValue}
+                disabled={this.state.rdsLoading || !this.state.regionSelected}
+                onChange={this.handleRdsChange}>
+                {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
+              </DropDownMenu>
+            </div>
+          </div>
+        </div>
+        {this.state.regionSelected && this.state.rdsItems.length === 0 &&
+          <div class="error-message" style={{ paddingTop: 10 }}>
+            No instances in this region, please select a different one.
+  </div>}
+        <div class="add-capture-item">
+          S3 Bucket
+    <DropDownMenu
+            style={dropdownStyle.customWidth}
+            maxHeight={300}
+            value={this.state.s3Value}
+            onChange={this.handleS3Change}>
+            {this.state.s3Items !== undefined ? this.state.s3Items : []}
+          </DropDownMenu>
+        </div>
+        <div class="add-capture-item">
+          Capture Alias
+     <TextField
+            hintText="Type alias here"
+            errorText={this.state.aliasError}
+            errorStyle={{ width: '500px' }}
+            onChange={this.handleAliasChange}
+          />
+        </div>
+      </div>);
+  }
+  
   renderCaptureForm() {
     const actions = [
       <FlatButton
@@ -603,91 +704,8 @@ class HomePage extends Component {
           <div class="notif-message">
             Ensure that General Logging is enabled before starting a capture.
           </div>
-          <div class="add-capture-item">
-            RDS Region
-            <DropDownMenu
-              style={dropdownStyle.customWidth}
-              value={this.state.rdsRegionValue}
-              onChange={this.handleRegionChange}>
-              {rdsRegionItems !== undefined ? rdsRegionItems : []}
-            </DropDownMenu>
-          </div>
-          <div class="rds-instance-item">
-            <div>
-              <div class="rds-instance-row">
-                <div>
-                  RDS Instance
-                </div>
-                {this.state.rdsLoading &&
-                  <div>
-                    <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-                  </div>
-                }
-              </div>
-              <div class="override-dropdown-width">
-                <DropDownMenu
-                  style={dropdownStyle.customWidth}
-                  value={this.state.rdsValue}
-                  disabled={this.state.rdsLoading || !this.state.regionSelected}
-                  onChange={this.handleRdsChange}>
-                  {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
-                </DropDownMenu>
-              </div>
-            </div>
-          </div>
-          {this.state.regionSelected && this.state.rdsItems.length === 0 &&
-            <div class="error-message" style={{paddingTop:10}}>
-              No instances in this region, please select a different one.
-          </div>}
-          <div class="add-capture-item">
-            S3 Bucket
-            <DropDownMenu
-              style={dropdownStyle.customWidth}
-              maxHeight={300}
-              value={this.state.s3Value}
-              onChange={this.handleS3Change}>
-              {this.state.s3Items !== undefined ? this.state.s3Items : []}
-            </DropDownMenu>
-          </div>
-          <div class="add-capture-item">
-            Capture Alias
-             <TextField
-              hintText="Type alias here"
-              errorText={this.state.aliasError}
-              errorStyle={{width: '500px'}}
-              onChange={this.handleAliasChange}
-            />
-          </div>
-          {this.state.showAliasFailure &&
-            <div class="error-message">
-              Alias already in use, please provide an unique alias.
-          </div>}
-          <div class="add-capture-item">
-            Database Name
-             <TextField
-              hintText="Type name here"
-              onChange={this.handleDBNameChange}
-            />
-          </div>
-          {this.state.showDBConnectFailure &&
-            <div class="error-message">
-              Database credentials are invalid, please check your input.
-          </div>}
-          <div class="add-capture-item">
-            Database Username
-             <TextField
-              hintText="Type username here"
-              onChange={this.handleDBUsernameChange}
-            />
-          </div>
-          <div class="add-capture-item">
-            Database Password
-             <TextField
-              hintText="Type password here"
-              onChange={this.handleDBPasswordChange}
-              type="password"
-            />
-          </div>
+          {this.renderFormAWSFields()}
+          {this.renderDatabaseFormFields()}
           <div class="add-capture-item">
             Start Time
             <div class="capture-row">
@@ -768,48 +786,7 @@ class HomePage extends Component {
             {captureItems}
           </DropDownMenu>
         </div>
-        <div class="add-replay-item">
-          RDS Region
-            <DropDownMenu
-            style={dropdownStyle.customWidth}
-            value={this.state.rdsRegionValue}
-            onChange={this.handleRegionChange}>
-            {rdsRegionItems !== undefined ? rdsRegionItems : []}
-          </DropDownMenu>
-        </div>
-        <div class="rds-instance-item">
-          <div>
-            <div class="rds-instance-row">
-              <div>
-                RDS Instance
-                </div>
-              {this.state.rdsLoading &&
-                <div>
-                  <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-                </div>
-              }
-            </div>
-            <div class="override-dropdown-width">
-              <DropDownMenu
-                style={dropdownStyle.customWidth}
-                value={this.state.rdsValue}
-                disabled={this.state.rdsLoading || !this.state.regionSelected}
-                onChange={this.handleRdsChange}>
-                {this.state.rdsItems !== undefined ? this.state.rdsItems : []}
-              </DropDownMenu>
-            </div>
-          </div>
-        </div>
-        <div class="add-replay-item">
-          S3 Bucket
-            <DropDownMenu
-            style={dropdownStyle.customWidth}
-            maxHeight={300}
-            value={this.state.s3Value}
-            onChange={this.handleS3Change}>
-            {this.state.s3Items !== undefined ? this.state.s3Items : []}
-          </DropDownMenu>
-        </div>
+        {this.renderFormAWSFields()}
         <div class="add-replay-item">
           Replay Alias
              <TextField
@@ -819,36 +796,7 @@ class HomePage extends Component {
             onChange={this.handleAliasChange}
           />
         </div>
-        {this.state.showAliasFailure &&
-          <div class="error-message">
-            Alias already in use, please provide an unique alias.
-          </div>}
-        <div class="add-replay-item">
-          Database Name
-             <TextField
-            hintText="Type name here"
-            onChange={this.handleDBNameChange}
-          />
-        </div>
-        {this.state.showDBConnectFailure &&
-          <div class="error-message">
-            Database credentials are invalid, please check your input.
-          </div>}
-        <div class="add-replay-item">
-          Database Username
-             <TextField
-            hintText="Type username here"
-            onChange={this.handleDBUsernameChange}
-          />
-        </div>
-        <div class="add-replay-item">
-          Database Password
-             <TextField
-            hintText="Type password here"
-            onChange={this.handleDBPasswordChange}
-            type="password"
-          />
-        </div>
+        {this.renderDatabaseFormFields()}
         <div class="add-replay-item">
           Fast Replay (Transactions run successively)
              <Checkbox
