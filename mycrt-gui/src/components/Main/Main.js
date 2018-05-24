@@ -101,7 +101,7 @@ class Main extends Component {
                     <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
                     <div class="app-content">
                       <NavBar navLinks={navLinks} switchTab={this.switchTab} isHidden={this.state.isNavHidden} toggleBar={this.toggleNavBar} />
-                      <NavPage selected={this.state.selected} parentContext={this} {...this.props} isNavBarHidden={this.state.isNavHidden} />
+                      <NavPage selected={0} parentContext={this} {...this.props} isNavBarHidden={this.state.isNavHidden} />
                     </div>
                   </div>)
                 }
@@ -130,6 +130,7 @@ class Main extends Component {
               } />
             <Route path='/login'
               render={() => <LogIn onLogIn={this.onLogIn} parentContext={this} {...this.props} />} />
+            <Redirect from="*" to=".."/>
           </Switch>
         </div>
       </MuiThemeProvider>
