@@ -17,6 +17,7 @@ class Header extends Component {
       anchorEl: undefined,
       settingsVisible: false,
       helpVisible: false,
+      notifsVisible: false,
       anchorOrigin: {
         horizontal: 'left',
         vertical: 'bottom',
@@ -28,7 +29,7 @@ class Header extends Component {
     };
 
     // This binding is necessary to make `this` work in the callback
-    this.handleNotifClick = this.handleNotifClick.bind(this);
+    this.handleNotifsClick = this.handleNotifsClick.bind(this);
     this.handleRequestClose = this.handleRequestClose.bind(this);
   }
 
@@ -53,9 +54,17 @@ class Header extends Component {
   handleRequestClose = () => {
     this.setState({
       settingsVisible: false,
-      helpVisible: false
+      helpVisible: false,
+      notifsVisible: false
     });
   };
+
+  handleNotifsClick = (event) => {
+    this.setState({
+      notifsVisible: true,
+      anchorEl: event.currentTarget
+    });
+  }
 
   setAnchor = (positionElement, position) => {
     const {anchorOrigin} = this.state;
@@ -75,22 +84,6 @@ class Header extends Component {
     });
   };
 
-  handleNotifClick(event) {
-    // This prevents ghost click.
-    event.preventDefault();
-    this.setState(prevState => ({
-      isPopoverVisible: true,
-      anchorEl: event.currentTarget
-    }));
-    console.log(event.currentTarget)
-  }
-
-  handleRequestClose() {
-    this.setState(prevState => ({
-      isPopoverVisible: false
-    }));
-  }
-
   render() {
     return (
       <div class="Header">
@@ -106,13 +99,18 @@ class Header extends Component {
             onClick={this.handleHelpClick}></div>
           <div class="glyphiconstyle glyphicon glyphicon-cog" 
               onClick={this.handleSettingsClick}></div>
-	        <IconMenu
-            iconButtonElement={
-              <IconButton touch={true}>
-                <div class="glyphiconstyle glyphicon glyphicon-bell badge1" data-badge="2" />
-              </IconButton>
-            }
-          >
+          <div class="glyphiconstyle glyphicon glyphicon-bell badge1" 
+            data-badge="2"
+            onClick={this.handleNotifsClick}></div>
+        </div>
+        <Popover
+          open={this.state.notifsVisible}
+          anchorEl={this.state.anchorEl}
+          anchorOrigin={this.state.anchorOrigin}
+          targetOrigin={this.state.targetOrigin}
+          onRequestClose={this.handleRequestClose}
+        >
+          <Menu>
             <MenuItem primaryText="Notifications (2 new)" disabled={true} />
             <div class="alpha-note">ALPHA RELEASE NOTE: This feature is not ready yet. Placeholder notifications below.</div>
             <div class="notif-menu-card">
@@ -125,8 +123,8 @@ class Header extends Component {
               <div class="notif-menu-card-content">Capture 25 terminated with errors. Click to view capture errors.</div>
             </MenuItem>
             </div>
-          </IconMenu>
-        </div>
+          </Menu>
+        </Popover>
         <Popover
           open={this.state.settingsVisible}
           anchorEl={this.state.anchorEl}
