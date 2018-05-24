@@ -6,7 +6,7 @@ from src.database.updateRecords import updateReplay
 from src.database.addRecords import insertScheduledQuery
 from src.database.getRecords import getCaptureFromId
 from src.metrics.metrics import save_metrics
-from src.email.email_server import sendReplayEmail
+from src.email.email_server import sendStatusEmail
 from datetime import datetime
 from flask import g
 import warnings
@@ -77,17 +77,21 @@ def replay(replay_id, replay_alias, rds_endpoint, region_name, db_user, db_passw
 
     endTime = datetime.utcnow()
 
+    curReplay = {"replayAlias": replay_alias, "rdsInstance": rds_endpoint, "s3Bucket": bucket_name}
+
     if len(errList) > 0:
         print(errList)
         updateReplay(replay_id, REPLAY_STATUS_ERROR, db_session)
+        sendStatusEmail(REPLAY_STATUS_ERROR, curReplay, user.email, db_session)
     else:
         updateReplay(replay_id, REPLAY_STATUS_SUCCESS, db_session)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "CPUUtilization", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "FreeableMemory", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "ReadIOPS", region_name, user)
         save_metrics(replay_alias, startTime, endTime, bucket_name, rds_endpoint, "WriteIOPS", region_name, user)
+        sendStatusEmail(REPLAY_STATUS_SUCCESS, curReplay, user.email, db_session)
 
-    sendReplayEmail(replay_id, user.email, db_session)
+
 
     try:
         os.remove(replay_alias + ".metrics")

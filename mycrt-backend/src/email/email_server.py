@@ -50,13 +50,34 @@ def sendReplayEmail(replayId, userEmail, db_session):
        body =  ("Replay '" + userReplay['replayAlias'] + "' on RDS instance '" +
                  userReplay['rdsInstance'] + "' has succeeded. Please refer to your '" +
                  userReplay['s3Bucket'] + "' S3 bucket to view the relevant log and metric files")
-       subject = "Success: Replay " + userReplay['replayAlias']
+       subject = "Success: Replay '" + userReplay['replayAlias']
     elif (userReplay['replayStatus'] == 3):
        body = ("Replay '" + userReplay['replayAlias'] + "' on RDS instance '" +
                  userReplay['rdsInstance'] + "' has failed. Please refer to your '" +
                  userReplay['s3Bucket'] + "' S3 bucket to view the relevant log and metric files")
        subject = "Failure: Replay " + userReplay['replayAlias']
 
+def sendStatusEmail(status, user_capture_replay, userEmail, db_session):
+    print("attempting to send email to "+ userEmail +"...")
+    if ('captureAlias' in user_capture_replay.keys()):
+        aliasString = "Capture '" + user_capture_replay['captureAlias'] + "'"
+    elif ('replayAlias' in user_capture_replay.keys()):
+        aliasString = "Replay '" + user_capture_replay['replayAlias']  + "'"
+
+    if (status == 2):
+        body =  (aliasString + " on RDS instance '" +
+                  user_capture_replay['rdsInstance'] + "' has succeeded. Please refer to your '" +
+                  user_capture_replay['s3Bucket'] + "' S3 bucket to view the relevant log and metric files")
+        subject = "Success: " + aliasString
+    elif (status == 3):
+        body = (aliasString + " on RDS instance '" +
+                  userReplay['rdsInstance'] + "' has failed. Please refer to your '" +
+                  userReplay['s3Bucket'] + "' S3 bucket to view the relevant log and metric files")
+        subject = "Failure: " + aliasString
+
+    sendEmail(body, subject, userEmail, db_session)
+
+def sendEmail(body, subject, userEmail, db_session):
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = EMAIL
@@ -70,4 +91,5 @@ def sendReplayEmail(replayId, userEmail, db_session):
        s.quit()
        return 0
     except:
+       print("email failed to send")
        return 1

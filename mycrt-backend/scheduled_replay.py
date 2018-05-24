@@ -6,6 +6,7 @@ from src.database.getRecords import getReplayStatus
 from src.database.updateRecords import updateReplay
 from flask import Flask, request, g, Response
 from src.database.mycrt_database import MyCrtDb
+from src.email.email_server import sendStatusEmail
 
 import rpyc
 from datetime import datetime, timedelta
@@ -17,8 +18,11 @@ from apscheduler.triggers.date import DateTrigger
 
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
+REPLAY_STATUS_ERROR = 3
+REPLAY_STATUS_SUCCESS = 2
+
 jobstores = {
-    'default': SQLAlchemyJobStore(url='mysql+pymysql://db_username:db_password@localhost/sched_replay_db_name'),
+    'default': SQLAlchemyJobStore(url='mysql+pymysql://root:newpass@localhost/replaydb'),
 }
 executors = {
     'default': ThreadPoolExecutor(20),
@@ -62,6 +66,7 @@ def run_query(replay, query, user, is_last_transaction):
         end_time = datetime.utcnow()
         save_replay_metrics(replay, end_time, user)
         updateReplay(replay['replayId'], 2, db.get_session())
+        sendStatusEmail(REPLAY_STATUS_SUCCESS, replay, user.email, db_sesseion())
 
 def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
@@ -132,4 +137,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main() 
+    main()
