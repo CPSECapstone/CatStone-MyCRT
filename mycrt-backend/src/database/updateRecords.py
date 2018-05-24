@@ -1,6 +1,6 @@
 import pymysql
 
-from .models import Capture, Replay
+from .models import User, Capture, Replay
 
 def updateCapture(captureId, captureStatus, db_session):
     """Function to update a given capture's status
@@ -57,7 +57,8 @@ def updateKeys(username, accessKey, secretKey, db_session):
     """
 
     try:
-        user = db_session.query(User).filter(User.username == username).update({"access_key": accessKey, "secret_key", secretKey})
+        user = db_session.query(User).filter(User.username == username).update({"access_key": accessKey, "secret_key": secretKey})
         db_session.commit()
+        return user
     except:
         db_session.rollback()

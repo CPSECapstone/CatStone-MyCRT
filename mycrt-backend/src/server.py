@@ -17,7 +17,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
-from .database.updateRecords import updateCaptureEndTime
+from .database.updateRecords import updateCaptureEndTime, updateKeys
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -67,11 +67,13 @@ def create_app(config={}):
 
         return jsonify(), 201
 
-        @app.route('/users/<username>/keys', methods=['PUT'])
-        def edit_keys():
+    @app.route('/users/<username>/keys', methods=['PUT'])
+    @auth.login_required
+    def edit_keys(username):
+        if request.headers['Content-Type'] == 'application/json':
             jsonData = request.get_json()
 
-            if (!getUserFromUsername(jsonData['username'], db.get_session())):
+            if (not getUserFromUsername(jsonData['username'], db.get_session())):
                 return jsonify({"error": "User does not exist."}), 404
 
             if (g.user.username != username):
@@ -90,13 +92,14 @@ def create_app(config={}):
             jsonAccess_key = jsonData['access_key']
             jsonSecret_key = jsonData['secret_key']
 
-            if(not user.verify_password(jsonPassword)):
+            if(not g.user.verify_password(jsonPassword)):
                 return jsonify({"error": "Password does not match."}), 400
 
-            if (g.user.username != jsonUsername || g.user.email != jsonEmail):
+            if (g.user.username != jsonUsername or g.user.email != jsonEmail):
                 return jsonify({"error": "Cannot edit username or email."}), 400
 
-            success = updateKeys(jsonUsername, jsonAccess_key, jsonSecret_key)
+            success = updateKeys(jsonUsername, jsonAccess_key, jsonSecret_key, db.get_session())
+            print(success)
 
             if (not success):
                 return jsonify({"error": "Could not edit record in the database."}), 500
