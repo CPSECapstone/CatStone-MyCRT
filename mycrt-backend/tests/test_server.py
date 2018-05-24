@@ -3,7 +3,7 @@ from src.server import create_app
 from src.database.mycrt_database import MyCrtDb
 import unittest
 import tempfile
-from flask import json, Response
+from flask import json
 from base64 import b64encode
 
 
@@ -32,14 +32,14 @@ class TestServer(unittest.TestCase):
         """ Helper method for making a register request
         """
         return self.app.post('/users',
-                data = json.dumps({
+                data=json.dumps({
                     'username' : username,
                     'password' : password,
                     'email'    : email,
                     'access_key' : access_key,
                     'secret_key' : secret_key
                     }),
-                content_type = 'application/json')
+                content_type='application/json')
 
     def test_register_valid_user(self):
         username = 'test'
@@ -49,7 +49,35 @@ class TestServer(unittest.TestCase):
         secret_key = 'test_key'
 
         result = self.register_user_request(username, password, email, access_key, secret_key)
-        assert result.status_code  == 201
+        assert result.status_code == 201
+
+    def test_cannot_register_user_twice(self):
+        username = 'test'
+        password = 'test'
+        email = 'unittest@test.com'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+
+        self.register_user_request(username, password, email, access_key, secret_key)
+        result = self.register_user_request(username, password, email, access_key, secret_key)
+        assert result.status_code == 400
+
+    def test_register_user_with_data_missing(self):
+        username = 'test'
+        password = 'test'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+
+        result = self.app.post('/users',
+                             data = json.dumps({
+                                 'username' : username,
+                                 'password' : password,
+                                 'access_key' : access_key,
+                                 'secret_key' : secret_key
+                             }),
+                             content_type = 'application/json')
+
+        assert result.status_code == 400
 
     def test_login_with_credentials(self):
         username = 'test'
@@ -79,7 +107,7 @@ class TestServer(unittest.TestCase):
         json_data = json.loads(result.data)
         token = json_data['token']
 
-        captures = self.app.get('/users/captures', headers = {
+        captures = self.app.get('/users/captures', headers={
             'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")
         })
         capture_json = json.loads(captures.data)
@@ -93,7 +121,7 @@ class TestServer(unittest.TestCase):
         secret_key = 'test_key'
         self.register_user_request(username, password, email, access_key, secret_key)
         result = self.app.get('/authenticate',
-                              headers = {
+                              headers={
                                   'Authorization': 'Basic %s' % b64encode(bytes(username + ":" + password, 'utf-8')).decode("ascii")})
         json_data = json.loads(result.data)
         token = json_data['token']
@@ -112,7 +140,7 @@ class TestServer(unittest.TestCase):
         secret_key = 'test_key'
         self.register_user_request(username, password, email, access_key, secret_key)
         result = self.app.get('/authenticate',
-                              headers = {
+                              headers={
                                   'Authorization': 'Basic %s' % b64encode(bytes(username + ":" + password, 'utf-8')).decode("ascii")})
         json_data = json.loads(result.data)
         token = json_data['token']
@@ -123,6 +151,52 @@ class TestServer(unittest.TestCase):
         s3_json = json.loads(s3_response.data)
         assert s3_response.status_code != 201
         assert 'error' in s3_json
+
+    def test_getting_capture_id_that_doesnt_exist(self):
+        username = 'test'
+        password = 'password'
+        email = 'unittest@test.com'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+        self.register_user_request(username, password, email, access_key, secret_key)
+        result = self.app.get('/authenticate',
+                              headers={
+                                  'Authorization': 'Basic %s' % b64encode(bytes(username + ":" + password, 'utf-8')).decode("ascii")})
+        json_data = json.loads(result.data)
+        token = json_data['token']
+
+        capture_response = self.app.get('/users/captures/1', headers={
+            'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")
+        })
+        capture_json = json.loads(capture_response.data)
+        assert capture_response.status_code == 404
+
+    def test_post_capture_with_data_missing_fails(self):
+        username = 'test'
+        password = 'password'
+        email = 'unittest@test.com'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+        self.register_user_request(username, password, email, access_key, secret_key)
+        result = self.app.get('/authenticate',
+                              headers={
+                                  'Authorization': 'Basic %s' % b64encode(bytes(username + ":" + password, 'utf-8')).decode("ascii")})
+        json_data = json.loads(result.data)
+        token = json_data['token']
+
+        capture_response = self.app.post('/users/captures', headers={
+            'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")},
+                                         data=json.dumps({
+                                             'rds_endpoint': 'endpoint',
+                                             'region_name': 'region',
+                                             'db_user': 'user',
+                                             'db_password': 'password',
+                                             'db_name': 'name',
+                                             'start_time': 'start',
+                                             'end_time': 'end',
+                                             'alias': 'alias'
+                                         }), content_type='application/json')
+        assert capture_response.status_code == 400
 
 
 if __name__ == '__main__':
