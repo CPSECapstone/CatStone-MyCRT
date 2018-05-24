@@ -6,6 +6,7 @@ import tempfile
 from flask import json, Response
 from base64 import b64encode
 
+
 class TestServer(unittest.TestCase):
 
     def setUp(self):
@@ -28,8 +29,8 @@ class TestServer(unittest.TestCase):
         assert result.status_code == 401
 
     def register_user_request(self, username, password, email, access_key, secret_key):
-        ''' Helper method for making a register request
-        '''
+        """ Helper method for making a register request
+        """
         return self.app.post('/users',
                 data = json.dumps({
                     'username' : username,
@@ -58,13 +59,70 @@ class TestServer(unittest.TestCase):
         secret_key = 'test_key'
         self.register_user_request(username, password, email, access_key, secret_key)
         result = self.app.get('/authenticate',
-                headers = {
-                    'Authorization': 'Basic %s' % b64encode(bytes(username + ":" +  password, 'utf-8')).decode("ascii")})
-        jsonData = json.loads(result.data)
-        token = jsonData['token']
+                              headers={
+                                  'Authorization': 'Basic %s' % b64encode(bytes(username + ":" +  password, 'utf-8')).decode("ascii")})
+        json_data = json.loads(result.data)
+        token = json_data['token']
         assert b'Unauthorized' not in result.data
-        assert token != None and token != ''
+        assert token is not None and token != ''
 
+    def test_get_captures_with_no_captures_is_empty(self):
+        username = 'test'
+        password = 'password'
+        email = 'unittest@test.com'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+        self.register_user_request(username, password, email, access_key, secret_key)
+        result = self.app.get('/authenticate',
+                              headers={
+                                  'Authorization': 'Basic %s' % b64encode(bytes(username + ":" +  password, 'utf-8')).decode("ascii")})
+        json_data = json.loads(result.data)
+        token = json_data['token']
+
+        captures = self.app.get('/users/captures', headers = {
+            'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")
+        })
+        capture_json = json.loads(captures.data)
+        assert capture_json['userCaptures'] == []
+
+    def test_get_replays_with_no_replays_is_empty(self):
+        username = 'test'
+        password = 'password'
+        email = 'unittest@test.com'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+        self.register_user_request(username, password, email, access_key, secret_key)
+        result = self.app.get('/authenticate',
+                              headers = {
+                                  'Authorization': 'Basic %s' % b64encode(bytes(username + ":" + password, 'utf-8')).decode("ascii")})
+        json_data = json.loads(result.data)
+        token = json_data['token']
+
+        replays = self.app.get('/users/replays', headers={
+            'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")
+        })
+        replays_json = json.loads(replays.data)
+        assert replays_json['userReplays'] == []
+
+    def test_getting_users_s3_with_invalid_keys_fails(self):
+        username = 'test'
+        password = 'password'
+        email = 'unittest@test.com'
+        access_key = 'test_key'
+        secret_key = 'test_key'
+        self.register_user_request(username, password, email, access_key, secret_key)
+        result = self.app.get('/authenticate',
+                              headers = {
+                                  'Authorization': 'Basic %s' % b64encode(bytes(username + ":" + password, 'utf-8')).decode("ascii")})
+        json_data = json.loads(result.data)
+        token = json_data['token']
+
+        s3_response = self.app.get('/users/s3Buckets', headers={
+            'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")
+        })
+        s3_json = json.loads(s3_response.data)
+        assert s3_response.status_code != 201
+        assert 'error' in s3_json
 
 
 if __name__ == '__main__':
