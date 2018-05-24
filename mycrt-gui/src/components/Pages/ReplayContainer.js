@@ -13,6 +13,8 @@ class ReplayContainer extends Component {
   
   render() {
     var noContent = (this.props.cards !== undefined && this.props.cards.length === 0);
+    var that = this;
+    
     return (
       <div className="ReplayContainer">
         {!noContent &&
@@ -28,6 +30,7 @@ class ReplayContainer extends Component {
                 status={card.replayStatus}
                 loading={this.props.showLoadingCard}
                 isCapture={false}
+                {...that.props}
               />
           )}
           </div>

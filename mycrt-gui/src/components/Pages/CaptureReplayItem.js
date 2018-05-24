@@ -19,7 +19,7 @@ class CaptureReplayItem extends Component {
     };
 
     this.getTimeLeft = this.getTimeLeft.bind(this);
-    this.onStopCaptureClick = this.onStopCaptureClick.bind(this);
+    this.putEndTime = this.putEndTime.bind(this);
   }
 
   /* Code used from a sample received from the following github link.
@@ -42,10 +42,18 @@ class CaptureReplayItem extends Component {
     };
 }
 
-  onStopCaptureClick() {
-    this.setState({
-      captureStopped: true
-    })
+  putEndTime() {
+    this.props.putEndTime(
+      this.props.alias,
+      this.props.endTime,
+      () => this.setState(prevState => ({
+        captureStopped: true
+      })),
+      (err) => {
+        console.log("--------- Error Stopping capture ----------");
+        console.log(err);
+      }
+    );
   }
 
   getTimeLeft() {
@@ -111,7 +119,7 @@ class CaptureReplayItem extends Component {
               }
               {!this.props.end && this.props.isCapture &&
                   <div class={this.state.captureStopped ? "stop-capture-button-disabled" : "stop-capture-button-active"} 
-                    onClick={this.onStopCaptureClick}>
+                    onClick={this.putEndTime}>
                     <div>{this.state.captureStopped ? "STOPPED" : "STOP"}</div>
                   </div>
               }

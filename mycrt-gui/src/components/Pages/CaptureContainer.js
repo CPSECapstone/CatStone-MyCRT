@@ -19,7 +19,8 @@ class CaptureContainer extends Component {
 
   render() {
     var noContent = (this.props.cards !== undefined && this.props.cards.length === 0);
-
+    var that = this;
+    
     return (
       <div className="CaptureContainer">
         {!noContent &&
@@ -35,6 +36,7 @@ class CaptureContainer extends Component {
                 status={card.captureStatus}
                 loading={this.props.showLoadingCard}
                 isCapture={true}
+                {...that.props}
               />
           )}
           </div>

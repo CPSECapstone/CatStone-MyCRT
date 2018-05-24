@@ -889,6 +889,8 @@ class HomePage extends Component {
     );
   }
   render() {
+    var that = this;
+
     return (
       <div className="HomePage">
         <h2>Dashboard</h2>
@@ -903,6 +905,7 @@ class HomePage extends Component {
           showLoadingCard={this.state.showLoadingCard}
           showLoadingContent={this.state.loadingCaptureContent}
           errorFound={this.state.captureContentErrorFound}
+          {...that.props}
         />
         <h3>Replays</h3>
         <Button
@@ -915,6 +918,7 @@ class HomePage extends Component {
           showLoadingCard={this.state.showReplayLoadingCard}
           showLoadingContent={this.state.loadingReplayContent}
           errorFound={this.state.replayContentErrorFound}
+          {...that.props}
         />
       </div>
     );

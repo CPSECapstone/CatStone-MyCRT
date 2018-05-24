@@ -130,6 +130,16 @@ export function postReplay(replay, cb, errCb) {
     }
 }
 
+export function putEndTime(captureAlias, endTime, cb, errCb) {
+	return (dispatch, prevState) => {
+        api.putEndTime(captureAlias, endTime)
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+            error.then((result) => {if (errCb) errCb(result.error)})  
+          })
+    }
+}
+
 function checkError(err, dispatcher) {
     return err[0].includes("Unauthorized") ? dispatcher({type:"LOG_OUT"}) : console.log(err); 
 }

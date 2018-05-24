@@ -227,3 +227,17 @@ export function postReplay(replay) {
       })
       .then(json => json)
 }
+
+export function putEndTime(captureAlias, endTime) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return put("users/captures/" + captureAlias, {end_time: endTime})
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}

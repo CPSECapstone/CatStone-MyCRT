@@ -135,10 +135,7 @@ class Header extends Component {
           onRequestClose={this.handleRequestClose}
         >
           <Menu>
-            <MenuItem primaryText="Refresh" />
-            <MenuItem primaryText="Help &amp; feedback" />
-            <MenuItem primaryText="Settings" />
-            <MenuItem primaryText="Sign out" />
+            <MenuItem primaryText="Change AWS Keys" />
           </Menu>
         </Popover>
         <Popover
@@ -149,6 +146,7 @@ class Header extends Component {
           onRequestClose={this.handleRequestClose}
         >
           <Menu>
+            <MenuItem primaryText="About" onClick={() => {window.open("https://noizrnel3.wixsite.com/catstone")}}/>
             <MenuItem primaryText="Contact Us" onClick={() => {window.open("https://noizrnel3.wixsite.com/catstone/external-contact-page")}}/>
           </Menu>
         </Popover>

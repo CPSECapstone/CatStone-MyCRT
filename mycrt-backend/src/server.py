@@ -95,10 +95,11 @@ def create_app(config={}):
                 userCaptures = getCaptureFromId(capture_id, db.get_session())
 
                 userCapture = userCaptures[0]
+                updateCapture(capture['captureId'], 2, db.get_session())
                 return jsonify(userCapture), 200
 
         else:
-            return jsonify({"error": "Missing field in request."}), 400
+            return jsonify({"error": "Missing json data."}), 400
 
 
     @app.route('/users/captures', methods=['GET'])
