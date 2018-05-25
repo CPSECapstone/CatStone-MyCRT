@@ -18,6 +18,7 @@ from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
 from .database.updateRecords import updateCaptureEndTime
+from .database.deleteRecords import deleteCapture, deleteReplay
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -100,6 +101,15 @@ def create_app(config={}):
         else:
             return jsonify({"error": "Missing field in request."}), 400
 
+    @app.route('/users/captures/<capture_id>', methods=['DELETE'])
+    @auth.login_required
+    def delete_capture(capture_id):
+        success = deleteCapture(capture_id, db.get_session())
+
+        if (not success):
+            return jsonify({"error": "Missing field in request."}), 500
+
+        return jsonify(userCapture), 200
 
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
@@ -188,6 +198,16 @@ def create_app(config={}):
         userReplay = userReplays[0]
         if (userReplay['userId'] != g.user.get_id()):
             return jsonify(), 403
+
+        return jsonify(userReplay), 200
+
+    @app.route('/users/replays/<replay_id>', methods=['DELETE'])
+    @auth.login_required
+    def delete_replay(replay_id):
+        success = deleteReplay(replay_id, db.get_session())
+
+        if (not success):
+            return jsonify({"error": "Missing field in request."}), 500
 
         return jsonify(userReplay), 200
 
@@ -400,6 +420,3 @@ def create_app(config={}):
     def verify_login():
         if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
-
-
-
