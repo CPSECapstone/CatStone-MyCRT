@@ -60,6 +60,7 @@ class ViewResults extends Component {
       selectedCaptureIds: [],
       selectedReplayIds: [],
       isCompareDisabled: true,
+      isDeleteDisabled: true,
       compareFreeableMemory: [],
       compareCpuUtilization: [],
       compareReadIOPS:[],
@@ -97,7 +98,7 @@ class ViewResults extends Component {
     this.renderCompare = this.renderCompare.bind(this);
 
     this.isRelatedReplayOrCapture = this.isRelatedReplayOrCapture.bind(this);
-    
+
     this.onFilterChange = this.onFilterChange.bind(this);
   }
 
@@ -184,6 +185,7 @@ class ViewResults extends Component {
   onCaptureRowSelection(rows) {
     // check if compare button should be disabled or enabled
     var disabled = true;
+    var deleteDisabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
 
@@ -197,6 +199,7 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
+        isDeleteDisabled: true,
         selectedCaptureRows: selectedRows,
         selectedCaptureIds: [],
         relatedCaptureId: this.state.selectedReplayIds.length >= 1 ? this.state.relatedCaptureId : -1
@@ -206,21 +209,26 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
+    if (selectedRows.length == 1) {
+      deleteDisabled = false;
+    }
+
 
     if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
       disabled = false;
     }
     this.setState(prevState => ({
       isCompareDisabled: disabled,
+      isDeleteDisabled: deleteDisabled,
       selectedCaptureRows: selectedRows
     }));
 
     // get capture ids from row indexes
     var selectedCaptureIds = [];
 
-    
+
     for (var i = 0; i < selectedRows.length; i++) {
-      var visibleCaptures = this.state.relatedCaptureId === -1 ? 
+      var visibleCaptures = this.state.relatedCaptureId === -1 ?
          this.state.captures.filter(c => (!this.state["captureAliasFilter"] || c.captureAlias.includes(this.state["captureAliasFilter"])))  :
          this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId )
 
@@ -229,7 +237,7 @@ class ViewResults extends Component {
     }
     this.setState(prevState => ({
       selectedCaptureIds: selectedCaptureIds,
-      relatedCaptureId: relatedCaptureId 
+      relatedCaptureId: relatedCaptureId
     }));
 
     if (rows.length === 0) {
@@ -240,6 +248,7 @@ class ViewResults extends Component {
   onReplayRowSelection(rows) {
     // check if compare button should be disabled or enabled
     var disabled = true;
+    var deleteDisabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
     console.log("Selected rows are----" + rows);
@@ -255,6 +264,7 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
+        isDeleteDisabled: true,
         selectedReplayRows: selectedRows,
         selectedReplayIds: [],
         relatedCaptureId: this.state.selectedCaptureIds.length > 0 ? this.state.relatedCaptureId : -1
@@ -264,18 +274,23 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
+    if (selectedRows.length == 1) {
+      deleteDisabled = false;
+    }
+
     if (selectedRows.length + this.state.selectedCaptureRows.length > 1 && selectedRows.length + this.state.selectedCaptureRows.length <= 3) {
       disabled = false;
     }
     this.setState(prevState => ({
       isCompareDisabled: disabled,
+      isDeleteDisabled: deleteDisabled,
       selectedReplayRows: selectedRows
     }));
 
     // get capture ids from row indexes
     var selectedReplayIds = [];
-    var visibleReplays = this.state.relatedCaptureId === -1 ? 
-     this.state.replays.filter(r => (!this.state["replayAliasFilter"] || r.replayAlias.includes(this.state["replayAliasFilter"]))) : 
+    var visibleReplays = this.state.relatedCaptureId === -1 ?
+     this.state.replays.filter(r => (!this.state["replayAliasFilter"] || r.replayAlias.includes(this.state["replayAliasFilter"]))) :
      this.state.replays.filter(r => r.captureId === this.state.relatedCaptureId);
 
     for (var i = 0; i < selectedRows.length; i++) {
@@ -284,7 +299,7 @@ class ViewResults extends Component {
     }
     this.setState(prevState => ({
       selectedReplayIds: selectedReplayIds,
-      relatedCaptureId: relatedCaptureId   
+      relatedCaptureId: relatedCaptureId
     }));
   }
 
@@ -304,9 +319,9 @@ class ViewResults extends Component {
         showReplayResultsLoading: false
       }));
     })
-    
+
   }
-  
+
   getCaptureMetricData(captureId) {
     var parentContextState = this.props.parentContext.state;
     var component = this;
@@ -328,7 +343,7 @@ class ViewResults extends Component {
 
         var i = this.state.comparisonIndex;
         console.log("comparison index is: " + i);
-        console.log("The selected items to compare " + (this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length));        
+        console.log("The selected items to compare " + (this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length));
         //combine comparison data
         if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
@@ -338,7 +353,7 @@ class ViewResults extends Component {
           var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS, captureAlias);
           var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS, captureAlias);
 
-          console.log(component.state.comparsionAliases);          
+          console.log(component.state.comparsionAliases);
           component.setState(prevState => ({
             compareFreeableMemory: fm,
             compareCpuUtilization: cu,
@@ -353,7 +368,7 @@ class ViewResults extends Component {
           }
           else if ((i + 1) < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
             this.getReplayMetricData(this.state.selectedReplayIds[0]);
-          } 
+          }
           else {
               component.setState(prevState => ({
               isComparisonChartLoaded: true,
@@ -430,9 +445,9 @@ class ViewResults extends Component {
 
   /**
    * Function referenced from
-   * 
+   *
    * https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser/20343999
-   * 
+   *
    * Param:
    *   isCapture: expected boolean to determine if a capture or replay is being downloaded
    */
@@ -443,14 +458,14 @@ class ViewResults extends Component {
       readIOPS: this.state.readIOPS,
       writeIOPS: this.state.writeIOPS
     }
-    
+
     console.log("current processing" + (isCapture ? "capture" : "replay"));
     console.log(metricsObject);
 
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(metricsObject));
     var downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", 
+    downloadAnchorNode.setAttribute("download",
       (isCapture ? this.state.captureDetails["captureAlias"] : this.state.replayDetails["replayAlias"])+ ".json");
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -515,7 +530,7 @@ class ViewResults extends Component {
     return (
       <div>
           <h3>Capture Results</h3>
-          <Filter 
+          <Filter
             fields={[{name: "captureAlias", displayText: "Capture Alias", type: "TextField"}]}
             onFilterChange={this.onFilterChange}></Filter>
         <Table
@@ -585,7 +600,7 @@ class ViewResults extends Component {
     return (
       <div>
       <h3>Replay Results</h3>
-      <Filter 
+      <Filter
         fields={[{name: "replayAlias", displayText: "Replay Alias", type: "TextField"}]}
         onFilterChange={this.onFilterChange}>
       </Filter>
@@ -1013,13 +1028,23 @@ class ViewResults extends Component {
     <div className="ViewResults">
       <h2>View Results</h2>
       <h5 className="results-help-text">All (completed or failed) captures and replays are stored here.</h5>
-         <div className="refresh-result-button">
-            <Button
-              onClick={this.onCompareClick}
-              content="Compare"
-              isSubmit={false}
-              isDisabled={this.state.isCompareDisabled}
-            />
+        <div style={{	"flex": 1, "flexDirection": "row" }}>
+           <div className="refresh-result-button">
+              <Button
+                onClick={this.onCompareClick}
+                content="Compare"
+                isSubmit={false}
+                isDisabled={this.state.isCompareDisabled}
+              />
+            </div>
+            <div className="refresh-result-button">
+               <Button
+                 onClick={this.onDeleteModalClick}
+                 content="Delete"
+                 isSubmit={false}
+                 isDisabled={this.state.isDeleteDisabled}
+               />
+             </div>
           </div>
         {this.renderCaptureTable()}
         {this.renderReplayTable()}
@@ -1029,7 +1054,7 @@ class ViewResults extends Component {
         {this.state.replayDetails && this.state.isReplayLogOpen &&
           <div>{this.renderReplayDetails()}</div>
         }
-        {this.state.isCompareOpen && 
+        {this.state.isCompareOpen &&
           <div>{this.renderCompare()}</div>
         }
       </div>
