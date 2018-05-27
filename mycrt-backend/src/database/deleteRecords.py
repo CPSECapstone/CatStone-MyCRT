@@ -27,6 +27,6 @@ def deleteReplay(replayId, db_session):
     try:
         replay = db_session.query(Replay).filter(Replay.replayId == replayId).delete()
         db_session.commit()
-        return repaly
+        return replay
     except:
 	    db_session.rollback()
