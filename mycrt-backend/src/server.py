@@ -104,12 +104,23 @@ def create_app(config={}):
     @app.route('/users/captures/<capture_id>', methods=['DELETE'])
     @auth.login_required
     def delete_capture(capture_id):
+        userCaptures = getCaptureFromId(capture_id, db.get_session())
+        if (len(userCaptures) == 0):
+            return jsonify(), 404
+
+        userCapture = userCaptures[0]
+        if (userCapture['userId'] != g.user.get_id()):
+            return jsonify(), 403
+
+        if (userCapture['captureStatus'] != 2 and userCapture['captureStatus'] != 3):
+            return jsonify({"error": "Cannot delete capture in progress."}), 400
+
         success = deleteCapture(capture_id, db.get_session())
 
         if (not success):
             return jsonify({"error": "Missing field in request."}), 500
 
-        return jsonify(userCapture), 200
+        return jsonify(), 200
 
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
@@ -204,12 +215,23 @@ def create_app(config={}):
     @app.route('/users/replays/<replay_id>', methods=['DELETE'])
     @auth.login_required
     def delete_replay(replay_id):
+        userReplays = getReplayFromId(replay_id, db.get_session())
+        if (len(userReplays) == 0):
+            return jsonify(), 404
+
+        userReplay = userReplays[0]
+        if (userReplay['userId'] != g.user.get_id()):
+            return jsonify(), 403
+
+        if (userReplay['replayStatus'] != 2 and userReplay['replayStatus'] != 3):
+            return jsonify({"error": "Cannot delete replay in progress."}), 400
+
         success = deleteReplay(replay_id, db.get_session())
 
         if (not success):
             return jsonify({"error": "Missing field in request."}), 500
 
-        return jsonify(userReplay), 200
+        return jsonify(), 200
 
     @app.route('/users/replays', methods=['POST'])
     @auth.login_required
