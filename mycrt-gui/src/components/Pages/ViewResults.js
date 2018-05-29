@@ -72,7 +72,8 @@ class ViewResults extends Component {
       comparisonAliases: [],
       relatedCaptureId: -1,
       showCaptureResultsLoading: true,
-      showReplayResultsLoading: true
+      showReplayResultsLoading: true,
+      isDeleteOpen: false
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -90,12 +91,16 @@ class ViewResults extends Component {
     this.onLogClose = this.onLogClose.bind(this);
     this.downloadLog = this.downloadLog.bind(this);
     this.onReplayLogClose = this.onReplayLogClose.bind(this);
+    this.onDeleteModalClick = this.onDeleteModalClick.bind(this);
+    this.onDeleteClose = this.onDeleteClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
     this.renderCaptureDetails = this.renderCaptureDetails.bind(this);
     this.renderReplayDetails = this.renderReplayDetails.bind(this);
     this.renderCompare = this.renderCompare.bind(this);
+    this.renderDelete = this.renderDelete.bind(this);
+    this.deleteCaptureReplay = this.deleteCaptureReplay.bind(this);
 
     this.isRelatedReplayOrCapture = this.isRelatedReplayOrCapture.bind(this);
 
@@ -199,7 +204,6 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
-        isDeleteDisabled: true,
         selectedCaptureRows: selectedRows,
         selectedCaptureIds: [],
         relatedCaptureId: this.state.selectedReplayIds.length >= 1 ? this.state.relatedCaptureId : -1
@@ -209,17 +213,11 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-    if (selectedRows.length == 1) {
-      deleteDisabled = false;
-    }
-
-
     if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
       disabled = false;
     }
     this.setState(prevState => ({
       isCompareDisabled: disabled,
-      isDeleteDisabled: deleteDisabled,
       selectedCaptureRows: selectedRows
     }));
 
@@ -235,9 +233,18 @@ class ViewResults extends Component {
       selectedCaptureIds.push(visibleCaptures[selectedRows[i]].captureId);
       relatedCaptureId = visibleCaptures[selectedRows[i]].captureId;
     }
+
+    console.log("selectedReplayIds length: " + this.state.selectedReplayIds.length);
+    console.log("selectedCaptureIds length: " + this.state.selectedCaptureIds.length);
+
+    if (this.state.selectedReplayIds.length + selectedCaptureIds.length === 1) {
+      deleteDisabled = false;
+    }
+
     this.setState(prevState => ({
       selectedCaptureIds: selectedCaptureIds,
-      relatedCaptureId: relatedCaptureId
+      relatedCaptureId: relatedCaptureId,
+      isDeleteDisabled: deleteDisabled
     }));
 
     if (rows.length === 0) {
@@ -264,7 +271,6 @@ class ViewResults extends Component {
       }
       this.setState(prevState => ({
         isCompareDisabled: true,
-        isDeleteDisabled: true,
         selectedReplayRows: selectedRows,
         selectedReplayIds: [],
         relatedCaptureId: this.state.selectedCaptureIds.length > 0 ? this.state.relatedCaptureId : -1
@@ -274,16 +280,11 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-    if (selectedRows.length == 1) {
-      deleteDisabled = false;
-    }
-
     if (selectedRows.length + this.state.selectedCaptureRows.length > 1 && selectedRows.length + this.state.selectedCaptureRows.length <= 3) {
       disabled = false;
     }
     this.setState(prevState => ({
       isCompareDisabled: disabled,
-      isDeleteDisabled: deleteDisabled,
       selectedReplayRows: selectedRows
     }));
 
@@ -297,9 +298,18 @@ class ViewResults extends Component {
       selectedReplayIds.push(visibleReplays[selectedRows[i]].replayId);
       relatedCaptureId = visibleReplays[selectedRows[i]].captureId;
     }
+
+    console.log("selectedReplayIds length: " + this.state.selectedReplayIds.length);
+    console.log("selectedCaptureIds length: " + this.state.selectedCaptureIds.length);
+
+    if (selectedReplayIds.length + this.state.selectedCaptureIds.length === 1) {
+      deleteDisabled = false;
+    }
+
     this.setState(prevState => ({
       selectedReplayIds: selectedReplayIds,
-      relatedCaptureId: relatedCaptureId
+      relatedCaptureId: relatedCaptureId,
+      isDeleteDisabled: deleteDisabled
     }));
   }
 
@@ -511,6 +521,29 @@ class ViewResults extends Component {
     this.getReplayMetricData(this.state.replays[rowIndex].replayId);
   }
 
+  onDeleteModalClick(rowIndex, e) {
+    this.setState(prevState => ({
+      isDeleteOpen: true
+    }))
+  }
+
+  onDeleteClose() {
+    this.setState(prevState => ({
+      isDeleteOpen: false
+    }))
+  }
+
+  deleteCaptureReplay() {
+    console.log("selectedReplayIds: " + this.state.selectedReplayIds);
+    console.log("selectedCaptureIds: " + this.state.selectedCaptureIds);
+    if (this.state.selectedCaptureIds[0] === undefined) {
+       this.props.deleteReplay(this.state.selectedReplayIds[0]);
+    }
+    else {
+       this.props.deleteCapture(this.state.selectedCaptureIds[0]);
+    }
+  }
+
   isRelatedReplayOrCapture(captureId) {
     return (this.state.selectedCaptureRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
       (this.state.selectedReplayRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
@@ -523,6 +556,41 @@ class ViewResults extends Component {
       obj[filterName + "Filter"] = filterValues;
       return obj;
     })
+  }
+
+  renderDelete() {
+    const actions = [
+      <FlatButton
+        label="Close"
+        primary={true}
+        onClick={this.onDeleteClose}
+      />,
+      <FlatButton
+        label="Confirm"
+        primary={true}
+        onClick={this.deleteCaptureReplay}
+      />
+    ];
+
+
+
+    return (
+      <Dialog
+        title={"Delete"}
+        actions={actions}
+        modal={true}
+        autoScrollBodyContent={true}
+        contentStyle={{
+          width: '50%',
+          maxWidth: 'none',
+        }}
+        open={this.state.isDeleteOpen}
+      >
+        <div>
+          <h4>Are you sure you want to delete </h4>
+        </div>
+      </Dialog>
+    );
   }
 
   renderCaptureTable() {
@@ -1056,6 +1124,9 @@ class ViewResults extends Component {
         }
         {this.state.isCompareOpen &&
           <div>{this.renderCompare()}</div>
+        }
+        {this.state.isDeleteOpen &&
+          <div>{this.renderDelete()}</div>
         }
       </div>
       );
