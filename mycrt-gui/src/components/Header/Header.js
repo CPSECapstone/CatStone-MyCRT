@@ -9,6 +9,10 @@ import {Menu, MenuItem} from 'material-ui/Menu';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
 
+import TextField from 'material-ui/TextField';
+import Dialog from 'material-ui/Dialog';
+import FlatButton from 'material-ui/FlatButton';
+
 class Header extends Component {
 	constructor(props) {
     super(props);
@@ -26,11 +30,39 @@ class Header extends Component {
         horizontal: 'left',
         vertical: 'top',
       },
+      changeKeysVisible: false
     };
 
     // This binding is necessary to make `this` work in the callback
     this.handleNotifsClick = this.handleNotifsClick.bind(this);
     this.handleRequestClose = this.handleRequestClose.bind(this);
+
+    this.onChangeKeysOpen = this.onChangeKeysOpen.bind(this);
+    this.onChangeKeysClose = this.onChangeKeysClose.bind(this);
+    this.onChangeKeysSubmit = this.onChangeKeysSubmit.bind(this);
+    this.isChangeKeysFieldsFilled = this.isChangeKeysFieldsFilled.bind(this);
+    this.renderChangeKeysForm = this.renderChangeKeysForm.bind(this);
+  }
+
+  onChangeKeysOpen() {
+    this.setState({
+      changeKeysVisible: true
+    });
+  }
+
+  onChangeKeysClose() {
+    this.setState({
+      changeKeysVisible: false
+    });
+  }
+
+  onChangeKeysSubmit() {
+    this.onChangeKeysClose();
+    //api call here
+  }
+
+  isChangeKeysFieldsFilled() {
+    return true;
   }
 
   handleSettingsClick = (event) => {
@@ -84,6 +116,81 @@ class Header extends Component {
     });
   };
 
+  renderChangeKeysForm() {
+    const actions = [
+      <FlatButton
+        label="Cancel"
+        primary={true}
+        onClick={this.onChangeKeysClose}
+      />,
+      <FlatButton
+        label="Submit"
+        primary={true}
+        disabled={!this.isChangeKeysFieldsFilled()}
+        onClick={this.onChangeKeysSubmit}
+      />
+    ];
+
+    const dropdownStyle = {
+      customWidth: {
+        width: 300,
+      },
+    };
+
+    return (
+      <Dialog title="Change AWS Keys"
+        actions={actions}
+        modal={true}
+        open={this.state.changeKeysVisible}
+        autoScrollBodyContent={true}>
+        {this.state.showDBConnectFailure &&
+          <div class="error-message">
+            Database credentials are invalid, please check your input.
+          </div>}
+        <div class="aws-keys-item">
+          Username
+             <TextField
+            hintText="Type username here"
+            errorText={this.state.credentialsError}
+            onChange={this.onUsernameChange}
+          />
+        </div>
+        <div class="aws-keys-item">
+          Database Password
+             <TextField
+            hintText="Type password here"
+            onChange={this.onPasswordChange}
+            type="password"
+          />
+        </div>
+        <div class="aws-keys-item">
+          Email
+           <TextField
+              hintText="Type email here"
+              errorText={this.state.emailError}
+              onChange={this.onEmailChange}
+            />
+        </div>
+        <div class="aws-keys-item">
+          New AWS Key
+           <TextField
+              hintText="Type aws key here"
+              onChange={this.onAWSKeyChange}
+              type="password"
+            />
+        </div>
+        <div class="aws-keys-item">
+          New Secret Key
+           <TextField
+              hintText="Type secret key here"
+              onChange={this.onSecretKeyChange}
+              type="password"
+            />
+        </div>
+      </Dialog>
+    );
+  }
+
   render() {
     return (
       <div class="Header">
@@ -133,7 +240,7 @@ class Header extends Component {
           onRequestClose={this.handleRequestClose}
         >
           <Menu>
-            <MenuItem primaryText="Change AWS Keys" />
+            <MenuItem primaryText="Change AWS Keys" onClick={this.onChangeKeysOpen}/>
           </Menu>
         </Popover>
         <Popover
@@ -148,6 +255,7 @@ class Header extends Component {
             <MenuItem primaryText="Contact Us" onClick={() => {window.open("https://noizrnel3.wixsite.com/catstone/external-contact-page")}}/>
           </Menu>
         </Popover>
+        {this.renderChangeKeysForm()}
       </div>
     );
   }
