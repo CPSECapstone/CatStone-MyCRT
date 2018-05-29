@@ -96,7 +96,6 @@ def create_app(config={}):
                 print(userCaptures)
 
                 userCapture = userCaptures[0]
-                updateCapture(capture_id, 2, db.get_session())
                 return jsonify(userCapture), 200
 
         else:
