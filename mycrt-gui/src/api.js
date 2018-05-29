@@ -103,9 +103,9 @@ export function setToken(tok) {
 }
 
 /**
- * 
- * @param {string} username 
- * @param {string} password 
+ *
+ * @param {string} username
+ * @param {string} password
  */
 export function logIn(username, password) {
     headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
@@ -218,6 +218,34 @@ export function postReplay(replay) {
     headers.set('Authorization', 'Basic ' + btoa(token + ":"));
 
     return post("users/replays", replay)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
+export function deleteCapture(captureId) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return del("users/captures/" + captureId)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
+export function deleteReplay(replayId) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return del("users/replays/" + replayId)
       .then((response) => {
           if (response.ok) {
               return response.json();
