@@ -124,7 +124,7 @@ def create_app(config={}):
             start_time_object = datetime.strptime(start_time, time_format)
 
             if 'end_time' not in jsonData:
-                jsonData['end_time'] = (start_time_object + timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S.000Z"))
+                jsonData['end_time'] = (start_time_object + timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
             if ('rds_endpoint' not in jsonData or
