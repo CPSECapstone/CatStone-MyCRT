@@ -26,7 +26,7 @@ def capture(rds_endpoint, region_name, db_user, db_password, db_name, start_time
                       'Code': 400}}
 
     if end_time == None:
-        newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time, bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
+        newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time, bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session, 1)
     else:
         newCapture = insertCapture(user.id, alias, start_time.split('.', 1)[0].replace('T', ' '), end_time.split(
             '.', 1)[0].replace('T', ' '), bucket_name, alias, rds_endpoint, db_user, db_password, db_name, region_name, db_session)
