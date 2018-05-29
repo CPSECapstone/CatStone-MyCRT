@@ -116,8 +116,16 @@ def create_app(config={}):
         if request.headers['Content-Type'] == 'application/json':
             jsonData = request.json
 
+            now = datetime.now() + timedelta(hours=7,minutes=-5)
+
+            start_time = jsonData['start_time'].split('.', 1)[0].replace('T', ' ')
+            time_format = '%Y-%m-%d %H:%M:%S'
+
+            start_time_object = datetime.strptime(start_time, time_format)
+
             if 'end_time' not in jsonData:
-                jsonData['end_time'] = None
+                jsonData['end_time'] = (start_time_object + timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
 
             if ('rds_endpoint' not in jsonData or
                 'region_name' not in jsonData or
@@ -129,13 +137,6 @@ def create_app(config={}):
                 'alias' not in jsonData or
                 'bucket_name' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
-
-            now = datetime.now() + timedelta(hours=7,minutes=-5)
-
-            start_time = jsonData['start_time'].split('.', 1)[0].replace('T', ' ')
-            time_format = '%Y-%m-%d %H:%M:%S'
-
-            start_time_object = datetime.strptime(start_time, time_format)
 
             if (start_time_object < now):
                 return jsonify({"error": "Start time cannot be more than 5 minutes in the past."}), 400
@@ -410,6 +411,3 @@ def create_app(config={}):
     def verify_login():
         if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
-
-
-
