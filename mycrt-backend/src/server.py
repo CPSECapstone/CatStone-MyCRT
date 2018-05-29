@@ -17,7 +17,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
-from .database.updateRecords import updateCaptureEndTime
+from .database.updateRecords import updateCaptureEndTime, updateCapture
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -93,9 +93,10 @@ def create_app(config={}):
 
                 updateCaptureEndTime(capture_id, end_time, db.get_session())
                 userCaptures = getCaptureFromId(capture_id, db.get_session())
+                print(userCaptures)
 
                 userCapture = userCaptures[0]
-                updateCapture(capture['captureId'], 2, db.get_session())
+                updateCapture(capture_id, 2, db.get_session())
                 return jsonify(userCapture), 200
 
         else:

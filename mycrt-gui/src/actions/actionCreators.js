@@ -130,12 +130,12 @@ export function postReplay(replay, cb, errCb) {
     }
 }
 
-export function putEndTime(captureAlias, endTime, cb, errCb) {
+export function putEndTime(captureId, endTime, cb, errCb) {
 	return (dispatch, prevState) => {
-        api.putEndTime(captureAlias, endTime)
+        api.putEndTime(captureId, endTime)
           .then(() => {if (cb) cb();})
           .catch((error) => {
-            error.then((result) => {if (errCb) errCb(result.error)})  
+            if (errCb) errCb("Error submitting endTime " + endTime + " for capture " + captureId)  
           })
     }
 }

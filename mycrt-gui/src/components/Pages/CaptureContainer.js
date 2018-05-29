@@ -28,6 +28,7 @@ class CaptureContainer extends Component {
           {this.props.cards.slice(0).reverse().map((card) => 
               <CaptureReplayItem
                 key={card.captureAlias}
+                id={card.captureId}
                 alias={card.captureAlias}
                 s3={card.s3Bucket}
                 rds={card.rdsInstance}

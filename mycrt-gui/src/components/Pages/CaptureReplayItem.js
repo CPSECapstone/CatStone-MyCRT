@@ -43,9 +43,10 @@ class CaptureReplayItem extends Component {
 }
 
   putEndTime() {
+    console.log(this.props.id)
     this.props.putEndTime(
-      this.props.alias,
-      this.props.endTime,
+      this.props.id,
+      (new Date()).toISOString(),
       () => this.setState(prevState => ({
         captureStopped: true
       })),

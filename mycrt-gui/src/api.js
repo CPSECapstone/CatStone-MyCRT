@@ -228,10 +228,10 @@ export function postReplay(replay) {
       .then(json => json)
 }
 
-export function putEndTime(captureAlias, endTime) {
+export function putEndTime(captureId, endTime) {
     headers.set('Authorization', 'Basic ' + btoa(token + ":"));
 
-    return put("users/captures/" + captureAlias, {end_time: endTime})
+    return put("users/captures/" + captureId, {end_time: endTime})
       .then((response) => {
           if (response.ok) {
               return response.json();
