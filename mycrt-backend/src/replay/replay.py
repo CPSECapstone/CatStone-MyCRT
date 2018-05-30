@@ -15,6 +15,7 @@ import rpyc
 from pytz import utc, timezone
 from pymysql import OperationalError, MySQLError
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
+from src.database.models import User
 
 REPLAY_STATUS_ERROR = 3
 REPLAY_STATUS_SUCCESS = 2
@@ -102,15 +103,22 @@ def prepare_scheduled_replay(replay, capture, db_session, user):
     time_delta = replay['startTime'] - capture['startTime']
     conn = rpyc.connect('localhost', 12345)
 
-    for transaction in transactions:
-        scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
-        scheduled_time = scheduled_time.replace(tzinfo=utc)
-        formatted_query = transaction[1].replace("\'", "\\\'")
+    userObject = User(id=user[0], username=user[1], password=user[2],
+                      email=user[3], access_key=user[4],
+                      secret_key=user[5], notificationLife=user[6])
 
-        if transaction is transactions[-1]:
-            conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys(), is_last_transaction=True)
-        else:
-            conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys())
+    if transactions == []:
+        conn.root.add_empty_replay(replay, userObject)
+    else:
+        for transaction in transactions:
+            scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
+            scheduled_time = scheduled_time.replace(tzinfo=utc)
+            formatted_query = transaction[1].replace("\'", "\\\'")
+
+            if transaction is transactions[-1]:
+                conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, userObject, is_last_transaction=True)
+            else:
+                conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, userObject)
 
     try:
         os.remove(capture['captureAlias'] + ".log")

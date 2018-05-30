@@ -64,6 +64,16 @@ def run_query(replay, query, user, is_last_transaction):
         save_replay_metrics(replay, end_time, user)
         updateReplay(replay['replayId'], 2, db.get_session())
 
+def complete_replay(replay, user):
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('config')
+
+    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
+
+    end_time = datetime.utcnow()
+    save_replay_metrics(replay, end_time, user)
+    updateReplay(replay['replayId'], 2, db.get_session())
+
 def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "FreeableMemory", replay['regionName'], user)
@@ -71,6 +81,17 @@ def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
 
 class SchedulerService(rpyc.Service):
+
+    def exposed_add_empty_replay(self, replay, scheduled_time, user):
+        trigger = DateTrigger(run_date=scheduled_time)
+        replay_id = str(replay['replayId'])
+        scheduler.add_job(func=complete_replay, args=[replay, user],
+                          trigger=trigger,
+                          coalesce=True,
+                          name=replay_id,
+                          max_instances=1,
+                          jobstore='default',
+                          executor='default')
 
     def exposed_add_scheduled_replay(self, replay, query, scheduled_time, db_session, user, is_last_transaction=False):
         trigger = DateTrigger(run_date=scheduled_time)
