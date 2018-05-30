@@ -21,6 +21,15 @@ from .database.updateRecords import updateCaptureEndTime
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
+
+def sql_connection_wrapper(*args, **kwargs):
+    return pymysql.connect(*args, **kwargs)
+
+
+def capture_wrapper(*args):
+    return capture(*args)
+
+
 def create_app(config={}):
     # app configuration
     app = Flask(__name__, static_url_path='')
@@ -114,53 +123,59 @@ def create_app(config={}):
     @auth.login_required
     def post_capture():
         if request.headers['Content-Type'] == 'application/json':
-            jsonData = request.json
+            json_data = request.json
 
-            if 'end_time' not in jsonData:
-                jsonData['end_time'] = None
+            if 'end_time' not in json_data:
+                json_data['end_time'] = None
 
-            if ('rds_endpoint' not in jsonData or
-                'region_name' not in jsonData or
-                'db_user' not in jsonData or
-                'db_password' not in jsonData or
-                'db_name' not in jsonData or
-                'start_time' not in jsonData or
-                'end_time' not in jsonData or
-                'alias' not in jsonData or
-                'bucket_name' not in jsonData):
-                    return jsonify({"error": "Missing field in request."}), 400
+            if ('rds_endpoint' not in json_data or
+                    'region_name' not in json_data or
+                    'db_user' not in json_data or
+                    'db_password' not in json_data or
+                    'db_name' not in json_data or
+                    'start_time' not in json_data or
+                    'end_time' not in json_data or
+                    'alias' not in json_data or
+                    'bucket_name' not in json_data):
+                return jsonify({"error": "Missing field in request."}), 400
 
-            if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0 or
-                len(getCaptureFromAlias(jsonData['alias'], db.get_session())) != 0):
+            if (len(getReplayFromAlias(json_data['alias'], db.get_session())) != 0 or
+                    len(getCaptureFromAlias(json_data['alias'], db.get_session())) != 0):
                 return jsonify({"error": "Alias is unavailable."}), 400
 
             try:
-                connection = pymysql.connect(jsonData['rds_endpoint'], user=jsonData['db_user'], passwd=jsonData['db_password'], db=jsonData['db_name'], connect_timeout=5)
-                queries = []
+                connection = app.sql_connection_wrapper(json_data['rds_endpoint'],
+                                                    user=json_data['db_user'],
+                                                    passwd=json_data['db_password'],
+                                                    db=json_data['db_name'],
+                                                    connect_timeout=5)
 
                 if connection.open:
                     connection.close()
             except OperationalError as e:
                 return jsonify({'error': 'Failed to connect to your database with credentials'}), 400
 
-            response = capture( jsonData['rds_endpoint'],
-                                jsonData['region_name'],
-                                jsonData['db_user'],
-                                jsonData['db_password'],
-                                jsonData['db_name'],
-                                jsonData['start_time'],
-                                jsonData['end_time'],
-                                jsonData['alias'],
-                                jsonData['bucket_name'],
-                                g.user,
-                                db.get_session())
-            if (isinstance(response, int) and response > -1):
+            response = app.capture_wrapper(json_data['rds_endpoint'],
+                                       json_data['region_name'],
+                                       json_data['db_user'],
+                                       json_data['db_password'],
+                                       json_data['db_name'],
+                                       json_data['start_time'],
+                                       json_data['end_time'],
+                                       json_data['alias'],
+                                       json_data['bucket_name'],
+                                       g.user,
+                                       db.get_session())
+            if isinstance(response, int) and response > -1:
                 return jsonify({'captureId': response}), 201
             else:
                 return jsonify({'error': response['Error']['Message']}), response['Error']['Code']
         else:
             return jsonify({"error": "Generic Error."}), 400
 
+
+    app.sql_connection_wrapper = sql_connection_wrapper
+    app.capture_wrapper = capture_wrapper
 
     @app.route('/users/replays', methods=['GET'])
     @auth.login_required
