@@ -1,9 +1,9 @@
 import boto3
 import os.path
 from operator import itemgetter
-from flask import g
 from datetime import date, datetime, timedelta
 from botocore.exceptions import ClientError
+
 
 def save_metrics(alias, start_time, end_time, bucket_name, db_identifier, metric_type, region_name, user):
     metric_file = alias + ".metrics"
