@@ -107,7 +107,7 @@ export function postCapture(capture, cb, errCb) {
           }, type:"ADD_CAPTURE"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
-            error.then((result) => {if (errCb) errCb(result.error)})  
+            error.then((result) => {if (errCb) errCb(result.error)})
           })
     }
 }
@@ -125,11 +125,37 @@ export function postReplay(replay, cb, errCb) {
           }, type:"ADD_REPLAY"}))
           .then(() => {if (cb) cb();})
           .catch((error) => {
-            error.then((result) => {if (errCb) errCb(result.error)})  
+            error.then((result) => {if (errCb) errCb(result.error)})
+          })
+    }
+}
+
+export function deleteCapture(captureId, cb, errCb) {
+    return (dispatch, prevState) => {
+        api.deleteCapture(captureId)
+          .then(rdsInstances => dispatch({captureId: captureId, type: "DELETE_CAPTURE"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+            checkError(error, dispatch);
+              if (errCb) errCb();
+              console.log("Error deleting capture: " + error);
+          })
+    }
+}
+
+export function deleteReplay(replayId, cb, errCb) {
+    return (dispatch, prevState) => {
+        api.deleteReplay(replayId)
+          .then(replayId => dispatch({replayId: replayId, type: "DELETE_REPLAY"}))
+          .then(() => {if (cb) cb();})
+          .catch((error) => {
+            checkError(error, dispatch);
+              if (errCb) errCb();
+              console.log("Error deleting replay: " + error);
           })
     }
 }
 
 function checkError(err, dispatcher) {
-    return err[0].includes("Unauthorized") ? dispatcher({type:"LOG_OUT"}) : console.log(err); 
+    return err[0].includes("Unauthorized") ? dispatcher({type:"LOG_OUT"}) : console.log(err);
 }
