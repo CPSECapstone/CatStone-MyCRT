@@ -35,7 +35,7 @@ export function register(userInfo, cb, errCb) {
           .then(() => {if (cb) cb();})
           .catch((error) => {
               checkError(error, dispatch);
-              if (errCb) errCb("User already exists");
+              if (errCb) errCb(error);
           })
     }
 }
@@ -145,7 +145,7 @@ export function putKeys(changeKeysInfo, cb, errCb) {
     api.putKeys(changeKeysInfo)
       .then(() => {if (cb) cb();})
       .catch((error) => {
-        if (errCb) errCb("Invalid credentials. Check account username and password.")  
+        if (errCb) errCb(error)  
       })
   }
 }

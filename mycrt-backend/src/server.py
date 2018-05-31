@@ -19,7 +19,7 @@ from .database.getRecords import *
 from .database.addRecords import insertReplay
 from .database.updateRecords import updateCaptureEndTime, updateCapture, updateKeys
 import boto3
-from botocore import ClientError
+from botocore.exceptions import ClientError
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -96,6 +96,9 @@ def create_app(config={}):
             jsonAccess_key = jsonData['access_key']
             jsonSecret_key = jsonData['secret_key']
 
+            if(not validate_keys(jsonAccess_key, jsonSecret_key)):
+                return jsonify({"error": "Invalid access and/or secret key"}), 400
+                
             if(not g.user.verify_password(jsonPassword)):
                 return jsonify({"error": "Password does not match."}), 400
 

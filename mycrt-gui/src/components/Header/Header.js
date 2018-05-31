@@ -81,7 +81,6 @@ class Header extends Component {
       this.onChangeKeysClose,
       (err) => {
         this.setState(prevState => ({showError: true, errorMessage: err}))
-        console.log("ERROR ERROR");
       }
     );
   }
