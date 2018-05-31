@@ -10,6 +10,7 @@ def deleteCapture(captureId, db_session):
     """
 
     try:
+        replay = db_session.query(Replay).filter(Replay.captureId == captureId).delete()
         capture = db_session.query(Capture).filter(Capture.captureId == captureId).delete()
         db_session.commit()
         return capture
