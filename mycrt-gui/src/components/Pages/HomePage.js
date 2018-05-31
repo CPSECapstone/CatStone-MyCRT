@@ -105,6 +105,10 @@ class HomePage extends Component {
     this.handleDBNameChange = this.handleDBNameChange.bind(this);
     this.handleCaptureSelection = this.handleCaptureSelection.bind(this);
 
+    this.getNewStartDay = this.getNewStartDay.bind(this);
+    this.getNewStartTime = this.getNewStartTime.bind(this);
+    this.setNewStartDay = this.setNewStartDay.bind(this);
+
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
@@ -223,49 +227,6 @@ class HomePage extends Component {
           });
       }}
     );
-
-    // $.ajax({
-    //   url: SERVER_PATH + "/users/replays",
-    //   dataType: 'json',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': 'Basic ' + btoa(parentContextState.token + ":")
-    //   },
-    //   type: 'POST',
-    //   data: JSON.stringify(formDataValues),
-    //   success: function (data) {
-    //     console.log("SUCCESS Replay form");
-
-    //     var formattedCard = {
-    //       replayAlias: this.state.aliasValue,
-    //       rdsInstance: this.state.rdsValue,
-    //       s3Bucket: this.state.s3Value,
-    //       replayStatus: LOADING,
-    //       startTime: startDay,
-    //       is_fast: this.state.fastReplay
-    //     }
-
-    //     var newCards = this.props.Replays;
-    //     newCards.push(formattedCard);
-    //     this.setState({
-    //       replayCards: newCards
-    //     })
-    //   }.bind(this),
-    //   error: function (xhr, status, err) {
-    //     if (xhr.responseText.includes("Failed to connect")) {
-    //       this.setState({
-    //         showDBConnectFailure: true,
-    //         showAliasFailure: false
-    //       });
-    //     } else if (xhr.responseText.includes("Alias is unavailable")) {
-    //       this.setState({
-    //         showAliasFailure: true,
-    //         showDBConnectFailure: false
-    //       });
-    //     }
-    //     console.error(this.props.url, status, err.toString(), xhr.responseText);
-    //   }.bind(this)
-    // });
   }
 
   getCaptureData() {
@@ -401,17 +362,39 @@ class HomePage extends Component {
     }));
   }
 
-  handleStartDayChange(event, value) {
+  setNewStartDay(newDate) {
+    this.setState(prevState => ({
+      captureStartDay: newDate
+    }))
+  }
+
+  getNewStartDay(event, value) {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
       newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
     } else {
       var newDate = value;
     }
+    return newDate;
+  }
 
-    this.setState(prevState => ({
-      captureStartDay: newDate
-    }))
+  getNewStartTime(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes());
+    } else {
+      var newDate = value;
+    }
+    return newDate;
+  }
+
+  handleStartDayChange(event, value) {
+    this.setNewStartDay(this.getNewStartDay(event, value));
+  }
+
+  handleStartTimeChange(event, value) {
+    this.setNewStartDay(this.getNewStartTime(event, value));
   }
 
   handleEndDayChange(event, value) {
@@ -435,21 +418,6 @@ class HomePage extends Component {
         isErrorVisible: false
       }))
     }
-    console.log(newDate);
-  }
-
-  handleStartTimeChange(event, value) {
-    if (this.state.captureStartDay != undefined) {
-      var newDate = this.state.captureStartDay;
-      newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes());
-    } else {
-      var newDate = value;
-    }
-
-    this.setState(prevState => ({
-      captureStartDay: newDate
-    }))
     console.log(newDate);
   }
 
@@ -479,11 +447,11 @@ class HomePage extends Component {
   }
 
   handleAliasChange(event, value) {
-    var regEx = /^[-_a-zA-Z0-9]+$/i;
+    var regEx = /^[-_a-zA-Z0-9]{1,64}$/i;
 
     this.setState(prevState => ({
       aliasValue: value,
-      aliasError: ((regEx.test(value)) ? "" : "Invalid must contain alphanumeric, -, or _")
+      aliasError: ((regEx.test(value)) ? "" : "Invalid must be between 1 and 64 characters and contain only alphanumeric, -, or _")
     }))
   }
 
@@ -507,7 +475,7 @@ class HomePage extends Component {
 
   isCaptureFieldsFilled() {
     return this.state.rdsValue != undefined && this.state.s3Value != undefined
-      && this.state.captureStartDay != undefined && this.state.captureEndDay != undefined
+      && this.state.captureStartDay != undefined
       && this.state.dbUsernameValue != undefined && this.state.dbNameValue != undefined
       && this.state.dbPasswordValue != undefined && this.state.aliasValue != undefined
       && !this.state.isErrorVisible;
@@ -568,9 +536,11 @@ class HomePage extends Component {
       region_name: this.state.rdsRegionValue,
       rds_endpoint: this.state.rdsValue,
       bucket_name: this.state.s3Value,
-      end_time: this.state.captureEndDay.toISOString(),
       start_time: this.state.captureStartDay.toISOString()
     };
+    if (this.state.captureEndDay !== undefined) {
+      card["end_time"] = this.state.captureEndDay.toISOString();
+    }
     this.sendCaptureData(card);
     this.setState(prevState => ({
       isErrorVisible: false
@@ -695,6 +665,7 @@ class HomePage extends Component {
              <TextField
               hintText="Type alias here"
               errorText={this.state.aliasError}
+              errorStyle={{width: '500px'}}
               onChange={this.handleAliasChange}
             />
           </div>
@@ -855,6 +826,7 @@ class HomePage extends Component {
              <TextField
             hintText="Type alias here"
             errorText={this.state.aliasError}
+            errorStyle={{width: '500px'}}
             onChange={this.handleAliasChange}
           />
         </div>
@@ -917,6 +889,8 @@ class HomePage extends Component {
     );
   }
   render() {
+    var that = this;
+
     return (
       <div className="HomePage">
         <h2>Dashboard</h2>
@@ -931,6 +905,7 @@ class HomePage extends Component {
           showLoadingCard={this.state.showLoadingCard}
           showLoadingContent={this.state.loadingCaptureContent}
           errorFound={this.state.captureContentErrorFound}
+          {...that.props}
         />
         <h3>Replays</h3>
         <Button
@@ -943,6 +918,7 @@ class HomePage extends Component {
           showLoadingCard={this.state.showReplayLoadingCard}
           showLoadingContent={this.state.loadingReplayContent}
           errorFound={this.state.replayContentErrorFound}
+          {...that.props}
         />
       </div>
     );

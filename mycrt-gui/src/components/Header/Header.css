@@ -6,6 +6,7 @@
   flex-direction: row;
   position: fixed;
   width: 100%;
+  z-index: 1;
 }
 
 .header-title {
@@ -95,4 +96,15 @@
 
 .alpha-note {
   color: red;
+}
+
+.aws-keys-item {
+  display: flex;
+  flex-direction: column;
+  padding-top: 15px;
+}
+
+.aws-keys-item > div {
+  font-size: 1em !important;
+  height: 40px !important;
 }

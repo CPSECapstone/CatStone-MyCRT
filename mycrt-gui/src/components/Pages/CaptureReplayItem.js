@@ -14,10 +14,12 @@ class CaptureReplayItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      captureReplayStatus: ERROR
+      captureReplayStatus: ERROR,
+      captureStopped: false
     };
 
     this.getTimeLeft = this.getTimeLeft.bind(this);
+    this.putEndTime = this.putEndTime.bind(this);
   }
 
   /* Code used from a sample received from the following github link.
@@ -39,6 +41,21 @@ class CaptureReplayItem extends Component {
         seconds: seconds
     };
 }
+
+  putEndTime() {
+    console.log(this.props.id)
+    this.props.putEndTime(
+      this.props.id,
+      (new Date()).toISOString(),
+      () => this.setState(prevState => ({
+        captureStopped: true
+      })),
+      (err) => {
+        console.log("--------- Error Stopping capture ----------");
+        console.log(err);
+      }
+    );
+  }
 
   getTimeLeft() {
     var currentDate = new Date();
@@ -95,12 +112,18 @@ class CaptureReplayItem extends Component {
               <h4 class="capture-sub-item" >{this.props.alias}</h4>
               <h5 class="capture-sub-item" >RDS: {this.props.rds}</h5>
               <h5 class="capture-sub-item" >S3: {this.props.s3}</h5>
-              {this.props.start ? 
+              {this.props.start && this.props.end &&
                 <div>
                 <h5>Time Remaining:</h5>
                 <h5>{this.getTimeLeft()}</h5>
                 </div>
-                : ''}
+              }
+              {!this.props.end && this.props.isCapture &&
+                  <div class={this.state.captureStopped ? "stop-capture-button-disabled" : "stop-capture-button-active"} 
+                    onClick={this.putEndTime}>
+                    <div>{this.state.captureStopped ? "STOPPED" : "STOP"}</div>
+                  </div>
+              }
             </div>
           </div>
         }
