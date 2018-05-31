@@ -125,7 +125,7 @@ def create_app(config={}):
         if request.headers['Content-Type'] == 'application/json':
             json_data = request.json
 
-            now = datetime.now() + timedelta(hours=7,minutes=-5)
+            now = datetime.utcnow() + timedelta(minutes=-5)
 
             start_time = json_data['start_time'].split('.', 1)[0].replace('T', ' ')
             time_format = '%Y-%m-%d %H:%M:%S'
