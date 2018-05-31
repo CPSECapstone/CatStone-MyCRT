@@ -59,37 +59,6 @@ def insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsern
     return getReplayFromAlias(replayAlias, db_session)[0]["replayId"]
 
 
-def insertCaptureMetric(db_session, capture, bucket, metricFile):
-    """Simple function to insert a capture metric
-       Example: insertCaptureMetric("test-capture-2",
-                                    "testBucket",
-                                    "test-capture-1.log")
-
-    """
-    insertMetric(db_session, captureAlias=capture, s3Bucket=bucket, metricFileName=metricFile)
-
-
-# Simple function to insert a replay metric
-def insertReplayMetric(db_session, replay, bucket, metricFile):
-    insertMetric(db_session, replayAlias=replay, s3Bucket=bucket, metricFileName=metricFile)
-
-
-# Function used to insert MetricFiles
-# Note: This should NOT be used anywhere else in the system.
-def insertMetric(db_session, captureAlias=None, replayAlias=None, s3Bucket=None,
-                 metricFileName=None):
-    if captureAlias is not None:
-        metric = Metric(s3Bucket, metricFileName, captureAlias=captureAlias)
-    else:
-        metric = Metric(s3Bucket, metricFileName, replayAlias=replayAlias)
-
-    try:
-        db_session.add(metric)
-        db_session.commit()
-    except:
-        db_session.rollback()
-
-
 def insertUser(userName, userPassword, email, accessKey, secretKey, db_session):
     """Function to insert a user into the database
        Example: insertUser("AndrewTest",
