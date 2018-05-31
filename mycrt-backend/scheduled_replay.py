@@ -53,12 +53,13 @@ def run_query(replay, query, user, is_last_transaction):
         inner_conn.commit()
 
     except MySQLError as e:
+        updateReplay(replay['replayId'], 3, db.get_session())
         print(e)
     finally:
         if inner_conn is not None and inner_conn.open:
             inner_conn.close()
 
-    if is_last_transaction:
+    if is_last_transaction and replay_status[0][1] != 3:
         end_time = datetime.utcnow()
         save_replay_metrics(replay, end_time, user)
         updateReplay(replay['replayId'], 2, db.get_session())
@@ -68,7 +69,6 @@ def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "FreeableMemory", replay['regionName'], user)
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
-
 
 class SchedulerService(rpyc.Service):
 
