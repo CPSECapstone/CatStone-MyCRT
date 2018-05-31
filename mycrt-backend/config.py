@@ -10,7 +10,7 @@ TESTING = True
 SECRET_KEY = 'my-secret-key'
 
 
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://db_username:db_password@localhost/db_name'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:newpass@localhost/catdb'
 SQLALCHEMY_TRACK_MODIFICATIONS=True
 SQLALCHEMY_POOL_RECYCLE = 3600
 

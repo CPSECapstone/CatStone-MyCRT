@@ -3,7 +3,7 @@ from flask import Flask, request, g, Response
 from .database.mycrt_database import MyCrtDb
 from .database.models import User
 from .database.user_repository import UserRepository
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -17,7 +17,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
-from .database.updateRecords import updateCaptureEndTime
+from .database.updateRecords import updateCaptureEndTime, updateCapture, updateKeys
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -63,9 +63,46 @@ def create_app(config={}):
         secret_key = jsonData['secret_key']
         success = user_repository.register_user(username, password, email, access_key, secret_key)
         if (not success):
-            return jsonify({"error": "Could not add record to database."}), 400
+            return jsonify({"error": "Could not add record to database."}), 500
 
         return jsonify(), 201
+
+    @app.route('/users/<username>/keys', methods=['PUT'])
+    @auth.login_required
+    def edit_keys(username):
+        if request.headers['Content-Type'] == 'application/json':
+            jsonData = request.get_json()
+
+            if (not getUserFromUsername(jsonData['username'], db.get_session())):
+                return jsonify({"error": "User does not exist."}), 404
+
+            if (g.user.username != username):
+                return jsonify({"error": "username does not match logged in user."}), 401
+
+            if ('username' not in jsonData or
+                'password' not in jsonData or
+                'secret_key' not in jsonData or
+                'access_key' not in jsonData):
+                    return jsonify({"error": "Missing field in request."}), 400
+
+            jsonUsername = jsonData['username']
+            jsonPassword = jsonData['password']
+            jsonAccess_key = jsonData['access_key']
+            jsonSecret_key = jsonData['secret_key']
+
+            if(not g.user.verify_password(jsonPassword)):
+                return jsonify({"error": "Password does not match."}), 400
+
+            if (g.user.username != jsonUsername):
+                return jsonify({"error": "Cannot edit username."}), 400
+
+            success = updateKeys(jsonUsername, jsonAccess_key, jsonSecret_key, db.get_session())
+            print(success)
+
+            if (not success):
+                return jsonify({"error": "Could not edit record in the database."}), 500
+
+            return jsonify(), 200
 
     @app.route('/users/captures/<capture_id>', methods=['GET'])
     @auth.login_required
@@ -93,12 +130,13 @@ def create_app(config={}):
 
                 updateCaptureEndTime(capture_id, end_time, db.get_session())
                 userCaptures = getCaptureFromId(capture_id, db.get_session())
+                print(userCaptures)
 
                 userCapture = userCaptures[0]
                 return jsonify(userCapture), 200
 
         else:
-            return jsonify({"error": "Missing field in request."}), 400
+            return jsonify({"error": "Missing json data."}), 400
 
 
     @app.route('/users/captures', methods=['GET'])
@@ -116,8 +154,16 @@ def create_app(config={}):
         if request.headers['Content-Type'] == 'application/json':
             jsonData = request.json
 
+            now = datetime.now() + timedelta(hours=7,minutes=-5)
+
+            start_time = jsonData['start_time'].split('.', 1)[0].replace('T', ' ')
+            time_format = '%Y-%m-%d %H:%M:%S'
+
+            start_time_object = datetime.strptime(start_time, time_format)
+
             if 'end_time' not in jsonData:
-                jsonData['end_time'] = None
+                jsonData['end_time'] = (start_time_object + timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
 
             if ('rds_endpoint' not in jsonData or
                 'region_name' not in jsonData or
@@ -129,6 +175,9 @@ def create_app(config={}):
                 'alias' not in jsonData or
                 'bucket_name' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
+
+            if (start_time_object < now):
+                return jsonify({"error": "Start time cannot be more than 5 minutes in the past."}), 400
 
             if (len(getReplayFromAlias(jsonData['alias'], db.get_session())) != 0 or
                 len(getCaptureFromAlias(jsonData['alias'], db.get_session())) != 0):
@@ -400,6 +449,3 @@ def create_app(config={}):
     def verify_login():
         if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
-
-
-

@@ -57,16 +57,33 @@ def run_query(replay, query, user, is_last_transaction):
         inner_conn.commit()
 
     except MySQLError as e:
+        updateReplay(replay['replayId'], 3, db.get_session())
         print(e)
     finally:
         if inner_conn is not None and inner_conn.open:
             inner_conn.close()
 
-    if is_last_transaction:
+    if is_last_transaction and replay_status[0][1] != 3:
         end_time = datetime.utcnow()
         save_replay_metrics(replay, end_time, user)
         updateReplay(replay['replayId'], 2, db.get_session())
         sendStatusEmail(REPLAY_STATUS_SUCCESS, replay, user.email, db_sesseion())
+
+def start_empty_replay(replay):
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('config')
+
+    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
+    updateReplay(replay['replayId'], 1, db.get_session())
+
+def end_empty_replay(replay, user):
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('config')
+
+    db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
+    end_time = datetime.utcnow()
+    save_replay_metrics(replay, end_time, user)
+    updateReplay(replay['replayId'], 2, db.get_session())
 
 def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "CPUUtilization", replay['regionName'], user)
@@ -74,8 +91,27 @@ def save_replay_metrics(replay, end_time, user):
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "ReadIOPS", replay['regionName'], user)
     save_metrics(replay['replayAlias'], replay['startTime'], end_time, replay['s3Bucket'], replay['rdsInstance'], "WriteIOPS", replay['regionName'], user)
 
-
 class SchedulerService(rpyc.Service):
+
+    def exposed_add_empty_replay(self, replay, scheduled_time, user, is_start=True):
+        trigger = DateTrigger(run_date=scheduled_time)
+        replay_id = str(replay['replayId'])
+        if is_start:
+            scheduler.add_job(func=start_empty_replay, args=[replay],
+                              trigger=trigger,
+                              coalesce=True,
+                              name=replay_id,
+                              max_instances=1,
+                              jobstore='default',
+                              executor='default')
+        else:
+            scheduler.add_job(func=end_empty_replay, args=[replay, user],
+                              trigger=trigger,
+                              coalesce=True,
+                              name=replay_id,
+                              max_instances=1,
+                              jobstore='default',
+                              executor='default')
 
     def exposed_add_scheduled_replay(self, replay, query, scheduled_time, db_session, user, is_last_transaction=False):
         trigger = DateTrigger(run_date=scheduled_time)
@@ -111,13 +147,6 @@ class SchedulerService(rpyc.Service):
 
     def exposed_get_jobs(self, jobstore=None):
         return scheduler.get_jobs(jobstore)
-
-    def exposed_get_replay_completed(self, replay_id):
-        pending_jobs = scheduler.get_jobs()
-        for job in pending_jobs:
-            if job.id is replay_id:
-                return False
-        return True
 
     def exposed_print_all_jobs(self):
         print(scheduler.print_jobs())

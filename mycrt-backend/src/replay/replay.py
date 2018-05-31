@@ -15,6 +15,7 @@ import rpyc
 from pytz import utc, timezone
 from pymysql import OperationalError, MySQLError
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
+from src.database.models import User
 
 REPLAY_STATUS_ERROR = 3
 REPLAY_STATUS_SUCCESS = 2
@@ -103,18 +104,26 @@ def prepare_scheduled_replay(replay, capture, db_session, user):
     transactions = get_times_and_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])
     time_format = '%Y-%m-%d %H:%M:%S'
 
-    time_delta = replay['startTime'] - capture['startTime']
-    conn = rpyc.connect('localhost', 12345)
+    time_delta = capture['endTime'] - capture['startTime']
+    conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True})
 
-    for transaction in transactions:
-        scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
-        scheduled_time = scheduled_time.replace(tzinfo=utc)
-        formatted_query = transaction[1].replace("\'", "\\\'")
+    if transactions == []:
 
-        if transaction is transactions[-1]:
-            conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys(), is_last_transaction=True)
-        else:
-            conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user.get_keys())
+        scheduled_end_time = datetime.strptime(str(replay['startTime'] + time_delta), time_format)
+        scheduled_end_time = scheduled_end_time.replace(tzinfo=utc)
+
+        conn.root.add_empty_replay(replay, datetime.strptime(str(replay['startTime'] + timedelta(seconds=10)), time_format).replace(tzinfo=utc), user)
+        conn.root.add_empty_replay(replay, scheduled_end_time, user, is_start = False)
+    else:
+        for transaction in transactions:
+            scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
+            scheduled_time = scheduled_time.replace(tzinfo=utc)
+            formatted_query = transaction[1].replace("\'", "\\\'")
+
+            if transaction is transactions[-1]:
+                conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user, is_last_transaction=True)
+            else:
+                conn.root.add_scheduled_replay(replay, formatted_query, str(scheduled_time), db_session, user)
 
     try:
         os.remove(capture['captureAlias'] + ".log")
