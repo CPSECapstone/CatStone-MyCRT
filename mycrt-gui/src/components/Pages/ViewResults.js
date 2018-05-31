@@ -546,9 +546,8 @@ class ViewResults extends Component {
   }
 
   deleteCapture() {
-    this.onCaptureRowSelection("none", this.props.deleteCapture);
+    this.onCaptureRowSelection("none");
     this.props.deleteCapture(this.state.captureDetails.captureId);
-    //this.onReplayRowSelection("none");
     this.setState(prevState => ({
       isDeleteCaptureOpen: false,
     }))
