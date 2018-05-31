@@ -241,3 +241,17 @@ export function putEndTime(captureId, endTime) {
       })
       .then(json => json)
 }
+
+export function putKeys(changeKeysInfo) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return put("users/" + changeKeysInfo.username + "/keys", changeKeysInfo)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}

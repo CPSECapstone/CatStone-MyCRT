@@ -34,7 +34,9 @@ class Header extends Component {
       passwordValue: undefined,
       usernameValue: undefined,
       secretKeyValue: undefined,
-      awsKeyValue: undefined
+      awsKeyValue: undefined,
+      showError: false,
+      errorMessage: ""
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -48,6 +50,7 @@ class Header extends Component {
     this.renderChangeKeysForm = this.renderChangeKeysForm.bind(this);
 
     this.onPasswordChange = this.onPasswordChange.bind(this);
+    this.onUsernameChange = this.onUsernameChange.bind(this);
     this.onAWSKeyChange = this.onAWSKeyChange.bind(this);
     this.onSecretKeyChange = this.onSecretKeyChange.bind(this);
   }
@@ -61,17 +64,26 @@ class Header extends Component {
 
   onChangeKeysClose() {
     this.setState({
-      changeKeysVisible: false
+      changeKeysVisible: false,
+      showError: false
     });
   }
 
   onChangeKeysSubmit() {
-    this.onChangeKeysClose();
-    //api call here
-  }
+    var changeKeysInfo = {
+      username: this.state.usernameValue,
+      password: this.state.passwordValue,
+      access_key: this.state.awsKeyValue,
+      secret_key: this.state.secretKeyValue
+    };
 
-  isChangeKeysFieldsFilled() {
-    return true;
+    this.props.putKeys(changeKeysInfo,
+      this.onChangeKeysClose,
+      (err) => {
+        this.setState(prevState => ({showError: true, errorMessage: err}))
+        console.log("ERROR ERROR");
+      }
+    );
   }
 
   onPasswordChange(event, value) {
@@ -205,16 +217,15 @@ class Header extends Component {
         modal={true}
         open={this.state.changeKeysVisible}
         autoScrollBodyContent={true}>
-        {this.state.showDBConnectFailure &&
+        {this.state.showError &&
           <div class="error-message">
-            Database credentials are invalid, please check your input.
+            {this.state.errorMessage}
           </div>}
         <div class="aws-keys-item">
           Verify Account Username
              <TextField
             hintText="Type username here"
-            onChange={this.onPasswordChange}
-            type="password"
+            onChange={this.onUsernameChange}
           />
         </div>
         <div class="aws-keys-item">

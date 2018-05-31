@@ -98,7 +98,7 @@ class Main extends Component {
               render={() => {
                 if (this.isLoggedIn()) {
                   return (<div>
-                    <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
+                    <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} {...this.props} />
                     <div class="app-content">
                       <NavBar navLinks={navLinks} switchTab={this.switchTab} isHidden={this.state.isNavHidden} toggleBar={this.toggleNavBar} />
                       <NavPage selected={0} parentContext={this} {...this.props} isNavBarHidden={this.state.isNavHidden} />
@@ -115,7 +115,7 @@ class Main extends Component {
                 if (this.isLoggedIn()) {
                   return (
                     <div>
-                      <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} />
+                      <Header logOut={() => that.props.logOut(() => that.props.history.push("/login"))} {...this.props} />
                       <div class="app-content">
                         <NavBar navLinks={navLinks} switchTab={this.switchTab} isHidden={this.state.isNavHidden} toggleBar={this.toggleNavBar} />
                         <NavPage selected={1} parentContext={this} {...this.props} isNavHidden={false} isNavBarHidden={this.state.isNavHidden} />
