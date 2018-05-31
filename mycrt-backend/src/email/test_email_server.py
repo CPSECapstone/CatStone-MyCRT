@@ -1,5 +1,4 @@
 import unittest
-from .email_server import sendCaptureEmail, sendReplayEmail
 class TestSample(unittest.TestCase):
    """
    Our basic test class
