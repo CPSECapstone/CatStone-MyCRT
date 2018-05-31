@@ -1,8 +1,8 @@
 import os
 from datetime import datetime, timedelta
 from src.database.mycrt_database import MyCrtDb
-from src.database.addRecords import insertUser, insertCapture
-from src.database.getRecords import getUserFromEmail, getCaptureFromAlias
+from src.database.addRecords import insertUser, insertCapture, insertReplay
+from src.database.getRecords import getUserFromEmail, getCaptureFromAlias, getReplaysFromCapture
 from src.database.models import Capture, Replay
 import unittest
 import tempfile
@@ -57,17 +57,7 @@ class TestDatabase(unittest.TestCase):
         captures_found = getCaptureFromAlias(captureAlias, self.db.db_session)
         assert len(captures_found) == 1
 
-
     def test_find_capture_associated_to_a_replay(self):
-        username = 'user'
-        password = 'password'
-        email = 'email'
-        accesskey = 'access'
-        secretkey = 'secret'
-        insertUser(username, password, email, accesskey, secretkey, self.db.db_session)
-
-
-    def test_inserting_capture_metric(self):
         userId = 1
         captureAlias = 'capture'
         startTime = datetime.utcnow()
@@ -79,8 +69,15 @@ class TestDatabase(unittest.TestCase):
         rdsPassword = 'rdsPassword'
         rdsDatabase = 'database'
         regionName = 'region'
-        capture = insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance,
-                                 rdsUsername, rdsPassword, rdsDatabase, regionName, self.db.db_session, status=None)[0]
+        capture1 = insertCapture(userId, captureAlias, startTime, endTime, s3Bucket, logFileName, rdsInstance,
+                                 rdsUsername, rdsPassword, rdsDatabase, regionName, self.db.db_session, status=None)
+        captureId = capture1[0][0]
+
+        replayAlias = 'replay'
+        isFast = False
+        replay = insertReplay(userId, captureId, replayAlias, s3Bucket, rdsInstance, rdsUsername, rdsPassword, rdsDatabase, regionName, startTime, isFast, self.db.db_session)
+        replay_found = getReplaysFromCapture(captureId, self.db.db_session)
+        assert len(replay_found) > 0
 
 
 if __name__ == '__main__':
