@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 import src.server
 import src.capture
 from src.server import create_app, capture_wrapper, sql_connection_wrapper
@@ -196,7 +197,7 @@ class TestServer(unittest.TestCase):
                                              'db_user': 'user',
                                              'db_password': 'password',
                                              'db_name': 'name',
-                                             'start_time': 'start',
+                                             'start_time': '2018-01-01 10:10:10',
                                              'end_time': 'end',
                                              'alias': 'alias'
                                          }), content_type='application/json')
@@ -220,6 +221,8 @@ class TestServer(unittest.TestCase):
         json_data = json.loads(result.data)
         token = json_data['token']
 
+        time_format = '%Y-%m-%d %H:%M:%S'
+        start_time = datetime.utcnow() + timedelta(minutes=5)
         capture_response = self.app.post('/users/captures', headers={
             'Authorization': 'Basic %s' % b64encode(bytes(token + ":" + '', 'utf-8')).decode("ascii")},
                                          data=json.dumps({
@@ -228,12 +231,13 @@ class TestServer(unittest.TestCase):
                                              'db_user': 'user',
                                              'db_password': 'password',
                                              'db_name': 'name',
-                                             'start_time': 'start',
+                                             'start_time': start_time.strftime(time_format),
                                              'end_time': 'end',
                                              'alias': 'alias',
                                              'bucket_name': 'bucket'
                                          }), content_type='application/json')
         response_json = json.loads(capture_response.data)
+        print(response_json)
         assert capture_response.status_code == 201
 
     def test_replay_with_missing_data_fails(self):
