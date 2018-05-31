@@ -23,13 +23,19 @@ function createErrorPromise(response, body) {
     console.log("CREATING ERROR PROMISE **********");
     console.log(response.status);
     console.log(response);
-    if (response.status === 400) {
-       return Promise.reject(response.json())
+    if (response.status === 400 || response.status === 404) {
+       return Promise.resolve(response)
+         .then(response => response.json())
+         .then(errMsg => Promise.reject(errMsg["error"]))
     }
     else if (response.status === 500)
        return Promise.reject(["Server Connect Error"]);
     else if (response.status === 401)
-       return Promise.reject(["Unauthorized Error"]);
+       return Promise.resolve(response)
+         .then(response => response.json())
+         .then(errMsg => Promise.reject(errMsg["error"].includes("username") ? 
+            errMsg["error"] :
+            "Unauthorized Error"));
     else
        return Promise.reject(["Unknown error"]);
 }

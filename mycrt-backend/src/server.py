@@ -19,6 +19,8 @@ from .database.getRecords import *
 from .database.addRecords import insertReplay
 from .database.deleteRecords import deleteCapture, deleteReplay
 from .database.updateRecords import updateCaptureEndTime, updateCapture, updateKeys
+import boto3
+from botocore.exceptions import ClientError
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -62,6 +64,10 @@ def create_app(config={}):
         email = jsonData['email']
         access_key = jsonData['access_key']
         secret_key = jsonData['secret_key']
+
+        if (not validate_keys(access_key, secret_key)):
+            return jsonify({"error": "Invalid AWS keys."}), 400
+
         success = user_repository.register_user(username, password, email, access_key, secret_key)
         if (not success):
             return jsonify({"error": "Could not add record to database."}), 500
@@ -91,6 +97,9 @@ def create_app(config={}):
             jsonAccess_key = jsonData['access_key']
             jsonSecret_key = jsonData['secret_key']
 
+            if(not validate_keys(jsonAccess_key, jsonSecret_key)):
+                return jsonify({"error": "Invalid access and/or secret key"}), 400
+                
             if(not g.user.verify_password(jsonPassword)):
                 return jsonify({"error": "Password does not match."}), 400
 
@@ -491,3 +500,13 @@ def create_app(config={}):
     def verify_login():
         if (request.authorization is None or not verify_password(request.authorization.username, request.authorization.password)):
             return jsonify(), 401
+
+def validate_keys(access_key, secret_key):
+    s3 = boto3.client('s3', aws_access_key_id=access_key,
+                        aws_secret_access_key=secret_key)
+
+    try:
+        response = s3.list_buckets()
+    except ClientError as e:
+        return False
+    return True
