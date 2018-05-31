@@ -392,7 +392,6 @@ class HomePage extends Component {
     }))
 
     if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
-      console.log("HEMLO")
       this.setState(prevState => ({
         isErrorVisible: true,
         captureEndDay: undefined
