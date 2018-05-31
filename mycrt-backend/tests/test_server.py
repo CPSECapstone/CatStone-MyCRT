@@ -65,7 +65,7 @@ class TestServer(unittest.TestCase):
     #     jsonData = json.loads(result.data)
     #     token = jsonData['token']
     #     assert b'Unauthorized' not in result.data
-        assert token != None and token != ''
+        # assert token != None and token != ''
 
 
 
