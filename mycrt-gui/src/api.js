@@ -270,17 +270,16 @@ export function deleteReplay(replayId) {
       .then(json => json)
 }
   
-  export function putKeys(changeKeysInfo) {
+export function putKeys(changeKeysInfo) {
     headers.set('Authorization', 'Basic ' + btoa(token + ":"));
 
     return put("users/" + changeKeysInfo.username + "/keys", changeKeysInfo)
-    .then((response) => {
-          if (response.ok) {
-              return response.json();
-          }
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
 
-          return createErrorPromise(response);
-      })
-      .then(json => json)
-  }
+            return createErrorPromise(response);
+        })
+        .then(json => json)
 }
