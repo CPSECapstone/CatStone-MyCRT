@@ -54,18 +54,6 @@ def getUsersCaptures(username, db_session):
 
     return result
 
-def getAllCaptures(username, db_session):
-	''' Function to get All Captures
-
-		Keyword arguments:
-		username -- the uesrname of the user you want to get all captures from
-	'''
-	result = []
-	user_captures = db_session.query(Capture).join(User).filter(User.username == username)
-	result = Capture.convertToDict(db_session.execute(user_captures).fetchall())
-
-	return result
-
 def getCaptureRDSInformation(captureAlias, db_session):
 	""" Function to get RDS Information from Capture
 

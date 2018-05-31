@@ -1,5 +1,5 @@
 from .user_repository import UserRepository
-from .models import Capture, Replay, Metric, ScheduledQuery
+from .models import Capture, Replay, ScheduledQuery
 from .getRecords import getCaptureFromAlias, getReplayFromAlias
 
 
