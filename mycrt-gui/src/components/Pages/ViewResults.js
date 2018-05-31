@@ -19,6 +19,7 @@ import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import Filter from '../Filter/Filter';
 
 const SERVER_PATH = "http://localhost:5000";
 var NOT_STARTED = 0;
@@ -59,6 +60,7 @@ class ViewResults extends Component {
       selectedCaptureIds: [],
       selectedReplayIds: [],
       isCompareDisabled: true,
+      isDeleteDisabled: true,
       compareFreeableMemory: [],
       compareCpuUtilization: [],
       compareReadIOPS:[],
@@ -70,7 +72,9 @@ class ViewResults extends Component {
       comparisonAliases: [],
       relatedCaptureId: -1,
       showCaptureResultsLoading: true,
-      showReplayResultsLoading: true
+      showReplayResultsLoading: true,
+      isDeleteCaptureOpen: false,
+      isDeleteReplayOpen: false
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -88,14 +92,21 @@ class ViewResults extends Component {
     this.onLogClose = this.onLogClose.bind(this);
     this.downloadLog = this.downloadLog.bind(this);
     this.onReplayLogClose = this.onReplayLogClose.bind(this);
+    this.onDeleteClose = this.onDeleteClose.bind(this);
 
     this.renderCaptureTable = this.renderCaptureTable.bind(this);
     this.renderReplayTable = this.renderReplayTable.bind(this);
     this.renderCaptureDetails = this.renderCaptureDetails.bind(this);
     this.renderReplayDetails = this.renderReplayDetails.bind(this);
     this.renderCompare = this.renderCompare.bind(this);
+    this.renderCaptureDelete = this.renderCaptureDelete.bind(this);
+    this.renderReplayDelete = this.renderReplayDelete.bind(this);
+    this.deleteCapture = this.deleteCapture.bind(this);
+    this.deleteReplay = this.deleteReplay.bind(this);
 
     this.isRelatedReplayOrCapture = this.isRelatedReplayOrCapture.bind(this);
+
+    this.onFilterChange = this.onFilterChange.bind(this);
   }
 
   componentDidMount() {
@@ -181,6 +192,7 @@ class ViewResults extends Component {
   onCaptureRowSelection(rows) {
     // check if compare button should be disabled or enabled
     var disabled = true;
+    var deleteDisabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
 
@@ -203,7 +215,6 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-
     if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
       disabled = false;
     }
@@ -215,17 +226,27 @@ class ViewResults extends Component {
     // get capture ids from row indexes
     var selectedCaptureIds = [];
 
-    
+
     for (var i = 0; i < selectedRows.length; i++) {
-      var visibleCaptures = this.state.relatedCaptureId === -1 ? this.state.captures :
-         this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId);
+      var visibleCaptures = this.state.relatedCaptureId === -1 ?
+         this.state.captures.filter(c => (!this.state["captureAliasFilter"] || c.captureAlias.includes(this.state["captureAliasFilter"])))  :
+         this.state.captures.filter(c => c.captureId === this.state.relatedCaptureId )
 
       selectedCaptureIds.push(visibleCaptures[selectedRows[i]].captureId);
       relatedCaptureId = visibleCaptures[selectedRows[i]].captureId;
     }
+
+    console.log("selectedReplayIds length: " + this.state.selectedReplayIds.length);
+    console.log("selectedCaptureIds length: " + this.state.selectedCaptureIds.length);
+
+    if (this.state.selectedReplayIds.length + selectedCaptureIds.length === 1) {
+      deleteDisabled = false;
+    }
+
     this.setState(prevState => ({
       selectedCaptureIds: selectedCaptureIds,
-      relatedCaptureId: relatedCaptureId 
+      relatedCaptureId: relatedCaptureId,
+      isDeleteDisabled: deleteDisabled
     }));
 
     if (rows.length === 0) {
@@ -236,6 +257,7 @@ class ViewResults extends Component {
   onReplayRowSelection(rows) {
     // check if compare button should be disabled or enabled
     var disabled = true;
+    var deleteDisabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
     console.log("Selected rows are----" + rows);
@@ -270,17 +292,26 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedReplayIds = [];
-    var visibleReplays = this.state.relatedCaptureId === -1 ? 
-     this.state.replays : 
+    var visibleReplays = this.state.relatedCaptureId === -1 ?
+     this.state.replays.filter(r => (!this.state["replayAliasFilter"] || r.replayAlias.includes(this.state["replayAliasFilter"]))) :
      this.state.replays.filter(r => r.captureId === this.state.relatedCaptureId);
 
     for (var i = 0; i < selectedRows.length; i++) {
       selectedReplayIds.push(visibleReplays[selectedRows[i]].replayId);
       relatedCaptureId = visibleReplays[selectedRows[i]].captureId;
     }
+
+    console.log("selectedReplayIds length: " + this.state.selectedReplayIds.length);
+    console.log("selectedCaptureIds length: " + this.state.selectedCaptureIds.length);
+
+    if (selectedReplayIds.length + this.state.selectedCaptureIds.length === 1) {
+      deleteDisabled = false;
+    }
+
     this.setState(prevState => ({
       selectedReplayIds: selectedReplayIds,
-      relatedCaptureId: relatedCaptureId   
+      relatedCaptureId: relatedCaptureId,
+      isDeleteDisabled: deleteDisabled
     }));
   }
 
@@ -300,9 +331,9 @@ class ViewResults extends Component {
         showReplayResultsLoading: false
       }));
     })
-    
+
   }
-  
+
   getCaptureMetricData(captureId) {
     var parentContextState = this.props.parentContext.state;
     var component = this;
@@ -324,7 +355,7 @@ class ViewResults extends Component {
 
         var i = this.state.comparisonIndex;
         console.log("comparison index is: " + i);
-        console.log("The selected items to compare " + (this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length));        
+        console.log("The selected items to compare " + (this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length));
         //combine comparison data
         if (!this.state.isComparisonChartLoaded && i < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
           console.log("gettign comparison data")
@@ -334,7 +365,7 @@ class ViewResults extends Component {
           var ri = this.fillComparisonData('ReadIOPS', json["ReadIOPS"], this.state.compareReadIOPS, captureAlias);
           var wi = this.fillComparisonData('WriteIOPS', json["WriteIOPS"], this.state.compareWriteIOPS, captureAlias);
 
-          console.log(component.state.comparsionAliases);          
+          console.log(component.state.comparsionAliases);
           component.setState(prevState => ({
             compareFreeableMemory: fm,
             compareCpuUtilization: cu,
@@ -349,7 +380,7 @@ class ViewResults extends Component {
           }
           else if ((i + 1) < this.state.selectedCaptureIds.length + this.state.selectedReplayIds.length) {
             this.getReplayMetricData(this.state.selectedReplayIds[0]);
-          } 
+          }
           else {
               component.setState(prevState => ({
               isComparisonChartLoaded: true,
@@ -426,9 +457,9 @@ class ViewResults extends Component {
 
   /**
    * Function referenced from
-   * 
+   *
    * https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser/20343999
-   * 
+   *
    * Param:
    *   isCapture: expected boolean to determine if a capture or replay is being downloaded
    */
@@ -439,14 +470,14 @@ class ViewResults extends Component {
       readIOPS: this.state.readIOPS,
       writeIOPS: this.state.writeIOPS
     }
-    
+
     console.log("current processing" + (isCapture ? "capture" : "replay"));
     console.log(metricsObject);
 
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(metricsObject));
     var downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", 
+    downloadAnchorNode.setAttribute("download",
       (isCapture ? this.state.captureDetails["captureAlias"] : this.state.replayDetails["replayAlias"])+ ".json");
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -492,19 +523,138 @@ class ViewResults extends Component {
     this.getReplayMetricData(this.state.replays[rowIndex].replayId);
   }
 
+  onDeleteCaptureClick(rowIndex, e) {
+    console.log("Capture open?: " + this.state.isDeleteCaptureOpen);
+    this.setState(prevState => ({
+      isDeleteCaptureOpen: true,
+      captureDetails: this.state.captures[rowIndex]
+    }))
+  }
+
+  onDeleteReplayClick(rowIndex, e) {
+    this.setState(prevState => ({
+      isDeleteReplayOpen: true,
+      replayDetails: this.state.replays[rowIndex]
+    }))
+  }
+
+  onDeleteClose() {
+    this.setState(prevState => ({
+      isDeleteCaptureOpen: false,
+      isDeleteReplayOpen: false
+    }))
+  }
+
+  deleteCapture() {
+    this.onCaptureRowSelection("none");
+    this.props.deleteCapture(this.state.captureDetails.captureId);
+    this.setState(prevState => ({
+      isDeleteCaptureOpen: false,
+    }))
+  }
+
+  deleteReplay() {
+    this.props.deleteReplay(this.state.replayDetails.replayId);
+    this.onReplayRowSelection("none");
+    this.setState(prevState => ({
+      isDeleteReplayOpen: false,
+    }))
+  }
+
   isRelatedReplayOrCapture(captureId) {
     return (this.state.selectedCaptureRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
       (this.state.selectedReplayRows.length > 0 && (this.state.relatedCaptureId === captureId)) ||
       (this.state.relatedCaptureId === -1);
   }
 
+  onFilterChange(filterName, filterValues) {
+    this.setState(prevState => {
+      var obj = {};
+      obj[filterName + "Filter"] = filterValues;
+      return obj;
+    })
+  }
+
+  renderCaptureDelete() {
+    const actions = [
+      <FlatButton
+        label="Close"
+        primary={true}
+        onClick={this.onDeleteClose}
+      />,
+      <FlatButton
+        label="Confirm"
+        primary={true}
+        onClick={this.deleteCapture}
+      />
+    ];
+
+
+
+    return (
+      <Dialog
+        title={"Delete Capture"}
+        actions={actions}
+        modal={true}
+        autoScrollBodyContent={true}
+        contentStyle={{
+          width: '50%',
+          maxWidth: 'none',
+        }}
+        open={this.state.isDeleteCaptureOpen}
+      >
+        <div>
+          <h4>Are you sure you want to delete capture '{this.state.captureDetails.captureAlias}' and all its related replays?</h4>
+        </div>
+      </Dialog>
+    );
+  }
+
+  renderReplayDelete() {
+    const actions = [
+      <FlatButton
+        label="Close"
+        primary={true}
+        onClick={this.onDeleteClose}
+      />,
+      <FlatButton
+        label="Confirm"
+        primary={true}
+        onClick={this.deleteReplay}
+      />
+    ];
+
+
+
+    return (
+      <Dialog
+        title={"Delete Replay"}
+        actions={actions}
+        modal={true}
+        autoScrollBodyContent={true}
+        contentStyle={{
+          width: '50%',
+          maxWidth: 'none',
+        }}
+        open={this.state.isDeleteReplayOpen}
+      >
+        <div>
+          <h4>Are you sure you want to delete replay '{this.state.replayDetails.replayAlias}' </h4>
+        </div>
+      </Dialog>
+    );
+  }
+
   renderCaptureTable() {
     var that = this;
     return (
       <div>
-      <h3>Capture Results</h3>
+          <h3>Capture Results</h3>
+          <Filter
+            fields={[{name: "captureAlias", displayText: "Capture Alias", type: "TextField"}]}
+            onFilterChange={this.onFilterChange}></Filter>
         <Table
-          height={'100%'}
+          height={this.state.showCaptureResultsLoading || this.state.captures.length == 0 ? '100%' : '250px'}
           fixedHeader={true}
           selectable={true}
           multiSelectable={false}
@@ -522,6 +672,7 @@ class ViewResults extends Component {
               <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="The End Time">End Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
+              <TableHeaderColumn tooltip="Delete">Delete</TableHeaderColumn>
             </TableRow>
           </TableHeader>
           <TableBody
@@ -532,7 +683,8 @@ class ViewResults extends Component {
           >
             {this.state.captures.map( (row, index) => {
               let boundItemClick = this.onOpenCaptureDetailsClick.bind(this, index);
-              if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
+              let boundItemClickDelete = this.onDeleteCaptureClick.bind(this, index);
+              if ((row.captureStatus === COMPLETED || row.captureStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId) && (!that.state["captureAliasFilter"] || row.captureAlias.includes(that.state["captureAliasFilter"]))) {
                 return(
                 <TableRow key={row.captureId} selected={this.state.selectedCaptureIds.indexOf(row.captureId) !== -1} >
                   <TableRowColumn>{row.captureAlias}</TableRowColumn>
@@ -543,6 +695,7 @@ class ViewResults extends Component {
                   <TableRowColumn>{row.startTime}</TableRowColumn>
                   <TableRowColumn>{row.endTime}</TableRowColumn>
                   <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
+                  <TableRowColumn><a onClick={boundItemClickDelete} class="open-log-link">Delete</a></TableRowColumn>
                 </TableRow>
                 );
               }
@@ -570,8 +723,12 @@ class ViewResults extends Component {
     return (
       <div>
       <h3>Replay Results</h3>
+      <Filter
+        fields={[{name: "replayAlias", displayText: "Replay Alias", type: "TextField"}]}
+        onFilterChange={this.onFilterChange}>
+      </Filter>
       <Table
-          height={'100%'}
+          height={this.state.showReplayResultsLoading || this.state.replays.length === 0 ? '100%' : '250px'}
           fixedHeader={true}
           selectable={true}
           multiSelectable={true}
@@ -589,6 +746,7 @@ class ViewResults extends Component {
               <TableHeaderColumn tooltip="The Start Time">Start Time</TableHeaderColumn>
               <TableHeaderColumn tooltip="The End Time">Fast Replay</TableHeaderColumn>
               <TableHeaderColumn tooltip="View Details">View Details</TableHeaderColumn>
+              <TableHeaderColumn tooltip="Delete">Delete</TableHeaderColumn>
             </TableRow>
           </TableHeader>
           <TableBody
@@ -599,7 +757,8 @@ class ViewResults extends Component {
           >
             {this.state.replays.map( (row, index) => {
               let boundItemClick = this.onOpenReplayDetailsClick.bind(this, index);
-              if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId)) {
+              let boundItemClickDelete = this.onDeleteReplayClick.bind(this, index);
+              if ((row.replayStatus === COMPLETED || row.replayStatus === ERROR) && that.isRelatedReplayOrCapture(row.captureId) && (!that.state["replayAliasFilter"] || row.replayAlias.includes(that.state["replayAliasFilter"]))) {
                 return(
                 <TableRow key={index} selected={this.state.selectedReplayIds.indexOf(row.replayId) !== -1} >
                   <TableRowColumn>{row.replayAlias}</TableRowColumn>
@@ -610,6 +769,7 @@ class ViewResults extends Component {
                   <TableRowColumn>{row.isFast ? '-' : row.startTime}</TableRowColumn>
                   <TableRowColumn>{row.isFast ? <div class="result-complete glyphiconstyle glyphicon glyphicon-ok" /> : <div class="result-fail glyphiconstyle glyphicon glyphicon-remove" />}</TableRowColumn>
                   <TableRowColumn><a onClick={boundItemClick} class="open-log-link">Open Details</a></TableRowColumn>
+                  <TableRowColumn><a onClick={boundItemClickDelete} class="open-log-link">Delete</a></TableRowColumn>
                 </TableRow>
                 );
               }
@@ -1010,8 +1170,14 @@ class ViewResults extends Component {
         {this.state.replayDetails && this.state.isReplayLogOpen &&
           <div>{this.renderReplayDetails()}</div>
         }
-        {this.state.isCompareOpen && 
+        {this.state.isCompareOpen &&
           <div>{this.renderCompare()}</div>
+        }
+        {this.state.isDeleteCaptureOpen &&
+          <div>{this.renderCaptureDelete()}</div>
+        }
+        {this.state.isDeleteReplayOpen &&
+          <div>{this.renderReplayDelete()}</div>
         }
       </div>
       );

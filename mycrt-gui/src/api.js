@@ -23,13 +23,19 @@ function createErrorPromise(response, body) {
     console.log("CREATING ERROR PROMISE **********");
     console.log(response.status);
     console.log(response);
-    if (response.status === 400) {
-       return Promise.reject(response.json())
+    if (response.status === 400 || response.status === 404) {
+       return Promise.resolve(response)
+         .then(response => response.json())
+         .then(errMsg => Promise.reject(errMsg["error"]))
     }
     else if (response.status === 500)
        return Promise.reject(["Server Connect Error"]);
     else if (response.status === 401)
-       return Promise.reject(["Unauthorized Error"]);
+       return Promise.resolve(response)
+         .then(response => response.json())
+         .then(errMsg => Promise.reject(errMsg["error"].includes("username") ? 
+            errMsg["error"] :
+            "Unauthorized Error"));
     else
        return Promise.reject(["Unknown error"]);
 }
@@ -103,9 +109,9 @@ export function setToken(tok) {
 }
 
 /**
- * 
- * @param {string} username 
- * @param {string} password 
+ *
+ * @param {string} username
+ * @param {string} password
  */
 export function logIn(username, password) {
     headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
@@ -226,4 +232,60 @@ export function postReplay(replay) {
           return createErrorPromise(response);
       })
       .then(json => json)
+}
+  
+export function putEndTime(captureId, endTime) {
+  headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+  return put("users/captures/" + captureId, {end_time: endTime})
+   .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
+export function deleteCapture(captureId) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return del("users/captures/" + captureId)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
+export function deleteReplay(replayId) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return del("users/replays/" + replayId)
+      .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+  
+export function putKeys(changeKeysInfo) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return put("users/" + changeKeysInfo.username + "/keys", changeKeysInfo)
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+
+            return createErrorPromise(response);
+        })
+        .then(json => json)
 }

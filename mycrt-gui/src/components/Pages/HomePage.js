@@ -105,6 +105,10 @@ class HomePage extends Component {
     this.handleDBNameChange = this.handleDBNameChange.bind(this);
     this.handleCaptureSelection = this.handleCaptureSelection.bind(this);
 
+    this.getNewStartDay = this.getNewStartDay.bind(this);
+    this.getNewStartTime = this.getNewStartTime.bind(this);
+    this.setNewStartDay = this.setNewStartDay.bind(this);
+
     this.isCaptureFieldsFilled = this.isCaptureFieldsFilled.bind(this);
     this.onCaptureButton = this.onCaptureButton.bind(this);
     this.onCaptureSubmit = this.onCaptureSubmit.bind(this);
@@ -358,17 +362,39 @@ class HomePage extends Component {
     }));
   }
 
-  handleStartDayChange(event, value) {
+  setNewStartDay(newDate) {
+    this.setState(prevState => ({
+      captureStartDay: newDate
+    }))
+  }
+
+  getNewStartDay(event, value) {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
       newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
     } else {
       var newDate = value;
     }
+    return newDate;
+  }
 
-    this.setState(prevState => ({
-      captureStartDay: newDate
-    }))
+  getNewStartTime(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes());
+    } else {
+      var newDate = value;
+    }
+    return newDate;
+  }
+
+  handleStartDayChange(event, value) {
+    this.setNewStartDay(this.getNewStartDay(event, value));
+  }
+
+  handleStartTimeChange(event, value) {
+    this.setNewStartDay(this.getNewStartTime(event, value));
   }
 
   handleEndDayChange(event, value) {
@@ -392,21 +418,6 @@ class HomePage extends Component {
         isErrorVisible: false
       }))
     }
-    console.log(newDate);
-  }
-
-  handleStartTimeChange(event, value) {
-    if (this.state.captureStartDay != undefined) {
-      var newDate = this.state.captureStartDay;
-      newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes());
-    } else {
-      var newDate = value;
-    }
-
-    this.setState(prevState => ({
-      captureStartDay: newDate
-    }))
     console.log(newDate);
   }
 
@@ -878,6 +889,8 @@ class HomePage extends Component {
     );
   }
   render() {
+    var that = this;
+
     return (
       <div className="HomePage">
         <h2>Dashboard</h2>
@@ -892,6 +905,7 @@ class HomePage extends Component {
           showLoadingCard={this.state.showLoadingCard}
           showLoadingContent={this.state.loadingCaptureContent}
           errorFound={this.state.captureContentErrorFound}
+          {...that.props}
         />
         <h3>Replays</h3>
         <Button
@@ -904,6 +918,7 @@ class HomePage extends Component {
           showLoadingCard={this.state.showReplayLoadingCard}
           showLoadingContent={this.state.loadingReplayContent}
           errorFound={this.state.replayContentErrorFound}
+          {...that.props}
         />
       </div>
     );
