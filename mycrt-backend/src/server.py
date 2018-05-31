@@ -17,7 +17,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
-from .database.updateRecords import updateCaptureEndTime, updateKeys
+from .database.updateRecords import updateCaptureEndTime, updateCapture, updateKeys
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
 
@@ -81,22 +81,20 @@ def create_app(config={}):
 
             if ('username' not in jsonData or
                 'password' not in jsonData or
-                'email' not in jsonData or
                 'secret_key' not in jsonData or
                 'access_key' not in jsonData):
                     return jsonify({"error": "Missing field in request."}), 400
 
             jsonUsername = jsonData['username']
             jsonPassword = jsonData['password']
-            jsonEmail = jsonData['email']
             jsonAccess_key = jsonData['access_key']
             jsonSecret_key = jsonData['secret_key']
 
             if(not g.user.verify_password(jsonPassword)):
                 return jsonify({"error": "Password does not match."}), 400
 
-            if (g.user.username != jsonUsername or g.user.email != jsonEmail):
-                return jsonify({"error": "Cannot edit username or email."}), 400
+            if (g.user.username != jsonUsername):
+                return jsonify({"error": "Cannot edit username."}), 400
 
             success = updateKeys(jsonUsername, jsonAccess_key, jsonSecret_key, db.get_session())
             print(success)
@@ -132,12 +130,13 @@ def create_app(config={}):
 
                 updateCaptureEndTime(capture_id, end_time, db.get_session())
                 userCaptures = getCaptureFromId(capture_id, db.get_session())
+                print(userCaptures)
 
                 userCapture = userCaptures[0]
                 return jsonify(userCapture), 200
 
         else:
-            return jsonify({"error": "Missing field in request."}), 400
+            return jsonify({"error": "Missing json data."}), 400
 
 
     @app.route('/users/captures', methods=['GET'])
