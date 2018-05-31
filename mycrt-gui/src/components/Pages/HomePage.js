@@ -117,6 +117,8 @@ class HomePage extends Component {
     this.getReplayData = this.getReplayData.bind(this);
     this.checkReplayLoadingCard = this.checkReplayLoadingCard.bind(this);
     this.isReplayFieldsFilled = this.isReplayFieldsFilled.bind(this);
+
+    this.setToValidDate = this.setToValidDate.bind(this);
   }
 
   componentDidMount() {
@@ -358,6 +360,14 @@ class HomePage extends Component {
     }));
   }
 
+  setToValidDate(newDate) {
+    var now = new Date();
+    if (newDate < now) {
+      return now;
+    }
+    return newDate;
+  }
+
   handleStartDayChange(event, value) {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
@@ -365,6 +375,7 @@ class HomePage extends Component {
     } else {
       var newDate = value;
     }
+    newDate = this.setToValidDate(newDate);
 
     this.setState(prevState => ({
       captureStartDay: newDate
@@ -378,6 +389,8 @@ class HomePage extends Component {
     } else {
       var newDate = value;
     }
+    //TODO: if user sets endday before start date
+    newDate = this.setToValidDate(newDate);
 
     // check if end date is after start date
     var newDateWithBuffer = newDate;
@@ -403,6 +416,7 @@ class HomePage extends Component {
     } else {
       var newDate = value;
     }
+    newDate = this.setToValidDate(newDate);
 
     this.setState(prevState => ({
       captureStartDay: newDate
@@ -418,6 +432,7 @@ class HomePage extends Component {
     } else {
       var newDate = value;
     }
+    newDate = this.setToValidDate(newDate);
 
     // check if end date is after start date
     var newDateWithBuffer = newDate;

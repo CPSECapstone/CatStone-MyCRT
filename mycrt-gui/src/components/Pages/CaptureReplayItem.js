@@ -86,10 +86,10 @@ class CaptureReplayItem extends Component {
       <div>
         {this.props.loading && 
           <div className="CaptureReplayItem">
-            <div class="capture-replay-item-content">
-              <div class={"status-bar " + captureStatusTextClass + "-bar"} />
-              <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-              <h5>Loading...</h5>
+            <div class="capture-replay-loading-item-content">
+              <div class="capture-loading-content">
+                <h3><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span></h3>
+              </div>
             </div>
           </div>
         }

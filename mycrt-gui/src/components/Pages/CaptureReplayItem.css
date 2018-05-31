@@ -16,6 +16,16 @@
     border-bottom-left-radius: 5px;
 }
 
+.data-loading-bar {
+  background: none;
+}
+
+.capture-loading-content {
+  padding-top: 50px;
+  text-align: center;
+  color: #aaa;
+}
+
 .capture-complete-bar { 
     background: #5dd1e0;
 }
@@ -54,6 +64,12 @@
 
 .capture-loading {
 	color: #fbe046;
+}
+
+.capture-replay-loading-item-content {
+  text-align: left;
+  padding-left: 5px;
+  width:180px;
 }
 
 .capture-replay-item-content {
