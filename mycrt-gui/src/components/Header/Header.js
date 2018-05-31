@@ -30,7 +30,11 @@ class Header extends Component {
         horizontal: 'left',
         vertical: 'top',
       },
-      changeKeysVisible: false
+      changeKeysVisible: false,
+      passwordValue: undefined,
+      usernameValue: undefined,
+      secretKeyValue: undefined,
+      awsKeyValue: undefined
     };
 
     // This binding is necessary to make `this` work in the callback
@@ -42,11 +46,16 @@ class Header extends Component {
     this.onChangeKeysSubmit = this.onChangeKeysSubmit.bind(this);
     this.isChangeKeysFieldsFilled = this.isChangeKeysFieldsFilled.bind(this);
     this.renderChangeKeysForm = this.renderChangeKeysForm.bind(this);
+
+    this.onPasswordChange = this.onPasswordChange.bind(this);
+    this.onAWSKeyChange = this.onAWSKeyChange.bind(this);
+    this.onSecretKeyChange = this.onSecretKeyChange.bind(this);
   }
 
   onChangeKeysOpen() {
     this.setState({
-      changeKeysVisible: true
+      changeKeysVisible: true,
+      settingsVisible: false
     });
   }
 
@@ -63,6 +72,59 @@ class Header extends Component {
 
   isChangeKeysFieldsFilled() {
     return true;
+  }
+
+  onPasswordChange(event, value) {
+    if (value.length == 0) {
+      this.setState(prevState => ({
+        passwordValue: undefined
+      }));
+    } else {
+      this.setState(prevState => ({
+        passwordValue: value
+      }));
+    }
+  }
+
+  onUsernameChange(event, value) {
+    if (value.length == 0) {
+      this.setState(prevState => ({
+        usernameValue: undefined
+      }));
+    } else {
+      this.setState(prevState => ({
+        usernameValue: value
+      }));
+    }
+  }
+
+  onAWSKeyChange(event, value) {
+    if (value.length == 0) {
+      this.setState(prevState => ({
+        awsKeyValue: undefined
+      }));
+    } else {
+      this.setState(prevState => ({
+        awsKeyValue: value
+      }));
+    }
+  }
+
+  onSecretKeyChange(event, value) {
+    if (value.length == 0) {
+      this.setState(prevState => ({
+        secretKeyValue: undefined
+      }));
+    } else {
+      this.setState(prevState => ({
+        secretKeyValue: value
+      }));
+    }
+  }
+
+  isChangeKeysFieldsFilled() {
+    return (this.state.passwordValue !== undefined && this.state.usernameValue !== undefined
+      && this.state.secretKeyValue !== undefined && this.state.awsKeyValue !== undefined);
   }
 
   handleSettingsClick = (event) => {
@@ -148,28 +210,20 @@ class Header extends Component {
             Database credentials are invalid, please check your input.
           </div>}
         <div class="aws-keys-item">
-          Username
+          Verify Account Username
              <TextField
             hintText="Type username here"
-            errorText={this.state.credentialsError}
-            onChange={this.onUsernameChange}
-          />
-        </div>
-        <div class="aws-keys-item">
-          Database Password
-             <TextField
-            hintText="Type password here"
             onChange={this.onPasswordChange}
             type="password"
           />
         </div>
         <div class="aws-keys-item">
-          Email
-           <TextField
-              hintText="Type email here"
-              errorText={this.state.emailError}
-              onChange={this.onEmailChange}
-            />
+          Verify Account Password
+             <TextField
+            hintText="Type password here"
+            onChange={this.onPasswordChange}
+            type="password"
+          />
         </div>
         <div class="aws-keys-item">
           New AWS Key
