@@ -156,6 +156,26 @@ export function deleteReplay(replayId, cb, errCb) {
     }
 }
 
+export function putEndTime(captureId, endTime, cb, errCb) {
+	return (dispatch, prevState) => {
+    api.putEndTime(captureId, endTime)
+      .then(() => {if (cb) cb();})
+      .catch((error) => {
+        if (errCb) errCb("Error submitting endTime " + endTime + " for capture " + captureId)  
+      })
+  }
+}
+
+export function putKeys(changeKeysInfo, cb, errCb) {
+  return (dispatch, prevState) => {
+    api.putKeys(changeKeysInfo)
+      .then(() => {if (cb) cb();})
+      .catch((error) => {
+        if (errCb) errCb("Invalid credentials. Check account username and password.")  
+      })
+  }
+}
+
 function checkError(err, dispatcher) {
     return err[0].includes("Unauthorized") ? dispatcher({type:"LOG_OUT"}) : console.log(err);
 }

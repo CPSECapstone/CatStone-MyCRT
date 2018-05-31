@@ -227,6 +227,20 @@ export function postReplay(replay) {
       })
       .then(json => json)
 }
+  
+export function putEndTime(captureId, endTime) {
+  headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+  return put("users/captures/" + captureId, {end_time: endTime})
+   .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
 
 export function deleteCapture(captureId) {
     headers.set('Authorization', 'Basic ' + btoa(token + ":"));
@@ -254,4 +268,19 @@ export function deleteReplay(replayId) {
           return createErrorPromise(response);
       })
       .then(json => json)
+}
+  
+  export function putKeys(changeKeysInfo) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return put("users/" + changeKeysInfo.username + "/keys", changeKeysInfo)
+    .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+  }
 }
