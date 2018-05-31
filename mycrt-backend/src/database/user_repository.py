@@ -1,12 +1,13 @@
 from src.database.models import User
 
+
 class UserRepository:
 
     def __init__(self, db_session):
         self.db_session = db_session
 
     def register_user(self, username, password, email, access_key, secret_key):
-        if User.query.filter(User.username==username).first() == None:
+        if User.query.filter(User.username==username).first() is None:
             user = User(username=username,
                     email=email, access_key=access_key, secret_key=secret_key)
             user.hash_password(password)
