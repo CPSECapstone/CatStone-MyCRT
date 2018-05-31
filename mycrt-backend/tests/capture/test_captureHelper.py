@@ -18,6 +18,13 @@ class TestCaptureHelper(unittest.TestCase):
 
         self.assertEqual(response, expected)
 
+    def test_get_rds_instances_none_with_no_user(self):
+        testBoto = mockBoto(0)
+        response = getRDSInstances("test-region", None, testBoto)
+        expected = []
+
+        self.assertEqual(response, expected)
+
     def test_get_rds_instances_singular(self):
         testBoto = mockBoto(1)
         response = getRDSInstances("test-region", self.user, testBoto)
@@ -42,6 +49,13 @@ class TestCaptureHelper(unittest.TestCase):
     def test_get_s3_instances_none(self):
         testBoto = mockBoto(0)
         response = getS3Instances(self.user, testBoto)
+        expected = []
+
+        self.assertEqual(response, expected)
+
+    def test_get_s3_instances_none_with_no_user(self):
+        testBoto = mockBoto(0)
+        response = getS3Instances(None, testBoto)
         expected = []
 
         self.assertEqual(response, expected)
