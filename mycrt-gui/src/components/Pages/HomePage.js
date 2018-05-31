@@ -119,6 +119,7 @@ class HomePage extends Component {
     this.isReplayFieldsFilled = this.isReplayFieldsFilled.bind(this);
 
     this.setToValidDate = this.setToValidDate.bind(this);
+    this.isEndAfterStart = this.isEndAfterStart.bind(this);
   }
 
   componentDidMount() {
@@ -368,6 +369,15 @@ class HomePage extends Component {
     return newDate;
   }
 
+  isEndAfterStart(end, start) {
+    var newDateWithBuffer = end;
+    newDateWithBuffer.setMinutes(end.getMinutes() - 1);
+    if (start !== undefined && newDateWithBuffer <= start) {
+      return false
+    }
+    return true
+  }
+
   handleStartDayChange(event, value) {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
@@ -380,6 +390,14 @@ class HomePage extends Component {
     this.setState(prevState => ({
       captureStartDay: newDate
     }))
+
+    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
+      console.log("HEMLO")
+      this.setState(prevState => ({
+        isErrorVisible: true,
+        captureEndDay: undefined
+      }))
+    }
   }
 
   handleEndDayChange(event, value) {
@@ -389,15 +407,13 @@ class HomePage extends Component {
     } else {
       var newDate = value;
     }
-    //TODO: if user sets endday before start date
     newDate = this.setToValidDate(newDate);
 
     // check if end date is after start date
-    var newDateWithBuffer = newDate;
-    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
-    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
+    if (!this.isEndAfterStart(newDate, this.state.captureStartDay)) {
       this.setState(prevState => ({
-        isErrorVisible: true
+        isErrorVisible: true,
+        captureEndDay: undefined
       }))
     } else {
       this.setState(prevState => ({
@@ -405,7 +421,6 @@ class HomePage extends Component {
         isErrorVisible: false
       }))
     }
-    console.log(newDate);
   }
 
   handleStartTimeChange(event, value) {
@@ -422,6 +437,13 @@ class HomePage extends Component {
       captureStartDay: newDate
     }))
     console.log(newDate);
+
+    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
+      this.setState(prevState => ({
+        isErrorVisible: true,
+        captureEndDay: undefined
+      }))
+    }
   }
 
   handleEndTimeChange(event, value) {
@@ -435,11 +457,10 @@ class HomePage extends Component {
     newDate = this.setToValidDate(newDate);
 
     // check if end date is after start date
-    var newDateWithBuffer = newDate;
-    newDateWithBuffer.setMinutes(newDate.getMinutes() - 1);
-    if (this.state.captureStartDay != undefined && newDateWithBuffer <= this.state.captureStartDay) {
+    if (!this.isEndAfterStart(newDate, this.state.captureStartDay)) {
       this.setState(prevState => ({
-        isErrorVisible: true
+        isErrorVisible: true,
+        captureEndDay: undefined
       }))
     } else {
       this.setState(prevState => ({
@@ -447,7 +468,6 @@ class HomePage extends Component {
         isErrorVisible: false
       }))
     }
-    console.log(newDate);
   }
 
   handleAliasChange(event, value) {
