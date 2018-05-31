@@ -120,6 +120,10 @@ class HomePage extends Component {
 
     this.setToValidDate = this.setToValidDate.bind(this);
     this.isEndAfterStart = this.isEndAfterStart.bind(this);
+
+    this.getNewStartDay = this.getNewStartDay.bind(this);
+    this.getNewStartTime = this.getNewStartTime.bind(this);
+    this.setNewStartDay = this.setNewStartDay.bind(this);
   }
 
   componentDidMount() {
@@ -378,7 +382,13 @@ class HomePage extends Component {
     return true
   }
 
-  handleStartDayChange(event, value) {
+  setNewStartDay(newDate) {
+    this.setState(prevState => ({
+      captureStartDay: newDate
+    }))
+  }
+
+  getNewStartDay(event, value) {
     if (this.state.captureStartDay != undefined) {
       var newDate = this.state.captureStartDay;
       newDate.setFullYear(value.getFullYear(), value.getMonth(), value.getDate());
@@ -386,10 +396,34 @@ class HomePage extends Component {
       var newDate = value;
     }
     newDate = this.setToValidDate(newDate);
+    return newDate;
+  }
 
-    this.setState(prevState => ({
-      captureStartDay: newDate
-    }))
+  getNewStartTime(event, value) {
+    if (this.state.captureStartDay != undefined) {
+      var newDate = this.state.captureStartDay;
+      newDate.setHours(value.getHours());
+      newDate.setMinutes(value.getMinutes());
+    } else {
+      var newDate = value;
+    }
+    newDate = this.setToValidDate(newDate);
+    return newDate;
+  }
+
+  handleStartDayChange(event, value) {
+    this.setNewStartDay(this.getNewStartDay(event, value));
+
+    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
+      this.setState(prevState => ({
+        isErrorVisible: true,
+        captureEndDay: undefined
+      }))
+    }
+  }
+
+  handleStartTimeChange(event, value) {
+    this.setNewStartDay(this.getNewStartTime(event, value));
 
     if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
       this.setState(prevState => ({
@@ -418,29 +452,6 @@ class HomePage extends Component {
       this.setState(prevState => ({
         captureEndDay: newDate,
         isErrorVisible: false
-      }))
-    }
-  }
-
-  handleStartTimeChange(event, value) {
-    if (this.state.captureStartDay != undefined) {
-      var newDate = this.state.captureStartDay;
-      newDate.setHours(value.getHours());
-      newDate.setMinutes(value.getMinutes());
-    } else {
-      var newDate = value;
-    }
-    newDate = this.setToValidDate(newDate);
-
-    this.setState(prevState => ({
-      captureStartDay: newDate
-    }))
-    console.log(newDate);
-
-    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
-      this.setState(prevState => ({
-        isErrorVisible: true,
-        captureEndDay: undefined
       }))
     }
   }
