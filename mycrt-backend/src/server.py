@@ -17,6 +17,7 @@ from .capture.captureHelper import getS3Instances, getRDSInstances
 from multiprocessing import Process
 from .database.getRecords import *
 from .database.addRecords import insertReplay
+from .database.deleteRecords import deleteCapture, deleteReplay
 from .database.updateRecords import updateCaptureEndTime, updateCapture, updateKeys
 import rpyc
 rpyc.core.protocol.DEFAULT_CONFIG['allow_pickle'] = True
@@ -138,6 +139,26 @@ def create_app(config={}):
         else:
             return jsonify({"error": "Missing json data."}), 400
 
+    @app.route('/users/captures/<capture_id>', methods=['DELETE'])
+    @auth.login_required
+    def delete_capture(capture_id):
+        userCaptures = getCaptureFromId(capture_id, db.get_session())
+        if (len(userCaptures) == 0):
+            return jsonify(), 404
+
+        userCapture = userCaptures[0]
+        if (userCapture['userId'] != g.user.get_id()):
+            return jsonify(), 403
+
+        if (userCapture['captureStatus'] != 2 and userCapture['captureStatus'] != 3):
+            return jsonify({"error": "Cannot delete capture in progress."}), 400
+
+        success = deleteCapture(capture_id, db.get_session())
+
+        if (not success):
+            return jsonify({"error": "Missing field in request."}), 500
+
+        return jsonify(), 200
 
     @app.route('/users/captures', methods=['GET'])
     @auth.login_required
@@ -239,6 +260,27 @@ def create_app(config={}):
             return jsonify(), 403
 
         return jsonify(userReplay), 200
+
+    @app.route('/users/replays/<replay_id>', methods=['DELETE'])
+    @auth.login_required
+    def delete_replay(replay_id):
+        userReplays = getReplayFromId(replay_id, db.get_session())
+        if (len(userReplays) == 0):
+            return jsonify(), 404
+
+        userReplay = userReplays[0]
+        if (userReplay['userId'] != g.user.get_id()):
+            return jsonify(), 403
+
+        if (userReplay['replayStatus'] != 2 and userReplay['replayStatus'] != 3):
+            return jsonify({"error": "Cannot delete replay in progress."}), 400
+
+        success = deleteReplay(replay_id, db.get_session())
+
+        if (not success):
+            return jsonify({"error": "Missing field in request."}), 500
+
+        return jsonify(), 200
 
     @app.route('/users/replays', methods=['POST'])
     @auth.login_required

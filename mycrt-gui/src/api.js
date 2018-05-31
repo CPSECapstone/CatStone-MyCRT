@@ -103,9 +103,9 @@ export function setToken(tok) {
 }
 
 /**
- * 
- * @param {string} username 
- * @param {string} password 
+ *
+ * @param {string} username
+ * @param {string} password
  */
 export function logIn(username, password) {
     headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
@@ -227,11 +227,25 @@ export function postReplay(replay) {
       })
       .then(json => json)
 }
-
+  
 export function putEndTime(captureId, endTime) {
+  headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+  return put("users/captures/" + captureId, {end_time: endTime})
+   .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+}
+
+export function deleteCapture(captureId) {
     headers.set('Authorization', 'Basic ' + btoa(token + ":"));
 
-    return put("users/captures/" + captureId, {end_time: endTime})
+    return del("users/captures/" + captureId)
       .then((response) => {
           if (response.ok) {
               return response.json();
@@ -242,10 +256,10 @@ export function putEndTime(captureId, endTime) {
       .then(json => json)
 }
 
-export function putKeys(changeKeysInfo) {
+export function deleteReplay(replayId) {
     headers.set('Authorization', 'Basic ' + btoa(token + ":"));
 
-    return put("users/" + changeKeysInfo.username + "/keys", changeKeysInfo)
+    return del("users/replays/" + replayId)
       .then((response) => {
           if (response.ok) {
               return response.json();
@@ -254,4 +268,19 @@ export function putKeys(changeKeysInfo) {
           return createErrorPromise(response);
       })
       .then(json => json)
+}
+  
+  export function putKeys(changeKeysInfo) {
+    headers.set('Authorization', 'Basic ' + btoa(token + ":"));
+
+    return put("users/" + changeKeysInfo.username + "/keys", changeKeysInfo)
+    .then((response) => {
+          if (response.ok) {
+              return response.json();
+          }
+
+          return createErrorPromise(response);
+      })
+      .then(json => json)
+  }
 }
