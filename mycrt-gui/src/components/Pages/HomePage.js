@@ -374,6 +374,8 @@ class HomePage extends Component {
   }
 
   isEndAfterStart(end, start) {
+    console.log(start)
+    console.log(end)
     var newDateWithBuffer = end;
     newDateWithBuffer.setMinutes(end.getMinutes() - 1);
     if (start !== undefined && newDateWithBuffer <= start) {
@@ -386,6 +388,13 @@ class HomePage extends Component {
     this.setState(prevState => ({
       captureStartDay: newDate
     }))
+
+    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
+      this.setState(prevState => ({
+        isErrorVisible: true,
+        captureEndDay: undefined
+      }))
+    }
   }
 
   getNewStartDay(event, value) {
@@ -413,24 +422,10 @@ class HomePage extends Component {
 
   handleStartDayChange(event, value) {
     this.setNewStartDay(this.getNewStartDay(event, value));
-
-    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
-      this.setState(prevState => ({
-        isErrorVisible: true,
-        captureEndDay: undefined
-      }))
-    }
   }
 
   handleStartTimeChange(event, value) {
     this.setNewStartDay(this.getNewStartTime(event, value));
-
-    if(this.state.captureEndDay !== undefined && !this.isEndAfterStart(this.state.captureEndDay, newDate)) {
-      this.setState(prevState => ({
-        isErrorVisible: true,
-        captureEndDay: undefined
-      }))
-    }
   }
 
   handleEndDayChange(event, value) {
