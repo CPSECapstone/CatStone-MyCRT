@@ -728,7 +728,7 @@ class ViewResults extends Component {
         onFilterChange={this.onFilterChange}>
       </Filter>
       <Table
-          height={this.state.showReplayResultsLoading || this.state.replays.length ? '100%' : '250px'}
+          height={this.state.showReplayResultsLoading || this.state.replays.length === 0 ? '100%' : '250px'}
           fixedHeader={true}
           selectable={true}
           multiSelectable={true}
