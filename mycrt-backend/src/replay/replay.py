@@ -100,17 +100,17 @@ def prepare_scheduled_replay(replay, capture, db_session, user):
     transactions = get_times_and_transactions(capture['captureAlias'] + ".log", capture['s3Bucket'])
     time_format = '%Y-%m-%d %H:%M:%S'
 
-    time_delta = capture['endTime'] - capture['startTime']
     conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True})
 
     if transactions == []:
-
+        time_delta = capture['endTime'] - capture['startTime']
         scheduled_end_time = datetime.strptime(str(replay['startTime'] + time_delta), time_format)
         scheduled_end_time = scheduled_end_time.replace(tzinfo=utc)
 
         conn.root.add_empty_replay(replay, datetime.strptime(str(replay['startTime'] + timedelta(seconds=10)), time_format).replace(tzinfo=utc), user)
         conn.root.add_empty_replay(replay, scheduled_end_time, user, is_start = False)
     else:
+        time_delta = replay['startTime'] - capture['startTime']
         for transaction in transactions:
             scheduled_time = datetime.strptime(transaction[0], time_format) + time_delta
             scheduled_time = scheduled_time.replace(tzinfo=utc)
