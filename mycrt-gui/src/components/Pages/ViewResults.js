@@ -38,6 +38,12 @@ const styles = {
   },
 };
 
+const shouldCompareButtonBeDisabled = (selectedCaptures, selectedReplays) => {
+  // When deselecting a capture so that there is no captures selected, the result is an array of -1s that is too long
+  const totalItemsSelected = selectedCaptures.filter(x => x !== -1).length + selectedReplays.length;
+  return !(totalItemsSelected > 1 && totalItemsSelected < 4);
+};
+
 class ViewResults extends Component {
   constructor(props) {
     super(props);
@@ -191,7 +197,7 @@ class ViewResults extends Component {
 
   onCaptureRowSelection(rows) {
     // check if compare button should be disabled or enabled
-    var disabled = true;
+    let disabled = true;
     var deleteDisabled = true;
     var selectedRows = [];
     var relatedCaptureId = -1;
@@ -204,8 +210,9 @@ class ViewResults extends Component {
       for (var i = 0; i < this.state.captures.length; i++) {
         selectedRows.push(-1);
       }
+      disabled = shouldCompareButtonBeDisabled([], this.state.selectedReplayRows);
       this.setState(prevState => ({
-        isCompareDisabled: true,
+        isCompareDisabled: disabled,
         selectedCaptureRows: selectedRows,
         selectedCaptureIds: [],
         relatedCaptureId: this.state.selectedReplayIds.length >= 1 ? this.state.relatedCaptureId : -1
@@ -215,9 +222,7 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-    if (selectedRows.length + this.state.selectedReplayRows.length > 1 && selectedRows.length + this.state.selectedReplayRows.length <= 3) {
-      disabled = false;
-    }
+    disabled = shouldCompareButtonBeDisabled(selectedRows, this.state.selectedReplayRows);
     this.setState(prevState => ({
       isCompareDisabled: disabled,
       selectedCaptureRows: selectedRows
@@ -225,7 +230,6 @@ class ViewResults extends Component {
 
     // get capture ids from row indexes
     var selectedCaptureIds = [];
-
 
     for (var i = 0; i < selectedRows.length; i++) {
       var visibleCaptures = this.state.relatedCaptureId === -1 ?
@@ -237,9 +241,10 @@ class ViewResults extends Component {
     }
 
     console.log("selectedReplayIds length: " + this.state.selectedReplayIds.length);
-    console.log("selectedCaptureIds length: " + this.state.selectedCaptureIds.length);
+    console.log("selectedCaptureIds Length: " + selectedCaptureIds.length);
 
-    if (this.state.selectedReplayIds.length + selectedCaptureIds.length === 1) {
+    const totalRowsSelected = this.state.selectedReplayIds.length + selectedCaptureIds.length;
+    if (totalRowsSelected > 1 && totalRowsSelected < 4) {
       deleteDisabled = false;
     }
 
@@ -250,7 +255,7 @@ class ViewResults extends Component {
     }));
 
     if (rows.length === 0) {
-      this.setState({selectedReplayIds: [], selectedReplayRows: [], isCompareDisabled: true})
+      this.setState({selectedReplayIds: [], selectedReplayRows: []})
     }
   }
 
@@ -282,9 +287,7 @@ class ViewResults extends Component {
       selectedRows = rows;
     }
 
-    if (selectedRows.length + this.state.selectedCaptureRows.length > 1 && selectedRows.length + this.state.selectedCaptureRows.length <= 3) {
-      disabled = false;
-    }
+    disabled = shouldCompareButtonBeDisabled(this.state.selectedCaptureRows, selectedRows);
     this.setState(prevState => ({
       isCompareDisabled: disabled,
       selectedReplayRows: selectedRows
@@ -301,7 +304,7 @@ class ViewResults extends Component {
       relatedCaptureId = visibleReplays[selectedRows[i]].captureId;
     }
 
-    console.log("selectedReplayIds length: " + this.state.selectedReplayIds.length);
+    console.log("selectedReplayIds length: " + selectedRows.length);
     console.log("selectedCaptureIds length: " + this.state.selectedCaptureIds.length);
 
     if (selectedReplayIds.length + this.state.selectedCaptureIds.length === 1) {
