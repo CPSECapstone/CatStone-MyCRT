@@ -23,11 +23,11 @@ def checkAllRDSInstances(db_session):
             endTime = capture['endTime'].strftime("%Y-%m-%dT%H:%M:%S.000Z") 
             updateCaptureEndtime(capture['captureId'], endTime, db_session)
        
-        if capture['startTime'] <= now and capture['endTime'] > now:
+        if capture['startTime'] <= now and capture['endTime'] is not None and capture['endTime'] > now:
             #datetime.timedelta(hours=1)
             print("Updating capture to be in progress")
             updateCapture(capture['captureId'], 1, db_session)
-        elif capture['endTime']<= now:
+        elif capture['endTime'] is not None and capture['endTime']<= now:
             print("Updating capture to be done")
             user = getUserFromId(capture["userId"], db_session)[0]
             userObject = User(id=user[0], username=user[1], password=user[2],
