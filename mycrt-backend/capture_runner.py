@@ -16,8 +16,8 @@ def run_capture_app():
     
 
     while True:
-        print("Sleeping for 5 seconds...")
-        time.sleep(5)
+        print("Sleeping for 1 seconds...")
+        time.sleep(1)
         print("Finished sleeping")
         db = MyCrtDb(app.config['SQLALCHEMY_DATABASE_URI'])
         checkAllRDSInstances(db.get_session())

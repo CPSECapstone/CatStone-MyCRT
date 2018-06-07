@@ -18,4 +18,5 @@ class MyCrtDb:
         return self.db_session
 
     def dispose_engine(self):
+        self.db_session.close_all()
         self.engine.dispose()
